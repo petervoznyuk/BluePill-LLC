@@ -15,14 +15,15 @@ int left_revolutions = 0;
 int right_revolutions = 0;
 float current_left_angle = 0;
 float current_right_angle = 0;
+float left_offset = 0;
+float right_offset = 0;
 
 
 /*
-  Read left and right motor angles from the encoders.
-  Angles are returned in degrees.
+Read left and right motor angles from the encoders.
+Angles are returned in degrees.
 */
-array<float, 2> read_motor_angles()
-{
+array<float, 2> read_motor_angles() {
     array<float, 2> angles;
     u_int16_t serial_response; // incoming byte from the SPI
     int chips[2] = {ENC_CHIP_SELECT_LEFT, ENC_CHIP_SELECT_RIGHT};
@@ -54,16 +55,19 @@ array<float, 2> read_motor_angles()
     }
 
     current_right_angle = angles[1];
+
+    angles[0] = angles[0] + 360 * left_revolutions - left_offset;
+    angles[1] = angles[1] + 360 * right_revolutions - right_offset;
     
     return angles;
 }
 
+
 /*
-  Command a motor velocity to the specified motor.
-  input values should be in the range [-100,100].
+Command a motor velocity to the specified motor.
+input values should be in the range [-100,100].
 */
-void set_motor_pwms(float left, float right)
-{
+void set_motor_pwms(float left, float right) {
     if (left >= 0) {
         // Set left motor direction pin to "forward"
     } else {
@@ -79,9 +83,59 @@ void set_motor_pwms(float left, float right)
     pwm_start(RIGHT_MOTOR_PWM_PIN, PWM_FREQ_HZ, floor(abs(right) / 100.0 * DUTY_CYCLE_CONVERSION), RESOLUTION_10B_COMPARE_FORMAT);
 }
 
+/*
+Home the table in the bottom left corner 
+and zero the encoders.
+*/
+void home_table(float x_speed, float y_speed, float position_threshold) {
 
-void setup()
-{
+    Serial.println("Homing in X...");
+    //Home X
+    set_motor_pwms(x_speed, x_speed);
+    delay(200);
+
+    float previous_left_encoder = read_motor_angles()[0];
+
+    while(true) {
+        delay(100);
+        if(abs(previous_left_encoder - read_motor_angles()[0]) < position_threshold) {
+            set_motor_pwms(0, 0);
+            Serial.println("Homed in X");
+            break;
+        }
+        previous_left_encoder = read_motor_angles()[0];
+    }
+
+    Serial.println("Homing in Y...");
+    //Home Y
+    set_motor_pwms(y_speed, -y_speed);
+    delay(200);
+
+    previous_left_encoder = read_motor_angles()[0];
+
+    while(true) {
+        delay(100);
+        if(abs(previous_left_encoder - read_motor_angles()[0]) < position_threshold) {
+            set_motor_pwms(0, 0);
+            Serial.println("Homed in Y");
+            break;
+        }
+        previous_left_encoder = read_motor_angles()[0];
+    }
+
+    //Nudge into the corner
+    set_motor_pwms(x_speed, 0);
+    delay(500);
+    set_motor_pwms(0, 0);
+    left_revolutions = 0;
+    right_revolutions = 0;
+    left_offset = read_motor_angles()[0];
+    right_offset = read_motor_angles()[1];
+    Serial.println("Fully Homed");
+}
+
+
+void setup() {
     Serial.begin(460800);
     SPI.beginTransaction(SPISettings(460800, MSBFIRST, SPI_MODE1));
     
@@ -99,18 +153,18 @@ void setup()
     pwm_start(RIGHT_MOTOR_PWM_PIN, PWM_FREQ_HZ, 0, RESOLUTION_10B_COMPARE_FORMAT);
 
     float start_time = millis();
+
+    home_table(11, 6, 10);
 }
 
-void loop()
-{
+void loop() {
     float loop_start_time = millis();
 
     array<float,2> angles = read_motor_angles();
-    Serial.print("Right motor Angle: ");
-    Serial.println(angles[1] + right_revolutions * 360);
-    
-    // Serial.print("\tRight motor Angle: ");
-    // Serial.println(angles[1]);
+    Serial.print("Left motor Angle: ");
+    Serial.print(angles[0]);
+    Serial.print("\tRight motor Angle: ");
+    Serial.println(angles[1]);
 
     // for (int i = 0; i < 100; i++) {
     //     set_motor_pwms(i, i);
