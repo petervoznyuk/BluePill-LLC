@@ -7,6 +7,8 @@
 #define LEFT_MOTOR_PWM_PIN PB_7
 #define RIGHT_MOTOR_PWM_PIN PB_8
 #define ROLLOVER_ANGLE_DEGS 180
+#define PULLEY_RADIUS 0.035 // In meters
+#define PI 3.14159265358979323846
 
 using namespace std;
 
@@ -81,6 +83,37 @@ void set_motor_pwms(float left, float right) {
         // Set right motor direction pin to "backward"
     }
     pwm_start(RIGHT_MOTOR_PWM_PIN, PWM_FREQ_HZ, floor(abs(right) / 100.0 * DUTY_CYCLE_CONVERSION), RESOLUTION_10B_COMPARE_FORMAT);
+}
+
+/*
+Return the sum of the PID terms
+*/
+float pid(float kp, float ki, float kd, float error, float accumulated_error, float previous_error, float dt) {
+    float error_derivative = (error - previous_error) / dt;
+
+    return error * kp + accumulated_error * ki + error_derivative * kd;
+}
+
+/*
+Takes motor angles in degrees
+and converts them into cartesian position of the mallet in meters
+*/
+tuple<float, float> theta_to_xy(float theta_l, float theta_r) {
+    float x = (theta_l + theta_r) * PULLEY_RADIUS * PI / 360;
+    float y = (theta_l - theta_r) * PULLEY_RADIUS * PI / 360;
+
+    return make_tuple(-x, -y);
+}
+
+/*
+Takes cartesian position of the mallet (x, y) in meters and converts
+it into motor angles in encoder ticks (2048 ticks per revolution)
+*/
+tuple<float, float> xy_to_theta(float x, float y) {
+    float theta_l = (x + y) / PULLEY_RADIUS * 360 / (2*PI);
+    float theta_r = (x - y) / PULLEY_RADIUS * 360 / (2*PI);
+
+    return make_tuple(-theta_l, -theta_r);
 }
 
 /*
