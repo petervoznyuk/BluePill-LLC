@@ -18,23 +18,23 @@ using namespace std;
 // Define Global Variables
 int left_revolutions = 0;
 int right_revolutions = 0;
-float current_left_angle = 0;
-float current_right_angle = 0;
+float previous_left_angle = 0;
+float previous_right_angle = 0;
 float left_offset = 0;
 float right_offset = 0;
 float start_time;
-float circle_radius = 0.15; //Meters
-float circle_period = 2; //Seconds
+float circle_radius = 0.07; //Meters
+float circle_period = .5; //Seconds
 float angular_frequency = 2 * PI / circle_period;
 float left_accumulated_error = 0;
 float right_accumulated_error = 0;
 float left_previous_error = 0;
 float right_previous_error = 0;
 double previous_time;
-float kp = 0.8;
+float kp = 1;
 float ki = 0;
 float kd = 0;
-float max_pwm = 25;
+float max_pwm = 40;
 
 
 /*
@@ -46,33 +46,31 @@ array<float, 2> read_motor_angles() {
     u_int16_t serial_response; // incoming byte from the SPI
     int chips[2] = {ENC_CHIP_SELECT_LEFT, ENC_CHIP_SELECT_RIGHT};
 
-    // TODO: Subtract starting angles or use the encoder's zeroing capabilities
-
     digitalWrite(chips[0], LOW);
     serial_response = SPI.transfer16(0x3FFF);
     digitalWrite(chips[0], HIGH);
     angles[0] = (serial_response & 0b0011111111111111) * 360.0 / 16384;
 
-    if(angles[0] - current_left_angle > ROLLOVER_ANGLE_DEGS) {
+    if(angles[0] - previous_left_angle > ROLLOVER_ANGLE_DEGS) {
         left_revolutions -= 1;
-    } else if(current_left_angle - angles[0] > ROLLOVER_ANGLE_DEGS) {
+    } else if(previous_left_angle - angles[0] > ROLLOVER_ANGLE_DEGS) {
         left_revolutions += 1;
     }
 
-    current_left_angle = angles[0];
+    previous_left_angle = angles[0];
 
     digitalWrite(chips[1], LOW);
     serial_response = SPI.transfer16(0x3FFF);
     digitalWrite(chips[1], HIGH);
     angles[1] = (serial_response & 0b0011111111111111) * 360.0 / 16384;
 
-    if(angles[1] - current_right_angle > ROLLOVER_ANGLE_DEGS) {
+    if(angles[1] - previous_right_angle > ROLLOVER_ANGLE_DEGS) {
         right_revolutions -= 1;
-    } else if (current_right_angle - angles[1] > ROLLOVER_ANGLE_DEGS) {
+    } else if (previous_right_angle - angles[1] > ROLLOVER_ANGLE_DEGS) {
         right_revolutions += 1;
     }
 
-    current_right_angle = angles[1];
+    previous_right_angle = angles[1];
 
     angles[0] = angles[0] + 360.0 * left_revolutions - left_offset;
     angles[1] = angles[1] + 360.0 * right_revolutions - right_offset;
@@ -194,6 +192,10 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
 
     Serial.print(current_time);
     Serial.print(",");
+    Serial.print(x_pos*100);
+    Serial.print(",");
+    Serial.print(y_pos*100);
+    Serial.print(",");
     Serial.print(left_error);
     Serial.print(",");
     Serial.print(right_error);
@@ -229,11 +231,15 @@ void setup() {
     // home_table(7, 6, 10);
     left_revolutions = 0;
     right_revolutions = 0;
+
+    delay(500);
+
+    read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
     left_offset = read_motor_angles()[0];
     right_offset = read_motor_angles()[1];
 
     Serial.println("BEGIN CSV");
-    Serial.println("Time(s),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
+    Serial.println("Time(s),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
 
     previous_time = 0;
     start_time = micros();
