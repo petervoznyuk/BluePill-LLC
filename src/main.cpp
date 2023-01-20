@@ -23,17 +23,18 @@ float current_right_angle = 0;
 float left_offset = 0;
 float right_offset = 0;
 float start_time;
-float circle_radius = 0.1; //Meters
-float circle_period = 4; //Seconds
+float circle_radius = 0.15; //Meters
+float circle_period = 2; //Seconds
 float angular_frequency = 2 * PI / circle_period;
 float left_accumulated_error = 0;
 float right_accumulated_error = 0;
 float left_previous_error = 0;
 float right_previous_error = 0;
 double previous_time;
-float kp = 0.2;
+float kp = 0.8;
 float ki = 0;
 float kd = 0;
+float max_pwm = 25;
 
 
 /*
@@ -177,6 +178,32 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
     Serial.println("Fully Homed");
 }
 
+void command_motors(float x_pos, float y_pos, double current_time, double previous_time) {
+    array<float, 2> target_angles = xy_to_theta(x_pos, y_pos);
+
+    array<float,2> actual_angles = read_motor_angles();
+
+    float left_error = target_angles[0] - actual_angles[0];
+    float right_error = target_angles[1] - actual_angles[1];
+
+    float left_pid = pid(kp, ki, kd, -left_error, left_accumulated_error, left_previous_error, current_time - previous_time);
+    float right_pid = pid(kp, ki, kd, -right_error, right_accumulated_error, right_previous_error, current_time - previous_time);
+
+    float left_pwm = fmin(fmax(-max_pwm, left_pid), max_pwm);
+    float right_pwm = fmin(fmax(-max_pwm, right_pid), max_pwm);
+
+    Serial.print(current_time);
+    Serial.print(",");
+    Serial.print(left_error);
+    Serial.print(",");
+    Serial.print(right_error);
+    Serial.print(",");
+    Serial.print(left_pwm);
+    Serial.print(",");
+    Serial.println(right_pwm);
+
+    set_motor_pwms(left_pwm, right_pwm);
+}
 
 void setup() {
     Serial.begin(460800);
@@ -205,6 +232,9 @@ void setup() {
     left_offset = read_motor_angles()[0];
     right_offset = read_motor_angles()[1];
 
+    Serial.println("BEGIN CSV");
+    Serial.println("Time(s),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
+
     previous_time = 0;
     start_time = micros();
 }
@@ -215,33 +245,7 @@ void loop() {
     float x_pos = circle_radius * (cos(angular_frequency * current_time)-1);
     float y_pos = circle_radius * sin(angular_frequency * current_time);
 
-    array<float, 2> target_angles = xy_to_theta(x_pos, y_pos);
-
-    array<float,2> actual_angles = read_motor_angles();
-
-    float left_error = target_angles[0] - actual_angles[0];
-    float right_error = target_angles[1] - actual_angles[1];
-
-    float left_pid = pid(kp, ki, kd, -left_error, left_accumulated_error, left_previous_error, current_time - previous_time);
-    float right_pid = pid(kp, ki, kd, -right_error, right_accumulated_error, right_previous_error, current_time - previous_time);
-
-    float left_pwm = fmin(fmax(-25.0, left_pid), 25.0);
-    float right_pwm = fmin(fmax(-25.0, right_pid), 25.0);
-
-    // Serial.print("Current time: ");
-    Serial.print(current_time);
-
-    Serial.print(",");
-    Serial.print(left_error);
-    Serial.print(",");
-    Serial.print(right_error);
-
-    Serial.print(",");
-    Serial.print(left_pwm);
-    Serial.print(",");
-    Serial.println(right_pwm);
-    
-    set_motor_pwms(left_pwm, right_pwm);
+    command_motors(x_pos, y_pos, current_time, previous_time);
 
     previous_time = current_time;
 }
