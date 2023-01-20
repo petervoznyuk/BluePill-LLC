@@ -2,5 +2,7 @@
     "files.associations": {
         "*.py": "python",
         "array": "cpp"
-    }
+    },
+
+    "terminal.integrated.rightClickBehavior": "default"
 }

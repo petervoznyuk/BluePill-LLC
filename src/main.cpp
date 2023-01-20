@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <SPI.h>
+#include <cmath>
+
 #define ENC_CHIP_SELECT_LEFT PA4
 #define ENC_CHIP_SELECT_RIGHT PB5
 #define LEFT_MOTOR_PWM_PIN PB_7
@@ -11,7 +13,6 @@
 #define ROLLOVER_ANGLE_DEGS 180
 #define PULLEY_RADIUS 0.035 // In meters
 
-
 using namespace std;
 
 // Define Global Variables
@@ -22,6 +23,17 @@ float current_right_angle = 0;
 float left_offset = 0;
 float right_offset = 0;
 float start_time;
+float circle_radius = 0.1; //Meters
+float circle_period = 4; //Seconds
+float angular_frequency = 2 * PI / circle_period;
+float left_accumulated_error = 0;
+float right_accumulated_error = 0;
+float left_previous_error = 0;
+float right_previous_error = 0;
+double previous_time;
+float kp = 0.2;
+float ki = 0;
+float kd = 0;
 
 
 /*
@@ -91,7 +103,7 @@ void set_motor_pwms(float left, float right) {
 /*
 Return the sum of the PID terms
 */
-float pid(float kp, float ki, float kd, float error, float accumulated_error, float previous_error, float dt) {
+float pid(float kp, float ki, float kd, float error, float accumulated_error, float previous_error, double dt) {
     float error_derivative = (error - previous_error) / dt;
 
     return error * kp + accumulated_error * ki + error_derivative * kd;
@@ -110,7 +122,7 @@ array<float,2> theta_to_xy(float theta_l, float theta_r) {
 
 /*
 Takes cartesian position of the mallet (x, y) in meters and converts
-it into motor angles in encoder ticks (2048 ticks per revolution)
+it into motor angles in degrees
 */
 array<float,2> xy_to_theta(float x, float y) {
     float theta_l = (x + y) / PULLEY_RADIUS * 360 / (2*PI);
@@ -125,7 +137,6 @@ and zero the encoders.
 */
 void home_table(float x_speed, float y_speed, float position_threshold) {
     //Home X
-    Serial.println("Homing in X...");
     set_motor_pwms(-x_speed, -x_speed);
     delay(200);
 
@@ -135,14 +146,12 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
         delay(100);
         if(abs(previous_left_encoder - read_motor_angles()[0]) < position_threshold) {
             set_motor_pwms(0, 0);
-            Serial.println("Homed in X");
             break;
         }
         previous_left_encoder = read_motor_angles()[0];
     }
 
     //Home Y
-    Serial.println("Homing in Y...");
     set_motor_pwms(-y_speed, y_speed);
     delay(200);
 
@@ -152,7 +161,6 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
         delay(100);
         if(abs(previous_left_encoder - read_motor_angles()[0]) < position_threshold) {
             set_motor_pwms(0, 0);
-            Serial.println("Homed in Y");
             break;
         }
         previous_left_encoder = read_motor_angles()[0];
@@ -191,33 +199,49 @@ void setup() {
     digitalWrite(LEFT_MOTOR_DIR_PIN, LOW);
     digitalWrite(RIGHT_MOTOR_DIR_PIN, LOW);
 
-    start_time = millis();
+    // home_table(7, 6, 10);
+    left_revolutions = 0;
+    right_revolutions = 0;
+    left_offset = read_motor_angles()[0];
+    right_offset = read_motor_angles()[1];
 
-    home_table(7, 6, 10);
+    previous_time = 0;
+    start_time = micros();
 }
 
 void loop() {
-    // float loop_start_time = millis();
+    double current_time = (micros() - start_time) / 1000000.0;
 
-    // Serial.println(millis() - start_time);
+    float x_pos = circle_radius * (cos(angular_frequency * current_time)-1);
+    float y_pos = circle_radius * sin(angular_frequency * current_time);
+
+    array<float, 2> target_angles = xy_to_theta(x_pos, y_pos);
+
+    array<float,2> actual_angles = read_motor_angles();
+
+    float left_error = target_angles[0] - actual_angles[0];
+    float right_error = target_angles[1] - actual_angles[1];
+
+    float left_pid = pid(kp, ki, kd, -left_error, left_accumulated_error, left_previous_error, current_time - previous_time);
+    float right_pid = pid(kp, ki, kd, -right_error, right_accumulated_error, right_previous_error, current_time - previous_time);
+
+    float left_pwm = fmin(fmax(-25.0, left_pid), 25.0);
+    float right_pwm = fmin(fmax(-25.0, right_pid), 25.0);
+
+    // Serial.print("Current time: ");
+    Serial.print(current_time);
+
+    Serial.print(",");
+    Serial.print(left_error);
+    Serial.print(",");
+    Serial.print(right_error);
+
+    Serial.print(",");
+    Serial.print(left_pwm);
+    Serial.print(",");
+    Serial.println(right_pwm);
     
-    int speed = 5;
+    set_motor_pwms(left_pwm, right_pwm);
 
-    set_motor_pwms(speed, -speed);
-    delay(2000);
-    set_motor_pwms(-speed, speed);
-    delay(2000);
-
-    array<float,2> angles = read_motor_angles();
-    array<float,2> pos = theta_to_xy(angles[0], angles[1]);
-    Serial.print("x (cm): ");
-    Serial.print(pos[0] * 100);
-    Serial.print("\ty (cm): ");
-    Serial.println(pos[1] * 100);
-    delay(5);
-
-    // for (int i = 0; i < 100; i++) {
-    //     set_motor_pwms(i, i);
-    //     delay(1);
-    // }
+    previous_time = current_time;
 }
