@@ -2,6 +2,8 @@
 #include <SPI.h>
 #include <cmath>
 #include <ArduinoEigen.h>
+// #include "ArduinoEigen/ArduinoEigenCommon.h"
+
 
 #define ENC_CHIP_SELECT_LEFT PA4
 #define ENC_CHIP_SELECT_RIGHT PB5
@@ -35,7 +37,9 @@ double previous_time;
 float kp = 1;
 float ki = 0;
 float kd = 0.0006;
-float max_pwm = 40;
+float max_pwm = 20;
+
+float tf = 1;
 
 array<float,6> cx;
 array<float,6> cy;
@@ -272,7 +276,7 @@ void setup() {
     digitalWrite(LEFT_MOTOR_DIR_PIN, LOW);
     digitalWrite(RIGHT_MOTOR_DIR_PIN, LOW);
 
-    home_table(7, 6, 10);
+    home_table(9, 5, 10);
 
     // Trajectory parameters
     float t0 = 0;
@@ -283,13 +287,13 @@ void setup() {
     float vx0 = 0;
     float vy0 = 0;
 
-    float tf = 0.75;
+    tf = 1;
     float xf = 0.5;
     float yf = 0.5;
-    float vxf = 0;
-    float vyf = 0.5;
+    float vxf = 0.1;
+    float vyf = 0;
 
-    array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.1);
+    array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
 
     cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
     cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
@@ -297,8 +301,8 @@ void setup() {
     delay(500);
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
-    left_offset = read_motor_angles()[0];
-    right_offset = read_motor_angles()[1];
+    // left_offset = read_motor_angles()[0];
+    // right_offset = read_motor_angles()[1];
 
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
@@ -316,15 +320,32 @@ void loop() {
     float x_pos = cx[0] + cx[1]*t + cx[2]*pow(t,2) + cx[3]*pow(t,3) + cx[4]*pow(t,4) + cx[5]*pow(t,5);
     float y_pos = cy[0] + cy[1]*t + cy[2]*pow(t,2) + cy[3]*pow(t,3) + cy[4]*pow(t,4) + cy[5]*pow(t,5);
 
-    Serial.print("Time (s): ");
-    Serial.print(t);
-    Serial.print("\tX (cm): ");
-    Serial.print(x_pos*100);
-    Serial.print("\tY (cm): ");
-    Serial.println(y_pos*100);
-    // command_motors(x_pos, y_pos, t, previous_time);
+    // Serial.println(cx[0]);
+    // Serial.println(cx[1]);
+    // Serial.println(cx[2]);
+    // Serial.println(cx[3]);
+    // Serial.println(cx[4]);
+    // Serial.println(cx[5]);
+    // Serial.println(cy[0]);
+    // Serial.println(cy[1]);
+    // Serial.println(cy[2]);
+    // Serial.println(cy[3]);
+    // Serial.println(cy[4]);
+    // Serial.println(cy[5]);
+    // Serial.print("Time (s): ");
+    // Serial.print(t);
+    // Serial.print("\tX (cm): ");
+    // Serial.print(x_pos*100);
+    // Serial.print("\tY (cm): ");
+    // Serial.println(y_pos*100);
+    command_motors(x_pos, y_pos, t, previous_time);
 
     previous_time = t;
 
-    delay(1000);
+    // delay(100);
+
+    if (t > tf) {
+        set_motor_pwms(0.0,0.0);
+        exit(0);
+    }
 }
