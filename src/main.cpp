@@ -23,8 +23,8 @@ float previous_right_angle = 0;
 float left_offset = 0;
 float right_offset = 0;
 float start_time;
-float circle_radius = 0.07; //Meters
-float circle_period = .5; //Seconds
+float circle_radius = 0.15; //Meters
+float circle_period = 1; //Seconds
 float angular_frequency = 2 * PI / circle_period;
 float left_accumulated_error = 0;
 float right_accumulated_error = 0;
@@ -190,7 +190,7 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_pwm = fmin(fmax(-max_pwm, left_pid), max_pwm);
     float right_pwm = fmin(fmax(-max_pwm, right_pid), max_pwm);
 
-    Serial.print(current_time);
+    Serial.print(current_time*1000);
     Serial.print(",");
     Serial.print(x_pos*100);
     Serial.print(",");
@@ -239,7 +239,7 @@ void setup() {
     right_offset = read_motor_angles()[1];
 
     Serial.println("BEGIN CSV");
-    Serial.println("Time(s),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
+    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
 
     previous_time = 0;
     start_time = micros();
