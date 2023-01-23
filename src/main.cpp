@@ -112,6 +112,8 @@ Return the sum of the PID terms
 float pid(float kp, float ki, float kd, float error, float accumulated_error, float previous_error, double dt) {
     float error_derivative = (error - previous_error) / dt;
 
+    accumulated_error += error;
+
     return error * kp + accumulated_error * ki + error_derivative * kd;
 }
 
@@ -276,6 +278,8 @@ void setup() {
     digitalWrite(LEFT_MOTOR_DIR_PIN, LOW);
     digitalWrite(RIGHT_MOTOR_DIR_PIN, LOW);
 
+    read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
+
     home_table(9, 5, 10);
 
     // Trajectory parameters
@@ -300,7 +304,6 @@ void setup() {
 
     delay(500);
 
-    read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
     // left_offset = read_motor_angles()[0];
     // right_offset = read_motor_angles()[1];
 
