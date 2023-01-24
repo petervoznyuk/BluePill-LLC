@@ -36,10 +36,11 @@ float right_previous_error = 0;
 double previous_time;
 float kp = 1;
 float ki = 0;
-float kd = 0.0006;
-float max_pwm = 20;
+// float kd = 0.002;
+float kd = 0.0;
+float max_pwm = 60;
 
-float tf = 1;
+float tf;
 
 array<float,6> cx;
 array<float,6> cy;
@@ -178,6 +179,8 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
     set_motor_pwms(-x_speed, 0);
     delay(500);
     set_motor_pwms(0, 0);
+    delay(500);
+
     left_revolutions = 0;
     right_revolutions = 0;
     left_offset = read_motor_angles()[0];
@@ -231,7 +234,7 @@ array<float,3> get_intermediate_point(float x, float y, float vx, float vy, floa
 }
 
 array<float,12> get_trajectory_coeffs(float t0, float x0, float y0, float vx0, float vy0, float tf, float xf, float yf, float vxf, float vyf, float d) {
-    array<float,3> intermediate_params = get_intermediate_point(xf, yf, vxf, vyf, tf, 0.1);
+    array<float,3> intermediate_params = get_intermediate_point(xf, yf, vxf, vyf, tf, d);
 
     float x1 = intermediate_params[0];
     float y1 = intermediate_params[1];
@@ -291,11 +294,11 @@ void setup() {
     float vx0 = 0;
     float vy0 = 0;
 
-    tf = 1;
+    tf = 0.5;
     float xf = 0.5;
     float yf = 0.5;
-    float vxf = 0.1;
-    float vyf = 0;
+    float vxf = 2.0;
+    float vyf = 2.0;
 
     array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
 
@@ -310,6 +313,7 @@ void setup() {
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
 
+
     previous_time = 0;
     start_time = micros();
 }
@@ -317,35 +321,12 @@ void setup() {
 void loop() {
     double t = (micros() - start_time) / 1000000.0;
 
-    // float x_pos = circle_radius * (cos(angular_frequency * current_time)-1);
-    // float y_pos = circle_radius * sin(angular_frequency * current_time);
-
     float x_pos = cx[0] + cx[1]*t + cx[2]*pow(t,2) + cx[3]*pow(t,3) + cx[4]*pow(t,4) + cx[5]*pow(t,5);
     float y_pos = cy[0] + cy[1]*t + cy[2]*pow(t,2) + cy[3]*pow(t,3) + cy[4]*pow(t,4) + cy[5]*pow(t,5);
 
-    // Serial.println(cx[0]);
-    // Serial.println(cx[1]);
-    // Serial.println(cx[2]);
-    // Serial.println(cx[3]);
-    // Serial.println(cx[4]);
-    // Serial.println(cx[5]);
-    // Serial.println(cy[0]);
-    // Serial.println(cy[1]);
-    // Serial.println(cy[2]);
-    // Serial.println(cy[3]);
-    // Serial.println(cy[4]);
-    // Serial.println(cy[5]);
-    // Serial.print("Time (s): ");
-    // Serial.print(t);
-    // Serial.print("\tX (cm): ");
-    // Serial.print(x_pos*100);
-    // Serial.print("\tY (cm): ");
-    // Serial.println(y_pos*100);
     command_motors(x_pos, y_pos, t, previous_time);
 
     previous_time = t;
-
-    // delay(100);
 
     if (t > tf) {
         set_motor_pwms(0.0,0.0);
