@@ -36,14 +36,18 @@ float right_previous_error = 0;
 double previous_time;
 float kp = 1;
 float ki = 0;
-// float kd = 0.002;
-float kd = 0.0;
-float max_pwm = 60;
+float kd = 0.005;
+// float kd = 0.0;
+float max_pwm = 100;
 
 float tf;
+float tf_2;
 
 array<float,6> cx;
 array<float,6> cy;
+
+array<float,6> cx_2;
+array<float,6> cy_2;
 
 /*
 Read left and right motor angles from the encoders.
@@ -283,9 +287,9 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(9, 5, 10);
+    home_table(11, 5, 10);
 
-    // Trajectory parameters
+    // 1st Trajectory Parameters
     float t0 = 0;
     array<float,2> start_angles = read_motor_angles();
     array<float,2> start_position = theta_to_xy(start_angles[0], start_angles[1]);
@@ -294,16 +298,35 @@ void setup() {
     float vx0 = 0;
     float vy0 = 0;
 
-    tf = 0.5;
+    tf = 0.25;
     float xf = 0.5;
     float yf = 0.5;
-    float vxf = 2.0;
-    float vyf = 2.0;
+    float vxf = 0.0;
+    float vyf = 4.0;
 
     array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
 
     cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
     cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
+
+    // 2nd Trajectory Parameters
+    float t0_2 = tf;
+    float x0_2 = xf;
+    float y0_2 = yf;
+    float vx0_2 = vxf;
+    float vy0_2 = vyf;
+
+    tf_2 = t0_2 + 0.5;
+    float xf_2 = 0.5;
+    float yf_2 = 0.2;
+    float vxf_2 = 0.0;
+    float vyf_2 = -0.01;
+
+    array<float,12> coeffs_2 = get_trajectory_coeffs(t0_2, x0_2, y0_2, vx0_2, vy0_2, tf_2, xf_2, yf_2, vxf_2, vyf_2, 0.05);
+
+    cx_2 = {{coeffs_2[0], coeffs_2[1], coeffs_2[2], coeffs_2[3], coeffs_2[4], coeffs_2[5]}};
+    cy_2 = {{coeffs_2[6], coeffs_2[7], coeffs_2[8], coeffs_2[9], coeffs_2[10], coeffs_2[11]}};
+
 
     delay(500);
 
@@ -319,17 +342,37 @@ void setup() {
 }
 
 void loop() {
+    float x_pos;
+    float y_pos;
+
     double t = (micros() - start_time) / 1000000.0;
 
-    float x_pos = cx[0] + cx[1]*t + cx[2]*pow(t,2) + cx[3]*pow(t,3) + cx[4]*pow(t,4) + cx[5]*pow(t,5);
-    float y_pos = cy[0] + cy[1]*t + cy[2]*pow(t,2) + cy[3]*pow(t,3) + cy[4]*pow(t,4) + cy[5]*pow(t,5);
+    float power_2 = pow(t,2);
+    float power_3 = pow(t,3);
+    float power_4 = pow(t,4);
+    float power_5 = pow(t,5);
+
+    if(t < tf) {
+        x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+        y_pos = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+    } else if(t < tf_2) {
+        x_pos = cx_2[0] + cx_2[1]*t + cx_2[2]*power_2 + cx_2[3]*power_3 + cx_2[4]*power_4 + cx_2[5]*power_5;
+        y_pos = cy_2[0] + cy_2[1]*t + cy_2[2]*power_2 + cy_2[3]*power_3 + cy_2[4]*power_4 + cy_2[5]*power_5;
+    }
 
     command_motors(x_pos, y_pos, t, previous_time);
 
     previous_time = t;
 
-    if (t > tf) {
-        set_motor_pwms(0.0,0.0);
+    if (t > tf_2) {
+        // while(t < tf + 1) {
+        //     double t = (micros() - start_time) / 1000000.0;
+        //     command_motors(x_pos, y_pos, t, previous_time);
+
+        //     previous_time = t;
+        // }
+
+        set_motor_pwms(0,0);
         exit(0);
     }
 }
