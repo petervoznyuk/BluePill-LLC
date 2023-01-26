@@ -14,7 +14,11 @@
 #define DUTY_CYCLE_CONVERSION 1024 // Accepted duty cycle values are 0-1024
 #define PWM_FREQ_HZ 10000
 #define ROLLOVER_ANGLE_DEGS 180
-#define PULLEY_RADIUS 0.035 // In meters
+#define PULLEY_RADIUS 0.035 //meters
+#define X_MIN 0.0 //meters
+#define X_MAX 0.7 //meters
+#define Y_MIN 0.0 //meters
+#define Y_MAX 0.9 //meters
 
 using namespace std;
 
@@ -36,9 +40,9 @@ float right_previous_error = 0;
 double previous_time;
 float kp = 1;
 float ki = 0;
-float kd = 0.005;
+float kd = 0.003;
 // float kd = 0.0;
-float max_pwm = 100;
+float max_pwm = 75;
 
 float tf;
 float tf_2;
@@ -276,6 +280,37 @@ array<float,12> get_trajectory_coeffs(float t0, float x0, float y0, float vx0, f
     return {{ax[0], ax[1], ax[2], ax[3], ax[4], ax[5], ay[0], ay[1], ay[2], ay[3], ay[4], ay[5]}};
 }
 
+bool check_path_bounds(array<float,6> x_coeffs, array<float,6> y_coeffs, float t0, float tf) {
+    int num_points = 100;
+    float x_pos;
+    float y_pos;
+
+    float delta_t = (tf - t0) / num_points;
+
+    for(int i=0;i<num_points;i++) {
+        float t = delta_t*i + t0;
+
+        float power_2 = t*t;
+        float power_3 = power_2*t;
+        float power_4 = power_3*t;
+        float power_5 = power_4*t;
+
+        x_pos = ceil((x_coeffs[0] + x_coeffs[1]*t + x_coeffs[2]*power_2 + x_coeffs[3]*power_3 + x_coeffs[4]*power_4 + x_coeffs[5]*power_5)*1000.0)/1000.0;
+        y_pos = ceil((y_coeffs[0] + y_coeffs[1]*t + y_coeffs[2]*power_2 + y_coeffs[3]*power_3 + y_coeffs[4]*power_4 + y_coeffs[5]*power_5)*1000.0)/1000.0;
+
+        if(x_pos < X_MIN || x_pos > X_MAX) {
+            Serial.println("X Bound Violated");
+            return false;
+        }
+        if(y_pos < Y_MIN || y_pos > Y_MAX) {
+            Serial.println("Y Bound Violated");
+            return false;
+        }
+    }
+    return true;
+}
+
+
 void setup() {
     Serial.begin(460800);
     SPI.beginTransaction(SPISettings(460800, MSBFIRST, SPI_MODE1));
@@ -312,19 +347,18 @@ void setup() {
 
     tf = 0.5;
     float xf = 0.5;
-    float yf = 0.5;
+    float yf = 0.6;
     float vxf = 0.0;
     float vyf = 2.0;
 
-    float before_traj = micros();
     array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
-    float after_traj = micros();
-
-    Serial.print("Time to calculate trajectory coeffs (us): ");
-    Serial.println(after_traj - before_traj);
 
     cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
     cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
+
+    if(!check_path_bounds(cx, cy, t0, tf)) {
+        exit(0);
+    }
 
     // 2nd Trajectory Parameters
     float t0_2 = tf;
@@ -343,6 +377,10 @@ void setup() {
 
     cx_2 = {{coeffs_2[0], coeffs_2[1], coeffs_2[2], coeffs_2[3], coeffs_2[4], coeffs_2[5]}};
     cy_2 = {{coeffs_2[6], coeffs_2[7], coeffs_2[8], coeffs_2[9], coeffs_2[10], coeffs_2[11]}};
+
+    if(!check_path_bounds(cx_2, cy_2, t0_2, tf_2)) {
+        exit(0);
+    }
 
     delay(500);
 
