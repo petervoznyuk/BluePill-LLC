@@ -310,7 +310,7 @@ void setup() {
     float vx0 = 0;
     float vy0 = 0;
 
-    tf = 0.25;
+    tf = 0.5;
     float xf = 0.5;
     float yf = 0.5;
     float vxf = 0.0;
@@ -344,15 +344,10 @@ void setup() {
     cx_2 = {{coeffs_2[0], coeffs_2[1], coeffs_2[2], coeffs_2[3], coeffs_2[4], coeffs_2[5]}};
     cy_2 = {{coeffs_2[6], coeffs_2[7], coeffs_2[8], coeffs_2[9], coeffs_2[10], coeffs_2[11]}};
 
-
     delay(500);
-
-    // left_offset = read_motor_angles()[0];
-    // right_offset = read_motor_angles()[1];
 
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
-
 
     previous_time = 0;
     start_time = micros();
