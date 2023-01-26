@@ -225,7 +225,7 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
 
 
 array<float,3> get_intermediate_point(float x, float y, float vx, float vy, float final_time, float straight_length) {
-    float final_velocity_magnitude = sqrt(pow(vx,2) + pow(vy,2));
+    float final_velocity_magnitude = sqrt(vx*vx + vy*vy);
     float reverse_x_component = -vx / final_velocity_magnitude * straight_length;
     float reverse_y_component = -vy / final_velocity_magnitude * straight_length;
     
@@ -246,20 +246,32 @@ array<float,12> get_trajectory_coeffs(float t0, float x0, float y0, float vx0, f
     
     Eigen::Matrix<float,6,6> mat;
 
-    mat << 1, t0, pow(t0,2), pow(t0,3), pow(t0,4), pow(t0,5),
-        0, 1, 2*t0, 3*pow(t0,2), 4*pow(t0,3), 5*pow(t0,4),
-        1, t1, pow(t1,2), pow(t1,3), pow(t1,4), pow(t1,5),
-        0, 1, 2*t1, 3*pow(t1,2), 4*pow(t1,3), 5*pow(t1,4),
-        1, tf, pow(tf,2), pow(tf,3), pow(tf,4), pow(tf,5),
-        0, 1, 2*tf, 3*pow(tf,2), 4*pow(tf,3), 5*pow(tf,4);
+    float t0_3 = t0*t0*t0;
+    float t0_4 = t0_3*t0;
+    float t0_5 = t0_4*t0;
+
+    float t1_3 = t1*t1*t1;
+    float t1_4 = t1_3*t1;
+    float t1_5 = t1_4*t1;
+    
+    float tf_3 = tf*tf*tf;
+    float tf_4 = tf_3*tf;
+    float tf_5 = tf_4*tf;
+
+    mat << 1, t0, t0*t0, t0_3, t0_4, t0_5,
+        0, 1, 2*t0, 3*t0*t0, 4*t0_3, 5*t0_4,
+        1, t1, t1*t1, t1_3, t1_4, t1_5,
+        0, 1, 2*t1, 3*t1*t1, 4*t1_3, 5*t1_4,
+        1, tf, tf*tf, tf_3, tf_4, tf_5,
+        0, 1, 2*tf, 3*tf*tf, 4*tf_3, 5*tf_4;
+
+    Eigen::ColPivHouseholderQR<Eigen::Matrix<float, 6, 6, 0, 6, 6>> qr = mat.colPivHouseholderQr();
 
     Eigen::Vector<float,6> bx(x0, vx0, x1, vxf, xf, vxf);
-
-    Eigen::Vector<float,6> ax = mat.colPivHouseholderQr().solve(bx);
+    Eigen::Vector<float,6> ax = qr.solve(bx);
 
     Eigen::Vector<float,6> by(y0, vy0, y1, vyf, yf, vyf);
-
-    Eigen::Vector<float,6> ay = mat.colPivHouseholderQr().solve(by);
+    Eigen::Vector<float,6> ay = qr.solve(by);
 
     return {{ax[0], ax[1], ax[2], ax[3], ax[4], ax[5], ay[0], ay[1], ay[2], ay[3], ay[4], ay[5]}};
 }
@@ -302,9 +314,14 @@ void setup() {
     float xf = 0.5;
     float yf = 0.5;
     float vxf = 0.0;
-    float vyf = 4.0;
+    float vyf = 2.0;
 
+    float before_traj = micros();
     array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
+    float after_traj = micros();
+
+    Serial.print("Time to calculate trajectory coeffs (us): ");
+    Serial.println(after_traj - before_traj);
 
     cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
     cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
@@ -347,10 +364,10 @@ void loop() {
 
     double t = (micros() - start_time) / 1000000.0;
 
-    float power_2 = pow(t,2);
-    float power_3 = pow(t,3);
-    float power_4 = pow(t,4);
-    float power_5 = pow(t,5);
+    float power_2 = t*t;
+    float power_3 = power_2*t;
+    float power_4 = power_3*t;
+    float power_5 = power_4*t;
 
     if(t < tf) {
         x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
