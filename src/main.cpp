@@ -414,13 +414,11 @@ void loop() {
     // If HLC gave us a new target, update the path
     if (xf != xf_prev || yf != yf_prev) {
         update_trajectory_coeffs(t);
-        Serial.println("Updating path");
         // if(!check_path_bounds(cx, cy, t, tf)) {
         //     Serial.println("FAILED PATH CHECK");
         //     exit(0);
         // }
     }
-    Serial.println(tf);
 
     if (t < (tf + 0.01)) {
         float power_2 = t*t;
@@ -434,7 +432,6 @@ void loop() {
         command_motors(x_pos, y_pos, t, previous_time);
     } else {
         set_motor_pwms(0, 0);
-        Serial.println("Finishing following");
         exit(0);
     }
 
