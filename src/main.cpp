@@ -42,12 +42,12 @@ float kp = 1;
 float ki = 0;
 float kd = 0.003;
 // float kd = 0.0;
-float max_pwm = 75;
+float max_pwm = 50;
 
 array<float,2> prev_pos = {{0,0}};
 float t;
 float tf;
-float tf_2;
+
 float traj_duration;
 float xf;
 float yf;
@@ -58,8 +58,6 @@ float xf_prev, yf_prev;
 array<float,6> cx;
 array<float,6> cy;
 
-array<float,6> cx_2;
-array<float,6> cy_2;
 
 /*
 Read left and right motor angles from the encoders.
@@ -232,7 +230,7 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial.print(",");
     Serial.println(right_pwm);
 
-    set_motor_pwms(left_pwm, right_pwm);
+    // set_motor_pwms(left_pwm, right_pwm);
 }
 
 array<float,3> get_intermediate_point(float x, float y, float vx, float vy, float final_time, float straight_length) {
@@ -293,18 +291,18 @@ Get the target position, velocity, and arrival time from the high-level controll
 void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
-    if (t < 1) {
-        traj_duration = 1;
+    if (t < 0.75) {
+        traj_duration = 0.75;
         xf = 0.5;
         yf = 0.5;
         vxf = 0.0;
         vyf = 2.0;
-    } else if (t < 2) {
+    } else if (t < traj_duration + 1) {
         traj_duration = 1;
-        xf = 0.2;
-        yf = 0.7;
+        xf = 0.5;
+        yf = 0.15;
         vxf = 0.0;
-        vyf = 0.05;
+        vyf = -0.01;
     }
 }
 
@@ -313,24 +311,29 @@ Modifies the variables cx and cy to contain the polynomial coefficients
 for the new path the mallet should follow.
 */
 void update_trajectory_coeffs(float t) {
-    float t0 = t;
-
-    array<float,2> start_angles = read_motor_angles();
-    array<float,2> current_pos = theta_to_xy(start_angles[0], start_angles[1]);
-    float x0 = current_pos[0];
-    float y0 = current_pos[1];
+    float power_2 = t*t;
+    float power_3 = power_2*t;
+    float power_4 = power_3*t;
+    float power_5 = power_4*t;
 
     // Alt 1: Estimate mallet velocity based on current/previous positions and time difference
+    // array<float,2> start_angles = read_motor_angles();
+    // array<float,2> current_pos = theta_to_xy(start_angles[0], start_angles[1]);
+    // float x0 = current_pos[0];
+    // float y0 = current_pos[1];
     // float vx0 = (current_pos[0] - prev_pos[0]) / (current_time - previous_time);
     // float vy0 = (current_pos[1] - prev_pos[1]) / (current_time - previous_time);
     
     // Alt 2: Use desired mallet velocity from the derivative of the target polynomial
-    float vx0 = cx[1]*2*t + cx[2]*3*t*t + cx[3]*4*t*t*t + cx[4]*5*t*t*t*t;
-    float vy0 = cy[1]*2*t + cy[2]*3*t*t + cy[3]*4*t*t*t + cy[4]*5*t*t*t*t;
+    float x0 = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+    float y0 = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
 
-    tf = t0 + traj_duration;
+    float vx0 = cx[1] + cx[2]*2*t + cx[3]*3*power_2 + cx[4]*4*power_3 + cx[5]*5*power_4;
+    float vy0 = cy[1] + cy[2]*2*t + cy[3]*3*power_2 + cy[4]*4*power_3 + cy[5]*5*power_4;
 
-    array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
+    tf = t + traj_duration;
+
+    array<float,12> coeffs = get_trajectory_coeffs(t, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
 
     cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
     cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
@@ -392,54 +395,6 @@ void setup() {
 
     home_table(11, 5, 10);
 
-    // 1st Trajectory Parameters
-    float t0 = 0;
-    array<float,2> start_angles = read_motor_angles();
-    array<float,2> start_position = theta_to_xy(start_angles[0], start_angles[1]);
-    float x0 = start_position[0];
-    float y0 = start_position[1];
-    float vx0 = 0;
-    float vy0 = 0;
-
-    tf = 0.5;
-    float xf = 0.5;
-    float yf = 0.6;
-    float vxf = 0.0;
-    float vyf = 2.0;
-
-    array<float,12> coeffs = get_trajectory_coeffs(t0, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
-
-    cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
-    cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
-
-    if(!check_path_bounds(cx, cy, t0, tf)) {
-        exit(0);
-    }
-
-    // 2nd Trajectory Parameters
-    float t0_2 = tf;
-    float x0_2 = xf;
-    float y0_2 = yf;
-    float vx0_2 = vxf;
-    float vy0_2 = vyf;
-
-    tf_2 = t0_2 + 0.5;
-    float xf_2 = 0.5;
-    float yf_2 = 0.2;
-    float vxf_2 = 0.0;
-    float vyf_2 = -0.01;
-
-    array<float,12> coeffs_2 = get_trajectory_coeffs(t0_2, x0_2, y0_2, vx0_2, vy0_2, tf_2, xf_2, yf_2, vxf_2, vyf_2, 0.05);
-
-    cx_2 = {{coeffs_2[0], coeffs_2[1], coeffs_2[2], coeffs_2[3], coeffs_2[4], coeffs_2[5]}};
-    cy_2 = {{coeffs_2[6], coeffs_2[7], coeffs_2[8], coeffs_2[9], coeffs_2[10], coeffs_2[11]}};
-
-    if(!check_path_bounds(cx_2, cy_2, t0_2, tf_2)) {
-        exit(0);
-    }
-
-    delay(500);
-
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
 
@@ -459,9 +414,15 @@ void loop() {
     // If HLC gave us a new target, update the path
     if (xf != xf_prev || yf != yf_prev) {
         update_trajectory_coeffs(t);
+        Serial.println("Updating path");
+        // if(!check_path_bounds(cx, cy, t, tf)) {
+        //     Serial.println("FAILED PATH CHECK");
+        //     exit(0);
+        // }
     }
+    Serial.println(tf);
 
-    if (t < tf) {
+    if (t < (tf + 0.01)) {
         float power_2 = t*t;
         float power_3 = power_2*t;
         float power_4 = power_3*t;
@@ -473,6 +434,8 @@ void loop() {
         command_motors(x_pos, y_pos, t, previous_time);
     } else {
         set_motor_pwms(0, 0);
+        Serial.println("Finishing following");
+        exit(0);
     }
 
     previous_time = t;
