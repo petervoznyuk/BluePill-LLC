@@ -16,9 +16,9 @@
 #define ROLLOVER_ANGLE_DEGS 180
 #define PULLEY_RADIUS 0.035 //meters
 #define X_MIN 0.0 //meters
-#define X_MAX 0.7 //meters
+#define X_MAX 0.80 //meters
 #define Y_MIN 0.0 //meters
-#define Y_MAX 0.9 //meters
+#define Y_MAX 0.85 //meters
 
 using namespace std;
 
@@ -40,9 +40,9 @@ float right_previous_error = 0;
 double previous_time;
 float kp = 1.0;
 float ki = 0;
-float kd = 0.003;
+float kd = 0.00015;
 // float kd = 0.0;
-float max_pwm = 50;
+float max_pwm = 80;
 
 array<float,2> prev_pos = {{0,0}};
 float t;
@@ -291,16 +291,27 @@ Get the target position, velocity, and arrival time from the high-level controll
 void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
-    if (t < 0.2) {
-        traj_duration = 0.2;
-        xf = 0.5;
-        yf = 0.25;
-        vxf = 0.0;
-        vyf = 2.5;
-    } else if (t < traj_duration + 0.5) {
-        traj_duration = 0.5;
+
+    float first_traj_duration = 0.25;
+    float second_traj_duration = 0.15;
+    float third_traj_duration = 0.5;
+
+    if (t < first_traj_duration) {
+        traj_duration = first_traj_duration;
         xf = 0.5;
         yf = 0.1;
+        vxf = 0.01;
+        vyf = 0.0;
+    } else if (t < first_traj_duration + second_traj_duration) {
+        traj_duration = second_traj_duration;
+        xf = 0.5;
+        yf = 0.3;
+        vxf = 0.0;
+        vyf = 4.0;
+    } else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
+        traj_duration = third_traj_duration;
+        xf = 0.5;
+        yf = 0.15;
         vxf = 0.0;
         vyf = -0.01;
     }
@@ -360,27 +371,27 @@ bool check_path_bounds(array<float,6> x_coeffs, array<float,6> y_coeffs, float t
         if(x_pos < X_MIN || x_pos > X_MAX) {
             Serial.println("X Bound Violated");
 
-            // for(int i=0;i<num_points;i++) {
-            //     float t = delta_t*i + t0;
-            //     float power_2 = t*t;
-            //     float power_3 = power_2*t;
-            //     float power_4 = power_3*t;
-            //     float power_5 = power_4*t;
-            //     Serial.println(ceil((x_coeffs[0] + x_coeffs[1]*t + x_coeffs[2]*power_2 + x_coeffs[3]*power_3 + x_coeffs[4]*power_4 + x_coeffs[5]*power_5)*1000.0)/1000.0);
-            // }
+            for(int i=0;i<num_points;i++) {
+                float t = delta_t*i + t0;
+                float power_2 = t*t;
+                float power_3 = power_2*t;
+                float power_4 = power_3*t;
+                float power_5 = power_4*t;
+                Serial.println(ceil((x_coeffs[0] + x_coeffs[1]*t + x_coeffs[2]*power_2 + x_coeffs[3]*power_3 + x_coeffs[4]*power_4 + x_coeffs[5]*power_5)*1000.0)/1000.0);
+            }
             return false;
         }
         if(y_pos < Y_MIN || y_pos > Y_MAX) {
             Serial.println("Y Bound Violated");
 
-            // for(int i=0;i<num_points;i++) {
-            //     float t = delta_t*i + t0;
-            //     float power_2 = t*t;
-            //     float power_3 = power_2*t;
-            //     float power_4 = power_3*t;
-            //     float power_5 = power_4*t;
-            //     Serial.println(ceil((y_coeffs[0] + y_coeffs[1]*t + y_coeffs[2]*power_2 + y_coeffs[3]*power_3 + y_coeffs[4]*power_4 + y_coeffs[5]*power_5)*1000.0)/1000.0);
-            // }
+            for(int i=0;i<num_points;i++) {
+                float t = delta_t*i + t0;
+                float power_2 = t*t;
+                float power_3 = power_2*t;
+                float power_4 = power_3*t;
+                float power_5 = power_4*t;
+                Serial.println(ceil((y_coeffs[0] + y_coeffs[1]*t + y_coeffs[2]*power_2 + y_coeffs[3]*power_3 + y_coeffs[4]*power_4 + y_coeffs[5]*power_5)*1000.0)/1000.0);
+            }
             return false;
         }
     }
@@ -430,14 +441,14 @@ void loop() {
     get_target_from_hlc();
 
     // If HLC gave us a new target, update the path
-    if (xf != xf_prev || yf != yf_prev) {
-        update_trajectory_coeffs(t);
-        // if(!check_path_bounds(cx, cy, t, tf)) {
-        //     Serial.println("FAILED PATH CHECK");
-        //     set_motor_pwms(0, 0);
-        //     exit(0);
-        // }
-    }
+    // if (xf != xf_prev || yf != yf_prev) {
+    //     update_trajectory_coeffs(t);
+    //     if(!check_path_bounds(cx, cy, t, tf)) {
+    //         Serial.println("FAILED PATH CHECK");
+    //         set_motor_pwms(0, 0);
+    //         exit(0);
+    //     }
+    // }
 
     if (t < (tf + 0.01)) {
         float power_2 = t*t;
@@ -447,6 +458,18 @@ void loop() {
 
         float x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
         float y_pos = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+
+        if(x_pos < X_MIN) {
+            x_pos = X_MIN;
+        } else if(x_pos > X_MAX) {
+            x_pos = X_MAX;
+        }
+
+        if(y_pos < Y_MIN) {
+            y_pos = Y_MIN;
+        } else if(y_pos > Y_MAX) {
+            y_pos = Y_MAX;
+        }
 
         command_motors(x_pos, y_pos, t, previous_time);
     } else {
