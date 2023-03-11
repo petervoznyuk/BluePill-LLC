@@ -40,9 +40,9 @@ float right_previous_error = 0;
 double previous_time;
 float kp = 1.0;
 float ki = 0;
-float kd = 0.00015;
+float kd = 0.0002;
 // float kd = 0.0;
-float max_pwm = 80;
+float max_pwm = 95;
 
 array<float,2> prev_pos = {{0,0}};
 float t;
@@ -207,6 +207,8 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
 
     array<float,2> actual_angles = read_motor_angles();
 
+    //Add accumulated error update
+
     float left_error = target_angles[0] - actual_angles[0];
     float right_error = target_angles[1] - actual_angles[1];
 
@@ -292,29 +294,30 @@ void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
 
-    float first_traj_duration = 0.25;
-    float second_traj_duration = 0.15;
+    float first_traj_duration = 0.3;
+    float second_traj_duration = 0.35;
     float third_traj_duration = 0.5;
 
     if (t < first_traj_duration) {
         traj_duration = first_traj_duration;
-        xf = 0.5;
-        yf = 0.1;
-        vxf = 0.01;
-        vyf = 0.0;
-    } else if (t < first_traj_duration + second_traj_duration) {
-        traj_duration = second_traj_duration;
-        xf = 0.5;
+        xf = 0.412;
         yf = 0.3;
         vxf = 0.0;
-        vyf = 4.0;
-    } else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
-        traj_duration = third_traj_duration;
-        xf = 0.5;
-        yf = 0.15;
+        vyf = 3.0;
+    } else if (t < first_traj_duration + second_traj_duration) {
+        traj_duration = second_traj_duration;
+        xf = 0.412;
+        yf = 0.1;
         vxf = 0.0;
         vyf = -0.01;
-    }
+    } 
+    // else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
+    //     traj_duration = third_traj_duration;
+    //     xf = 0.412;
+    //     yf = 0.1;
+    //     vxf = 0.0;
+    //     vyf = -0.01;
+    // }
 }
 
 /*
@@ -422,7 +425,7 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(11, 5, 10);
+    home_table(12, 12, 10);
 
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
@@ -441,14 +444,9 @@ void loop() {
     get_target_from_hlc();
 
     // If HLC gave us a new target, update the path
-    // if (xf != xf_prev || yf != yf_prev) {
-    //     update_trajectory_coeffs(t);
-    //     if(!check_path_bounds(cx, cy, t, tf)) {
-    //         Serial.println("FAILED PATH CHECK");
-    //         set_motor_pwms(0, 0);
-    //         exit(0);
-    //     }
-    // }
+    if (xf != xf_prev || yf != yf_prev) {
+        update_trajectory_coeffs(t);
+    }
 
     if (t < (tf + 0.01)) {
         float power_2 = t*t;
