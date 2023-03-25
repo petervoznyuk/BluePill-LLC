@@ -40,9 +40,9 @@ float right_previous_error = 0;
 double previous_time;
 float kp = 1.0;
 float ki = 0;
-float kd = 0.0002;
-// float kd = 0.0;
-float max_pwm = 95;
+// float kd = 0.0002;
+float kd = 0.0;
+float max_pwm = 50;
 
 array<float,2> prev_pos = {{0,0}};
 float t;
@@ -74,9 +74,9 @@ array<float, 2> read_motor_angles() {
     angles[0] = (serial_response & 0b0011111111111111) * 360.0 / 16384;
 
     if(angles[0] - previous_left_angle > ROLLOVER_ANGLE_DEGS) {
-        left_revolutions -= 1;
-    } else if(previous_left_angle - angles[0] > ROLLOVER_ANGLE_DEGS) {
         left_revolutions += 1;
+    } else if(previous_left_angle - angles[0] > ROLLOVER_ANGLE_DEGS) {
+        left_revolutions -= 1;
     }
 
     previous_left_angle = angles[0];
@@ -87,17 +87,39 @@ array<float, 2> read_motor_angles() {
     angles[1] = (serial_response & 0b0011111111111111) * 360.0 / 16384;
 
     if(angles[1] - previous_right_angle > ROLLOVER_ANGLE_DEGS) {
-        right_revolutions -= 1;
-    } else if (previous_right_angle - angles[1] > ROLLOVER_ANGLE_DEGS) {
         right_revolutions += 1;
+    } else if (previous_right_angle - angles[1] > ROLLOVER_ANGLE_DEGS) {
+        right_revolutions -= 1;
     }
 
     previous_right_angle = angles[1];
 
-    angles[0] = angles[0] + 360.0 * left_revolutions - left_offset;
-    angles[1] = angles[1] + 360.0 * right_revolutions - right_offset;
+    angles[0] = -angles[0] + 360.0 * left_revolutions - left_offset;
+    angles[1] = -angles[1] + 360.0 * right_revolutions - right_offset;
     
     return angles;
+}
+
+/*
+Takes motor angles in degrees
+and converts them into cartesian position of the mallet in meters
+*/
+array<float,2> theta_to_xy(float theta_l, float theta_r) {
+    float x = (theta_l + theta_r) * PULLEY_RADIUS * PI / 360;
+    float y = (theta_l - theta_r) * PULLEY_RADIUS * PI / 360;
+
+    return {{x, y}};
+}
+
+/*
+Takes cartesian position of the mallet (x, y) in meters and converts
+it into motor angles in degrees
+*/
+array<float,2> xy_to_theta(float x, float y) {
+    float theta_l = (x + y) / PULLEY_RADIUS * 360 / (2*PI);
+    float theta_r = (x - y) / PULLEY_RADIUS * 360 / (2*PI);
+
+    return {{theta_l, theta_r}};
 }
 
 
@@ -133,26 +155,37 @@ float pid(float kp, float ki, float kd, float error, float accumulated_error, fl
 }
 
 /*
-Takes motor angles in degrees
-and converts them into cartesian position of the mallet in meters
+Return the sum of the feed forward terms
 */
-array<float,2> theta_to_xy(float theta_l, float theta_r) {
-    float x = (theta_l + theta_r) * PULLEY_RADIUS * PI / 360;
-    float y = (theta_l - theta_r) * PULLEY_RADIUS * PI / 360;
+array<float,2> feed_forward(float t) {
+    float power_2 = t*t;
+    float power_3 = power_2*t;
+    float power_4 = power_3*t;
+    float power_5 = power_4*t;
 
-    return {{-x, -y}};
+    // float x = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+    // float y = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+    // array<float, 2> thetas = xy_to_theta(x*PI/180, y*PI/180);
+
+    float x_vel = cx[1] + 2*cx[2]*t + 3*cx[3]*power_2 + 4*cx[4]*power_3 + 5*cx[5]*power_4;
+    float y_vel = cy[1] + 2*cy[2]*t + 3*cy[3]*power_2 + 4*cy[4]*power_3 + 5*cy[5]*power_4;
+    array<float, 2> theta_vel = xy_to_theta(x_vel*PI/180, y_vel*PI/180);
+
+    float x_accel = 2*cx[2] + 6*cx[3]*t + 12*cx[4]*power_2 + 20*cx[5]*power_3;
+    float y_accel = 2*cy[2] + 6*cy[3]*t + 12*cy[4]*power_2 + 20*cy[5]*power_3;
+    array<float, 2> theta_accel = xy_to_theta(x_accel*PI/180, y_accel*PI/180);
+
+    float x_jerk = 6*cx[3] + 24*cx[4]*t + 60*cx[5]*power_2;
+    float y_jerk = 6*cy[3] + 24*cy[4]*t + 60*cy[5]*power_2;
+    array<float, 2> theta_jerk = xy_to_theta(x_jerk*PI/180, y_jerk*PI/180);
+
+
+    float left_feed_forward = 100/24*0.00001*(1.12*theta_vel[0]+0.1075*theta_accel[0]+0.00006723*theta_jerk[0]-.0515*theta_accel[1]-.00003227*theta_jerk[1]);
+    float right_feed_forward = 100/24*0.00001*(-.0515*theta_accel[0]-.00003227*theta_jerk[0]+.8779*theta_vel[1]+.1074*theta_accel[1]+.00006723*theta_jerk[1]);
+
+    return {{left_feed_forward, right_feed_forward}};
 }
 
-/*
-Takes cartesian position of the mallet (x, y) in meters and converts
-it into motor angles in degrees
-*/
-array<float,2> xy_to_theta(float x, float y) {
-    float theta_l = (x + y) / PULLEY_RADIUS * 360 / (2*PI);
-    float theta_r = (x - y) / PULLEY_RADIUS * 360 / (2*PI);
-
-    return {{-theta_l, -theta_r}};
-}
 
 /*
 Home the table in the bottom left corner 
@@ -212,27 +245,34 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_error = target_angles[0] - actual_angles[0];
     float right_error = target_angles[1] - actual_angles[1];
 
-    float left_pid = pid(kp, ki, kd, -left_error, left_accumulated_error, left_previous_error, current_time - previous_time);
-    float right_pid = pid(kp, ki, kd, -right_error, right_accumulated_error, right_previous_error, current_time - previous_time);
+    float left_pid = pid(kp, ki, kd, left_error, left_accumulated_error, left_previous_error, current_time - previous_time);
+    float right_pid = pid(kp, ki, kd, right_error, right_accumulated_error, right_previous_error, current_time - previous_time);
+
+    left_previous_error = left_error;
+    right_previous_error = right_error;
+
+    array<float, 2> feed_forward_values = feed_forward(current_time);
 
     float left_pwm = fmin(fmax(-max_pwm, left_pid), max_pwm);
     float right_pwm = fmin(fmax(-max_pwm, right_pid), max_pwm);
+    // float left_pwm = fmin(fmax(-max_pwm, left_pid + feed_forward_values[0]), max_pwm);
+    // float right_pwm = fmin(fmax(-max_pwm, right_pid + feed_forward_values[1]), max_pwm);
 
-    Serial.print(current_time*1000);
+    // Serial.print(current_time*1000);
+    // Serial.print(",");
+    Serial.print(actual_angles[0]);
     Serial.print(",");
-    Serial.print(x_pos*100);
-    Serial.print(",");
-    Serial.print(y_pos*100);
-    Serial.print(",");
-    Serial.print(left_error);
-    Serial.print(",");
-    Serial.print(right_error);
-    Serial.print(",");
-    Serial.print(left_pwm);
-    Serial.print(",");
-    Serial.println(right_pwm);
+    Serial.println(actual_angles[1]);
+    // Serial.print(",");
+    // Serial.print(left_error);
+    // Serial.print(",");
+    // Serial.print(right_error);
+    // Serial.print(",");
+    // Serial.print(left_pwm);
+    // Serial.print(",");
+    // Serial.println(right_pwm);
 
-    set_motor_pwms(left_pwm, right_pwm);
+    // set_motor_pwms(left_pwm, right_pwm);
 }
 
 array<float,3> get_intermediate_point(float x, float y, float vx, float vy, float final_time, float straight_length) {
@@ -330,15 +370,6 @@ void update_trajectory_coeffs(float t) {
     float power_4 = power_3*t;
     float power_5 = power_4*t;
 
-    // Alt 1: Estimate mallet velocity based on current/previous positions and time difference
-    // array<float,2> start_angles = read_motor_angles();
-    // array<float,2> current_pos = theta_to_xy(start_angles[0], start_angles[1]);
-    // float x0 = current_pos[0];
-    // float y0 = current_pos[1];
-    // float vx0 = (current_pos[0] - prev_pos[0]) / (current_time - previous_time);
-    // float vy0 = (current_pos[1] - prev_pos[1]) / (current_time - previous_time);
-    
-    // Alt 2: Use desired mallet velocity from the derivative of the target polynomial
     float x0 = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
     float y0 = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
 
@@ -425,7 +456,7 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(12, 12, 10);
+    home_table(7, 7, 10);
 
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
@@ -448,32 +479,32 @@ void loop() {
         update_trajectory_coeffs(t);
     }
 
-    if (t < (tf + 0.01)) {
-        float power_2 = t*t;
-        float power_3 = power_2*t;
-        float power_4 = power_3*t;
-        float power_5 = power_4*t;
+    // if (t < (tf + 0.01)) {
+    //     float power_2 = t*t;
+    //     float power_3 = power_2*t;
+    //     float power_4 = power_3*t;
+    //     float power_5 = power_4*t;
 
-        float x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-        float y_pos = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+    //     float x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+    //     float y_pos = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
 
-        if(x_pos < X_MIN) {
-            x_pos = X_MIN;
-        } else if(x_pos > X_MAX) {
-            x_pos = X_MAX;
-        }
+    //     if(x_pos < X_MIN) {
+    //         x_pos = X_MIN;
+    //     } else if(x_pos > X_MAX) {
+    //         x_pos = X_MAX;
+    //     }
 
-        if(y_pos < Y_MIN) {
-            y_pos = Y_MIN;
-        } else if(y_pos > Y_MAX) {
-            y_pos = Y_MAX;
-        }
+    //     if(y_pos < Y_MIN) {
+    //         y_pos = Y_MIN;
+    //     } else if(y_pos > Y_MAX) {
+    //         y_pos = Y_MAX;
+    //     }
 
-        command_motors(x_pos, y_pos, t, previous_time);
-    } else {
-        set_motor_pwms(0, 0);
-        exit(0);
-    }
+    command_motors(0, 0, t, previous_time);
+    // } else {
+    //     set_motor_pwms(0, 0);
+    //     exit(0);
+    // }
 
     previous_time = t;
     xf_prev = xf;
