@@ -40,9 +40,9 @@ float right_previous_error = 0;
 double previous_time;
 float kp = 1.0;
 float ki = 0;
-// float kd = 0.0002;
-float kd = 0.0;
-float max_pwm = 50;
+float kd = 0.0002;
+// float kd = 0.0;
+float max_pwm = 100;
 
 array<float,2> prev_pos = {{0,0}};
 float t;
@@ -146,10 +146,8 @@ void set_motor_pwms(float left, float right) {
 /*
 Return the sum of the PID terms
 */
-float pid(float kp, float ki, float kd, float error, float accumulated_error, float previous_error, double dt) {
+float pid(float error, float accumulated_error, float previous_error, double dt) {
     float error_derivative = (error - previous_error) / dt;
-
-    accumulated_error += error;
 
     return error * kp + accumulated_error * ki + error_derivative * kd;
 }
@@ -245,34 +243,37 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_error = target_angles[0] - actual_angles[0];
     float right_error = target_angles[1] - actual_angles[1];
 
-    float left_pid = pid(kp, ki, kd, left_error, left_accumulated_error, left_previous_error, current_time - previous_time);
-    float right_pid = pid(kp, ki, kd, right_error, right_accumulated_error, right_previous_error, current_time - previous_time);
+    float left_pid = pid(left_error, left_accumulated_error, left_previous_error, current_time - previous_time);
+    float right_pid = pid(right_error, right_accumulated_error, right_previous_error, current_time - previous_time);
 
     left_previous_error = left_error;
     right_previous_error = right_error;
 
+    left_accumulated_error += left_error;
+    right_accumulated_error += right_error;
+
     array<float, 2> feed_forward_values = feed_forward(current_time);
 
-    float left_pwm = fmin(fmax(-max_pwm, left_pid), max_pwm);
-    float right_pwm = fmin(fmax(-max_pwm, right_pid), max_pwm);
+    float left_pwm = fmin(fmax(-max_pwm, left_pid + 7000*feed_forward_values[0]), max_pwm);
+    float right_pwm = fmin(fmax(-max_pwm, right_pid + 7000*feed_forward_values[1]), max_pwm);
     // float left_pwm = fmin(fmax(-max_pwm, left_pid + feed_forward_values[0]), max_pwm);
     // float right_pwm = fmin(fmax(-max_pwm, right_pid + feed_forward_values[1]), max_pwm);
 
-    // Serial.print(current_time*1000);
-    // Serial.print(",");
-    Serial.print(actual_angles[0]);
+    Serial.print(current_time*1000);
     Serial.print(",");
-    Serial.println(actual_angles[1]);
-    // Serial.print(",");
-    // Serial.print(left_error);
-    // Serial.print(",");
-    // Serial.print(right_error);
-    // Serial.print(",");
-    // Serial.print(left_pwm);
-    // Serial.print(",");
-    // Serial.println(right_pwm);
+    Serial.print(x_pos*100);
+    Serial.print(",");
+    Serial.print(y_pos*100);
+    Serial.print(",");
+    Serial.print(left_error);
+    Serial.print(",");
+    Serial.print(right_error);
+    Serial.print(",");
+    Serial.print(left_pwm);
+    Serial.print(",");
+    Serial.println(right_pwm);
 
-    // set_motor_pwms(left_pwm, right_pwm);
+    set_motor_pwms(left_pwm, right_pwm);
 }
 
 array<float,3> get_intermediate_point(float x, float y, float vx, float vy, float final_time, float straight_length) {
@@ -334,7 +335,7 @@ void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
 
-    float first_traj_duration = 0.3;
+    float first_traj_duration = 0.2;
     float second_traj_duration = 0.35;
     float third_traj_duration = 0.5;
 
@@ -343,21 +344,21 @@ void get_target_from_hlc() {
         xf = 0.412;
         yf = 0.3;
         vxf = 0.0;
-        vyf = 3.0;
+        vyf = 2.0;
     } else if (t < first_traj_duration + second_traj_duration) {
         traj_duration = second_traj_duration;
+        xf = 0.412;
+        yf = 0.4;
+        vxf = 0.0;
+        vyf = 2.5;
+    } 
+    else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
+        traj_duration = third_traj_duration;
         xf = 0.412;
         yf = 0.1;
         vxf = 0.0;
         vyf = -0.01;
-    } 
-    // else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
-    //     traj_duration = third_traj_duration;
-    //     xf = 0.412;
-    //     yf = 0.1;
-    //     vxf = 0.0;
-    //     vyf = -0.01;
-    // }
+    }
 }
 
 /*
@@ -456,7 +457,7 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(7, 7, 10);
+    home_table(9, 6, 10);
 
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
@@ -479,38 +480,36 @@ void loop() {
         update_trajectory_coeffs(t);
     }
 
-    // if (t < (tf + 0.01)) {
-    //     float power_2 = t*t;
-    //     float power_3 = power_2*t;
-    //     float power_4 = power_3*t;
-    //     float power_5 = power_4*t;
+    if (t < (tf + 0.01)) {
+        float power_2 = t*t;
+        float power_3 = power_2*t;
+        float power_4 = power_3*t;
+        float power_5 = power_4*t;
 
-    //     float x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-    //     float y_pos = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+        float x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+        float y_pos = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
 
-    //     if(x_pos < X_MIN) {
-    //         x_pos = X_MIN;
-    //     } else if(x_pos > X_MAX) {
-    //         x_pos = X_MAX;
-    //     }
+        if(x_pos < X_MIN) {
+            x_pos = X_MIN;
+        } else if(x_pos > X_MAX) {
+            x_pos = X_MAX;
+        }
 
-    //     if(y_pos < Y_MIN) {
-    //         y_pos = Y_MIN;
-    //     } else if(y_pos > Y_MAX) {
-    //         y_pos = Y_MAX;
-    //     }
+        if(y_pos < Y_MIN) {
+            y_pos = Y_MIN;
+        } else if(y_pos > Y_MAX) {
+            y_pos = Y_MAX;
+        }
 
-    command_motors(0, 0, t, previous_time);
-    // } else {
-    //     set_motor_pwms(0, 0);
-    //     exit(0);
-    // }
+        command_motors(x_pos, y_pos, t, previous_time);
+    } else {
+        set_motor_pwms(0, 0);
+        exit(0);
+    }
 
     previous_time = t;
     xf_prev = xf;
     yf_prev = yf;
-
-    // Needed if we use the actual initial velocity instead of the ideal velocity
-    // array<float,2> angles = read_motor_angles();
-    // array<float,2> prev_pos = theta_to_xy(angles[0], angles[1]);
 }
+
+
