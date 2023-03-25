@@ -38,10 +38,10 @@ float right_accumulated_error = 0;
 float left_previous_error = 0;
 float right_previous_error = 0;
 double previous_time;
-float kp = 1.0;
+float kp = 0.0;
 float ki = 0;
-float kd = 0.0002;
-// float kd = 0.0;
+// float kd = 0.0002;
+float kd = 0.0;
 float max_pwm = 100;
 
 array<float,2> prev_pos = {{0,0}};
@@ -342,23 +342,23 @@ void get_target_from_hlc() {
     if (t < first_traj_duration) {
         traj_duration = first_traj_duration;
         xf = 0.412;
-        yf = 0.3;
+        yf = 0.4;
         vxf = 0.0;
         vyf = 2.0;
     } else if (t < first_traj_duration + second_traj_duration) {
         traj_duration = second_traj_duration;
         xf = 0.412;
-        yf = 0.4;
-        vxf = 0.0;
-        vyf = 2.5;
-    } 
-    else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
-        traj_duration = third_traj_duration;
-        xf = 0.412;
         yf = 0.1;
         vxf = 0.0;
         vyf = -0.01;
-    }
+    } 
+    // else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
+    //     traj_duration = third_traj_duration;
+    //     xf = 0.412;
+    //     yf = 0.1;
+    //     vxf = 0.0;
+    //     vyf = -0.01;
+    // }
 }
 
 /*
