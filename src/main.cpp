@@ -38,7 +38,7 @@ float right_accumulated_error = 0;
 float left_previous_error = 0;
 float right_previous_error = 0;
 double previous_time;
-float kp = 0.0;
+float kp = 1.0;
 float ki = 0;
 // float kd = 0.0002;
 float kd = 0.0;
@@ -54,6 +54,12 @@ float yf;
 float vxf;
 float vyf;
 float xf_prev, yf_prev;
+
+float ff[2][2][4] = {{{3.575853e-06, 5.718267e-03, 5.958733e-02, -6.040430e-17},
+{-1.716522e-06, -2.739130e-03, -5.986824e-17, 0}}, 
+{{-1.716522e-06, -2.739130e-03, -4.501154e-17, -1.848923e-31},
+{3.575853e-06, 5.710188e-03, 4.669578e-02, 5.416168e-18}}};
+
 
 array<float,6> cx;
 array<float,6> cy;
@@ -153,7 +159,9 @@ float pid(float error, float accumulated_error, float previous_error, double dt)
 }
 
 /*
-Return the sum of the feed forward terms
+Return the sum of the feed forward terms. This function determines what the feed forward controller
+contributes to the PWM at a given time. The ff matrix transforms the [theta_l,theta_r] vector, with 
+its derivatives, into [voltage_l, voltage_r].
 */
 array<float,2> feed_forward(float t) {
     float power_2 = t*t;
@@ -161,9 +169,9 @@ array<float,2> feed_forward(float t) {
     float power_4 = power_3*t;
     float power_5 = power_4*t;
 
-    // float x = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-    // float y = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
-    // array<float, 2> thetas = xy_to_theta(x*PI/180, y*PI/180);
+    float x = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+    float y = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+    array<float, 2> thetas = xy_to_theta(x*PI/180, y*PI/180);
 
     float x_vel = cx[1] + 2*cx[2]*t + 3*cx[3]*power_2 + 4*cx[4]*power_3 + 5*cx[5]*power_4;
     float y_vel = cy[1] + 2*cy[2]*t + 3*cy[3]*power_2 + 4*cy[4]*power_3 + 5*cy[5]*power_4;
@@ -178,9 +186,12 @@ array<float,2> feed_forward(float t) {
     array<float, 2> theta_jerk = xy_to_theta(x_jerk*PI/180, y_jerk*PI/180);
 
 
-    float left_feed_forward = 100/24*0.00001*(1.12*theta_vel[0]+0.1075*theta_accel[0]+0.00006723*theta_jerk[0]-.0515*theta_accel[1]-.00003227*theta_jerk[1]);
-    float right_feed_forward = 100/24*0.00001*(-.0515*theta_accel[0]-.00003227*theta_jerk[0]+.8779*theta_vel[1]+.1074*theta_accel[1]+.00006723*theta_jerk[1]);
-
+    //The next 4 lines take the feed forward gains from the simulink model, which are stored in the ff variable as a 2x2x4 matrix, and multiply
+    //by the corresponding x position, velocity, accel, and jerk which are calculated above.
+    float left_feed_forward = 100/24*(ff[0][0][3]*thetas[0] + ff[0][0][2]*theta_vel[0] + ff[0][0][1]*theta_accel[0]+ff[0][0][0]*theta_jerk[0]);
+    left_feed_forward += 100/24*(ff[0][1][3]*thetas[1] + ff[0][1][2]*theta_vel[1] + ff[0][1][1]*theta_accel[1]+ff[0][1][0]*theta_jerk[1]);
+    float right_feed_forward = 100/24*(ff[1][0][3]*thetas[0] + ff[1][0][2]*theta_vel[0] + ff[1][0][1]*theta_accel[0]+ff[1][0][0]*theta_jerk[0]);
+    right_feed_forward += 100/24*(ff[1][1][3]*thetas[1] + ff[1][1][2]*theta_vel[1] + ff[1][1][1]*theta_accel[1]+ff[1][1][0]*theta_jerk[1]);
     return {{left_feed_forward, right_feed_forward}};
 }
 
@@ -254,10 +265,8 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
 
     array<float, 2> feed_forward_values = feed_forward(current_time);
 
-    float left_pwm = fmin(fmax(-max_pwm, left_pid + 7000*feed_forward_values[0]), max_pwm);
-    float right_pwm = fmin(fmax(-max_pwm, right_pid + 7000*feed_forward_values[1]), max_pwm);
-    // float left_pwm = fmin(fmax(-max_pwm, left_pid + feed_forward_values[0]), max_pwm);
-    // float right_pwm = fmin(fmax(-max_pwm, right_pid + feed_forward_values[1]), max_pwm);
+    float left_pwm = fmin(fmax(-max_pwm, left_pid + feed_forward_values[0]), max_pwm);
+    float right_pwm = fmin(fmax(-max_pwm, right_pid + feed_forward_values[1]), max_pwm);
 
     Serial.print(current_time*1000);
     Serial.print(",");
@@ -269,9 +278,13 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial.print(",");
     Serial.print(right_error);
     Serial.print(",");
-    Serial.print(left_pwm);
+    Serial.print(left_pid);
     Serial.print(",");
-    Serial.println(right_pwm);
+    Serial.print(right_pid);
+    Serial.print(",");
+    Serial.print(feed_forward_values[0]);
+    Serial.print(",");
+    Serial.println(feed_forward_values[1]);
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -335,30 +348,30 @@ void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
 
-    float first_traj_duration = 0.2;
-    float second_traj_duration = 0.35;
-    float third_traj_duration = 0.5;
+    float first_traj_duration = 0.3;
+    float second_traj_duration = 0.5;
+    float third_traj_duration = 0.35;
 
     if (t < first_traj_duration) {
         traj_duration = first_traj_duration;
-        xf = 0.412;
-        yf = 0.4;
+        xf = 0.1;
+        yf = 0.5;
         vxf = 0.0;
         vyf = 2.0;
     } else if (t < first_traj_duration + second_traj_duration) {
         traj_duration = second_traj_duration;
-        xf = 0.412;
+        xf = 0.43;
+        yf = 0.45;
+        vxf = 0.0;
+        vyf = 2.5;
+    } 
+    else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
+        traj_duration = third_traj_duration;
+        xf = 0.43;
         yf = 0.1;
         vxf = 0.0;
         vyf = -0.01;
-    } 
-    // else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
-    //     traj_duration = third_traj_duration;
-    //     xf = 0.412;
-    //     yf = 0.1;
-    //     vxf = 0.0;
-    //     vyf = -0.01;
-    // }
+    }
 }
 
 /*
@@ -460,7 +473,7 @@ void setup() {
     home_table(9, 6, 10);
 
     Serial.println("BEGIN CSV");
-    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM");
+    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward");
 
     previous_time = 0;
     start_time = micros();
