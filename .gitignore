@@ -4,3 +4,4 @@ platformio.ini
 run_table.sh
 *.csv
 *.zip
+run_table.sh

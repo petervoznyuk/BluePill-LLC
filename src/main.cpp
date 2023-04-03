@@ -62,8 +62,8 @@ float ff[2][2][4] = {{{3.575853e-06, 5.718267e-03, 5.958733e-02, -6.040430e-17},
 {3.575853e-06, 5.710188e-03, 4.669578e-02, 5.416168e-18}}};
 
 
-array<float,6> cx;
-array<float,6> cy;
+array<float,4> cx;
+array<float,4> cy;
 
 
 /*
@@ -306,45 +306,6 @@ array<float,3> get_intermediate_point(float x, float y, float vx, float vy, floa
     return {{intermediate_x, intermediate_y, intermediate_t}};
 }
 
-array<float,12> get_trajectory_coeffs(float t0, float x0, float y0, float vx0, float vy0, float tf, float xf, float yf, float vxf, float vyf, float d) {
-    array<float,3> intermediate_params = get_intermediate_point(xf, yf, vxf, vyf, tf, d);
-
-    float x1 = intermediate_params[0];
-    float y1 = intermediate_params[1];
-    float t1 = intermediate_params[2];
-    
-    Eigen::Matrix<float,6,6> mat;
-
-    float t0_3 = t0*t0*t0;
-    float t0_4 = t0_3*t0;
-    float t0_5 = t0_4*t0;
-
-    float t1_3 = t1*t1*t1;
-    float t1_4 = t1_3*t1;
-    float t1_5 = t1_4*t1;
-    
-    float tf_3 = tf*tf*tf;
-    float tf_4 = tf_3*tf;
-    float tf_5 = tf_4*tf;
-
-    mat << 1, t0, t0*t0, t0_3, t0_4, t0_5,
-        0, 1, 2*t0, 3*t0*t0, 4*t0_3, 5*t0_4,
-        1, t1, t1*t1, t1_3, t1_4, t1_5,
-        0, 1, 2*t1, 3*t1*t1, 4*t1_3, 5*t1_4,
-        1, tf, tf*tf, tf_3, tf_4, tf_5,
-        0, 1, 2*tf, 3*tf*tf, 4*tf_3, 5*tf_4;
-
-    Eigen::ColPivHouseholderQR<Eigen::Matrix<float, 6, 6, 0, 6, 6>> qr = mat.colPivHouseholderQr();
-
-    Eigen::Vector<float,6> bx(x0, vx0, x1, vxf, xf, vxf);
-    Eigen::Vector<float,6> ax = qr.solve(bx);
-
-    Eigen::Vector<float,6> by(y0, vy0, y1, vyf, yf, vyf);
-    Eigen::Vector<float,6> ay = qr.solve(by);
-
-    return {{ax[0], ax[1], ax[2], ax[3], ax[4], ax[5], ay[0], ay[1], ay[2], ay[3], ay[4], ay[5]}};
-}
-
 /*
 Get the target position, velocity, and arrival time from the high-level controller
 */
@@ -360,27 +321,27 @@ void get_target_from_hlc() {
 
     if (t < first_traj_duration) {
         traj_duration = first_traj_duration;
-        cx = {0,	0,	0.900000000000000,	-0.400000000000000,	0,	0};
-        cy = {0,	0,	0.600000000000000,	-0.0999999999999999,	0,	0};
+        cx = {0,	0,	0.690000000000000,	-0.260000000000000,	0,	0};
+        cy = {0,	0,	0.450000000000000,	1.11022302462516e-16,	0,	0};
     } else if (t < first_traj_duration + second_traj_duration) {
         traj_duration = second_traj_duration;
-        cx = {0.500000000000000,	0.510000000000000,	-0.120000000000000,	-0.0900000000000001,	0,	0};
-        cy = {0.500000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
+        cx = {0.430000000000000,	0.510000000000000,	-0.0599999999999996,	-0.130000000000000,	0,	0};
+        cy = {0.450000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
     } 
     else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
         traj_duration = third_traj_duration;
-        cx = {0.800000000000000,	0,	-0.390000000000000,	0.0900000000000001,	0,	0};
-        cy = {0.500000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
+        cx = {0.750000000000000,	0,	-0.450000000000000,	0.130000000000000,	0,	0};
+        cy = {0.450000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
     }
     else if (t < first_traj_duration + second_traj_duration + third_traj_duration + fourth_traj_duration) {
         traj_duration = fourth_traj_duration;
-        cx = {0.500000000000000,	-0.510000000000000,	0.120000000000000,	0.0899999999999998,	0,	0};
-        cy = {0.500000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
+        cx = {0.430000000000000,	-0.510000000000000,	0.0600000000000000,	0.130000000000000,	0,	0};
+        cy = {0.450000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
     }
         else if (t < first_traj_duration + second_traj_duration + third_traj_duration + fourth_traj_duration + fifth_traj_duration) {
         traj_duration = fifth_traj_duration;
-        cx = {0.200000000000000,0,	0.390000000000000,	-0.0899999999999999,	0,	0};
-        cy = {0.500000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
+        cx = {0.110000000000000,	0,	0.450000000000000,	-0.130000000000000,	0,	0};
+        cy = {0.450000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
     } else {
         set_motor_pwms(0, 0);
         exit(0);
