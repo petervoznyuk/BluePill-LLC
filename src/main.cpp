@@ -167,26 +167,24 @@ its derivatives, into [voltage_l, voltage_r].
 array<float,2> feed_forward(float u) {
     float power_2 = u*u;
     float power_3 = power_2*u;
-    float power_4 = power_3*u;
-    float power_5 = power_4*u;
 
     float traj_2 = traj_duration * traj_duration;
     float traj_3 = traj_2 * traj_duration;
 
-    float x = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-    float y = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+    float x = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
+    float y = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
     array<float, 2> thetas = xy_to_theta(x*PI/180, y*PI/180);
 
-    float x_vel = cx[1] + 2*cx[2]*u + 3*cx[3]*power_2 + 4*cx[4]*power_3 + 5*cx[5]*power_4;
-    float y_vel = cy[1] + 2*cy[2]*u + 3*cy[3]*power_2 + 4*cy[4]*power_3 + 5*cy[5]*power_4;
+    float x_vel = cx[1] + 2*cx[2]*u + 3*cx[3]*power_2;
+    float y_vel = cy[1] + 2*cy[2]*u + 3*cy[3]*power_2;
     array<float, 2> theta_vel = xy_to_theta(x_vel*PI/180/traj_duration, y_vel*PI/180/traj_duration);
 
-    float x_accel = 2*cx[2] + 6*cx[3]*u + 12*cx[4]*power_2 + 20*cx[5]*power_3;
-    float y_accel = 2*cy[2] + 6*cy[3]*u + 12*cy[4]*power_2 + 20*cy[5]*power_3;
+    float x_accel = 2*cx[2] + 6*cx[3]*u;
+    float y_accel = 2*cy[2] + 6*cy[3]*u;
     array<float, 2> theta_accel = xy_to_theta(x_accel*PI/180/traj_2, y_accel*PI/180/traj_2);
 
-    float x_jerk = 6*cx[3] + 24*cx[4]*u + 60*cx[5]*power_2;
-    float y_jerk = 6*cy[3] + 24*cy[4]*u + 60*cy[5]*power_2;
+    float x_jerk = 6*cx[3];
+    float y_jerk = 6*cy[3];
     array<float, 2> theta_jerk = xy_to_theta(x_jerk*PI/180/traj_3, y_jerk*PI/180/traj_3);
 
 
@@ -293,19 +291,6 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     set_motor_pwms(left_pwm, right_pwm);
 }
 
-array<float,3> get_intermediate_point(float x, float y, float vx, float vy, float final_time, float straight_length) {
-    float final_velocity_magnitude = sqrt(vx*vx + vy*vy);
-    float reverse_x_component = -vx / final_velocity_magnitude * straight_length;
-    float reverse_y_component = -vy / final_velocity_magnitude * straight_length;
-    
-    float intermediate_x = x + reverse_x_component;
-    float intermediate_y = y + reverse_y_component;
-
-    float intermediate_t = final_time - straight_length / final_velocity_magnitude;
-
-    return {{intermediate_x, intermediate_y, intermediate_t}};
-}
-
 /*
 Get the target position, velocity, and arrival time from the high-level controller
 */
@@ -321,56 +306,32 @@ void get_target_from_hlc() {
 
     if (t < first_traj_duration) {
         traj_duration = first_traj_duration;
-        cx = {0,	0,	0.690000000000000,	-0.260000000000000,	0,	0};
-        cy = {0,	0,	0.450000000000000,	1.11022302462516e-16,	0,	0};
+        cx = {0,	0,	0.690000000000000,	-0.260000000000000};
+        cy = {0,	0,	0.450000000000000,	1.11022302462516e-16};
     } else if (t < first_traj_duration + second_traj_duration) {
         traj_duration = second_traj_duration;
-        cx = {0.430000000000000,	0.510000000000000,	-0.0599999999999996,	-0.130000000000000,	0,	0};
-        cy = {0.450000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
+        cx = {0.430000000000000,	0.510000000000000,	-0.0599999999999996,	-0.130000000000000};
+        cy = {0.450000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000};
     } 
     else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
         traj_duration = third_traj_duration;
-        cx = {0.750000000000000,	0,	-0.450000000000000,	0.130000000000000,	0,	0};
-        cy = {0.450000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
+        cx = {0.750000000000000,	0,	-0.450000000000000,	0.130000000000000};
+        cy = {0.450000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000};
     }
     else if (t < first_traj_duration + second_traj_duration + third_traj_duration + fourth_traj_duration) {
         traj_duration = fourth_traj_duration;
-        cx = {0.430000000000000,	-0.510000000000000,	0.0600000000000000,	0.130000000000000,	0,	0};
-        cy = {0.450000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
+        cx = {0.430000000000000,	-0.510000000000000,	0.0600000000000000,	0.130000000000000};
+        cy = {0.450000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000};
     }
         else if (t < first_traj_duration + second_traj_duration + third_traj_duration + fourth_traj_duration + fifth_traj_duration) {
         traj_duration = fifth_traj_duration;
-        cx = {0.110000000000000,	0,	0.450000000000000,	-0.130000000000000,	0,	0};
-        cy = {0.450000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
+        cx = {0.110000000000000,	0,	0.450000000000000,	-0.130000000000000};
+        cy = {0.450000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000};
     } else {
         set_motor_pwms(0, 0);
         exit(0);
     }
     tf = t + traj_duration;
-}
-
-/*
-Modifies the variables cx and cy to contain the polynomial coefficients
-for the new path the mallet should follow.
-*/
-void update_trajectory_coeffs(float t) {
-    float power_2 = t*t;
-    float power_3 = power_2*t;
-    float power_4 = power_3*t;
-    float power_5 = power_4*t;
-
-    float x0 = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-    float y0 = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
-
-    float vx0 = cx[1] + cx[2]*2*t + cx[3]*3*power_2 + cx[4]*4*power_3 + cx[5]*5*power_4;
-    float vy0 = cy[1] + cy[2]*2*t + cy[3]*3*power_2 + cy[4]*4*power_3 + cy[5]*5*power_4;
-
-    tf = t + traj_duration;
-
-    array<float,12> coeffs = get_trajectory_coeffs(t, x0, y0, vx0, vy0, tf, xf, yf, vxf, vyf, 0.05);
-
-    cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
-    cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
 }
 
 void setup() {
@@ -416,20 +377,13 @@ void loop() {
         get_target_from_hlc();
         path_start_time = t;
     }
-
-    // If HLC gave us a new target, update the path
-    // if (xf != xf_prev || yf != yf_prev) {
-    //     update_trajectory_coeffs(t);
-    // }
         
     float u = (t-path_start_time) / traj_duration;
     float power_2 = u*u;
     float power_3 = power_2*u;
-    float power_4 = power_3*u;
-    float power_5 = power_4*u;
 
-    float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-    float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+    float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
+    float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
 
     if(x_pos < X_MIN) {
         x_pos = X_MIN;
