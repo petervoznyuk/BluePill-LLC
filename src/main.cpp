@@ -47,6 +47,7 @@ float max_pwm = 100;
 array<float,2> prev_pos = {{0,0}};
 float t;
 float tf;
+float path_start_time;
 
 float traj_duration;
 float xf;
@@ -163,27 +164,30 @@ Return the sum of the feed forward terms. This function determines what the feed
 contributes to the PWM at a given time. The ff matrix transforms the [theta_l,theta_r] vector, with 
 its derivatives, into [voltage_l, voltage_r].
 */
-array<float,2> feed_forward(float t) {
-    float power_2 = t*t;
-    float power_3 = power_2*t;
-    float power_4 = power_3*t;
-    float power_5 = power_4*t;
+array<float,2> feed_forward(float u) {
+    float power_2 = u*u;
+    float power_3 = power_2*u;
+    float power_4 = power_3*u;
+    float power_5 = power_4*u;
 
-    float x = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-    float y = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+    float traj_2 = traj_duration * traj_duration;
+    float traj_3 = traj_2 * traj_duration;
+
+    float x = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+    float y = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
     array<float, 2> thetas = xy_to_theta(x*PI/180, y*PI/180);
 
-    float x_vel = cx[1] + 2*cx[2]*t + 3*cx[3]*power_2 + 4*cx[4]*power_3 + 5*cx[5]*power_4;
-    float y_vel = cy[1] + 2*cy[2]*t + 3*cy[3]*power_2 + 4*cy[4]*power_3 + 5*cy[5]*power_4;
-    array<float, 2> theta_vel = xy_to_theta(x_vel*PI/180, y_vel*PI/180);
+    float x_vel = cx[1] + 2*cx[2]*u + 3*cx[3]*power_2 + 4*cx[4]*power_3 + 5*cx[5]*power_4;
+    float y_vel = cy[1] + 2*cy[2]*u + 3*cy[3]*power_2 + 4*cy[4]*power_3 + 5*cy[5]*power_4;
+    array<float, 2> theta_vel = xy_to_theta(x_vel*PI/180/traj_duration, y_vel*PI/180/traj_duration);
 
-    float x_accel = 2*cx[2] + 6*cx[3]*t + 12*cx[4]*power_2 + 20*cx[5]*power_3;
-    float y_accel = 2*cy[2] + 6*cy[3]*t + 12*cy[4]*power_2 + 20*cy[5]*power_3;
-    array<float, 2> theta_accel = xy_to_theta(x_accel*PI/180, y_accel*PI/180);
+    float x_accel = 2*cx[2] + 6*cx[3]*u + 12*cx[4]*power_2 + 20*cx[5]*power_3;
+    float y_accel = 2*cy[2] + 6*cy[3]*u + 12*cy[4]*power_2 + 20*cy[5]*power_3;
+    array<float, 2> theta_accel = xy_to_theta(x_accel*PI/180/traj_2, y_accel*PI/180/traj_2);
 
-    float x_jerk = 6*cx[3] + 24*cx[4]*t + 60*cx[5]*power_2;
-    float y_jerk = 6*cy[3] + 24*cy[4]*t + 60*cy[5]*power_2;
-    array<float, 2> theta_jerk = xy_to_theta(x_jerk*PI/180, y_jerk*PI/180);
+    float x_jerk = 6*cx[3] + 24*cx[4]*u + 60*cx[5]*power_2;
+    float y_jerk = 6*cy[3] + 24*cy[4]*u + 60*cy[5]*power_2;
+    array<float, 2> theta_jerk = xy_to_theta(x_jerk*PI/180/traj_3, y_jerk*PI/180/traj_3);
 
 
     //The next 4 lines take the feed forward gains from the simulink model, which are stored in the ff variable as a 2x2x4 matrix, and multiply
@@ -263,7 +267,7 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     left_accumulated_error += left_error;
     right_accumulated_error += right_error;
 
-    array<float, 2> feed_forward_values = feed_forward(current_time);
+    array<float, 2> feed_forward_values = feed_forward((current_time-path_start_time)/traj_duration);
 
     float left_pwm = fmin(fmax(-max_pwm, left_pid + feed_forward_values[0]), max_pwm);
     float right_pwm = fmin(fmax(-max_pwm, right_pid + feed_forward_values[1]), max_pwm);
@@ -348,30 +352,40 @@ void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
 
-    float first_traj_duration = 0.3;
-    float second_traj_duration = 0.5;
-    float third_traj_duration = 0.35;
+    float first_traj_duration =  0.25;
+    float second_traj_duration = 0.25;
+    float third_traj_duration =  0.25;
+    float fourth_traj_duration = 0.25;
+    float fifth_traj_duration =  0.25;
 
     if (t < first_traj_duration) {
         traj_duration = first_traj_duration;
-        xf = 0.1;
-        yf = 0.5;
-        vxf = 0.0;
-        vyf = 2.0;
+        cx = {0,	0,	0.900000000000000,	-0.400000000000000,	0,	0};
+        cy = {0,	0,	0.600000000000000,	-0.0999999999999999,	0,	0};
     } else if (t < first_traj_duration + second_traj_duration) {
         traj_duration = second_traj_duration;
-        xf = 0.43;
-        yf = 0.45;
-        vxf = 0.0;
-        vyf = 2.5;
+        cx = {0.500000000000000,	0.510000000000000,	-0.120000000000000,	-0.0900000000000001,	0,	0};
+        cy = {0.500000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
     } 
     else if (t < first_traj_duration + second_traj_duration + third_traj_duration) {
         traj_duration = third_traj_duration;
-        xf = 0.43;
-        yf = 0.1;
-        vxf = 0.0;
-        vyf = -0.01;
+        cx = {0.800000000000000,	0,	-0.390000000000000,	0.0900000000000001,	0,	0};
+        cy = {0.500000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
     }
+    else if (t < first_traj_duration + second_traj_duration + third_traj_duration + fourth_traj_duration) {
+        traj_duration = fourth_traj_duration;
+        cx = {0.500000000000000,	-0.510000000000000,	0.120000000000000,	0.0899999999999998,	0,	0};
+        cy = {0.500000000000000,	0.765000000000000,	-1.26000000000000,	0.495000000000000,	0,	0};
+    }
+        else if (t < first_traj_duration + second_traj_duration + third_traj_duration + fourth_traj_duration + fifth_traj_duration) {
+        traj_duration = fifth_traj_duration;
+        cx = {0.200000000000000,0,	0.390000000000000,	-0.0899999999999999,	0,	0};
+        cy = {0.500000000000000,	-0.270000000000000,	-0.225000000000000,	0.495000000000000,	0,	0};
+    } else {
+        set_motor_pwms(0, 0);
+        exit(0);
+    }
+    tf = t + traj_duration;
 }
 
 /*
@@ -397,55 +411,6 @@ void update_trajectory_coeffs(float t) {
     cx = {{coeffs[0], coeffs[1], coeffs[2], coeffs[3], coeffs[4], coeffs[5]}};
     cy = {{coeffs[6], coeffs[7], coeffs[8], coeffs[9], coeffs[10], coeffs[11]}};
 }
-
-bool check_path_bounds(array<float,6> x_coeffs, array<float,6> y_coeffs, float t0, float tf) {
-    int num_points = 30;
-    float x_pos;
-    float y_pos;
-
-    float delta_t = (tf - t0) / num_points;
-
-    for(int i=0;i<num_points;i++) {
-        float t = delta_t*i + t0;
-
-        float power_2 = t*t;
-        float power_3 = power_2*t;
-        float power_4 = power_3*t;
-        float power_5 = power_4*t;
-
-        x_pos = ceil((x_coeffs[0] + x_coeffs[1]*t + x_coeffs[2]*power_2 + x_coeffs[3]*power_3 + x_coeffs[4]*power_4 + x_coeffs[5]*power_5)*1000.0)/1000.0;
-        y_pos = ceil((y_coeffs[0] + y_coeffs[1]*t + y_coeffs[2]*power_2 + y_coeffs[3]*power_3 + y_coeffs[4]*power_4 + y_coeffs[5]*power_5)*1000.0)/1000.0;
-
-        if(x_pos < X_MIN || x_pos > X_MAX) {
-            Serial.println("X Bound Violated");
-
-            for(int i=0;i<num_points;i++) {
-                float t = delta_t*i + t0;
-                float power_2 = t*t;
-                float power_3 = power_2*t;
-                float power_4 = power_3*t;
-                float power_5 = power_4*t;
-                Serial.println(ceil((x_coeffs[0] + x_coeffs[1]*t + x_coeffs[2]*power_2 + x_coeffs[3]*power_3 + x_coeffs[4]*power_4 + x_coeffs[5]*power_5)*1000.0)/1000.0);
-            }
-            return false;
-        }
-        if(y_pos < Y_MIN || y_pos > Y_MAX) {
-            Serial.println("Y Bound Violated");
-
-            for(int i=0;i<num_points;i++) {
-                float t = delta_t*i + t0;
-                float power_2 = t*t;
-                float power_3 = power_2*t;
-                float power_4 = power_3*t;
-                float power_5 = power_4*t;
-                Serial.println(ceil((y_coeffs[0] + y_coeffs[1]*t + y_coeffs[2]*power_2 + y_coeffs[3]*power_3 + y_coeffs[4]*power_4 + y_coeffs[5]*power_5)*1000.0)/1000.0);
-            }
-            return false;
-        }
-    }
-    return true;
-}
-
 
 void setup() {
     Serial.begin(460800);
@@ -477,48 +442,47 @@ void setup() {
 
     previous_time = 0;
     start_time = micros();
+    tf = 0;
 }
 
 void loop() {
-    float x_pos;
-    float y_pos;
 
     t = (micros() - start_time) / 1000000.0;
 
     // Update xf, yf, vxf, vyf, and traj_duration
-    get_target_from_hlc();
+
+    if (t > tf) {
+        get_target_from_hlc();
+        path_start_time = t;
+    }
 
     // If HLC gave us a new target, update the path
-    if (xf != xf_prev || yf != yf_prev) {
-        update_trajectory_coeffs(t);
+    // if (xf != xf_prev || yf != yf_prev) {
+    //     update_trajectory_coeffs(t);
+    // }
+        
+    float u = (t-path_start_time) / traj_duration;
+    float power_2 = u*u;
+    float power_3 = power_2*u;
+    float power_4 = power_3*u;
+    float power_5 = power_4*u;
+
+    float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
+    float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
+
+    if(x_pos < X_MIN) {
+        x_pos = X_MIN;
+    } else if(x_pos > X_MAX) {
+        x_pos = X_MAX;
     }
 
-    if (t < (tf + 0.01)) {
-        float power_2 = t*t;
-        float power_3 = power_2*t;
-        float power_4 = power_3*t;
-        float power_5 = power_4*t;
-
-        float x_pos = cx[0] + cx[1]*t + cx[2]*power_2 + cx[3]*power_3 + cx[4]*power_4 + cx[5]*power_5;
-        float y_pos = cy[0] + cy[1]*t + cy[2]*power_2 + cy[3]*power_3 + cy[4]*power_4 + cy[5]*power_5;
-
-        if(x_pos < X_MIN) {
-            x_pos = X_MIN;
-        } else if(x_pos > X_MAX) {
-            x_pos = X_MAX;
-        }
-
-        if(y_pos < Y_MIN) {
-            y_pos = Y_MIN;
-        } else if(y_pos > Y_MAX) {
-            y_pos = Y_MAX;
-        }
-
-        command_motors(x_pos, y_pos, t, previous_time);
-    } else {
-        set_motor_pwms(0, 0);
-        exit(0);
+    if(y_pos < Y_MIN) {
+        y_pos = Y_MIN;
+    } else if(y_pos > Y_MAX) {
+        y_pos = Y_MAX;
     }
+
+    command_motors(x_pos, y_pos, t, previous_time);
 
     previous_time = t;
     xf_prev = xf;
