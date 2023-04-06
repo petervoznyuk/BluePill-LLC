@@ -44,6 +44,11 @@ float ki = 0;
 float kd = 0.0;
 float max_pwm = 100;
 
+int path_section_num = 0;
+float traj_durations[];
+float x_traj_coeffs[][4];
+float y_traj_coeffs[][4];
+
 array<float,2> prev_pos = {{0,0}};
 float t;
 float tf;
@@ -56,10 +61,10 @@ float vxf;
 float vyf;
 float xf_prev, yf_prev;
 
-float ff[2][2][4] = {{{3.575853e-06, 5.718267e-03, 5.958733e-02, -6.040430e-17},
-{-1.716522e-06, -2.739130e-03, -5.986824e-17, 0}}, 
-{{-1.716522e-06, -2.739130e-03, -4.501154e-17, -1.848923e-31},
-{3.575853e-06, 5.710188e-03, 4.669578e-02, 5.416168e-18}}};
+float ff[2][2][4] ={{{3.790419e-06,6.066717e-03,6.925599e-02,2.323943e-18},
+{-1.501957e-06,-2.396739e-03, 6.811798e-17,-6.262513e-18}}, 
+{ {-1.501957e-06,-2.396739e-03, 8.406599e-17, 2.020639e-18},
+{3.790419e-06, 6.052580e-03, 4.669578e-02,-4.398398e-17}}};
 
 
 array<float,4> cx;
@@ -288,7 +293,7 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial.print(",");
     Serial.println(feed_forward_values[1]);
 
-    // set_motor_pwms(left_pwm, right_pwm);
+    set_motor_pwms(left_pwm, right_pwm);
 }
 
 /*
@@ -297,40 +302,55 @@ Get the target position, velocity, and arrival time from the high-level controll
 void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
+    traj_duration = 0.3;
+    
+    if (t > tf) {
+        path_section_num++;
+        
+        if (path_section_num > traj_durations.size()) {
+            exit(0);
+        }
 
-    traj_duration = 1;
+        cx = x_traj_coeffs[path_section_num];
+        cy = y_traj_coeffs[path_section_num];
+        tf += traj_durations[path_section_num];
+        
+    }
 
-    if (t < traj_duration) {
-       cx = {0, 0, 1.29, -0.86};
-       cy = {0, 0, 0.3, -0.2};;
-    } else if (t < 2*traj_duration) {
-       cx = {0.43, 0, -0.738, 0.548};
-       cy = {0.1, 0, -0.21, 0.56};
-    } 
-    else if (t < 3*traj_duration) {
-       cx = {0.24, 0.096, 0.378, -0.284};
-       cy = {0.45, 0.72, -2.49, 1.42};
-    }
-    else if (t < 4*traj_duration) {
-       cx = {0.43, 0, 0, 5.5511e-17};
-       cy = {0.1, 0, 0.09, 0.26};
-    }
-        else if (t < 5*traj_duration) {
-       cx = {0.43, 0, 0, 5.5511e-17};
-       cy = {0.45, 2.4, -5.85, 3.1};
-    }
-        else if (t < 6*traj_duration) {
-       cx = {0.43, 0, 0.753, -0.558};
-       cy = {0.1, 0, -0.21, 0.56};
-    }
-        else if (t < 7*traj_duration) {
-       cx = {0.625, -0.096, -0.393, 0.294};
-       cy = {0.45, 0.72, -2.49, 1.42};
-    } else {
-        set_motor_pwms(0, 0);
-        exit(0);
-    }
-    tf = t + traj_duration;
+    
+    
+
+    // if (t < traj_duration) {
+    //    cx = {0, 0, 1.29, -0.86};
+    //    cy = {0, 0, 0.3, -0.2};
+    // } else if (t < 2*traj_duration) {
+    //    cx = {0.43, 0, -0.69, 0.5};
+    //    cy = {0.1, 0, 0.15, 0.2};
+    // } 
+    // else if (t < 3*traj_duration) {
+    //    cx = {0.24, 0.12, 0.33, -0.26};
+    //    cy = {0.45, 0.9, -2.85, 1.6};
+    // }
+    // else if (t < 4*traj_duration) {
+    //    cx = {0.43, 0, 0, 5.5511e-17};
+    //    cy = {0.1, 0, -0.15, 0.5};
+    // }
+    //     else if (t < 5*traj_duration) {
+    //    cx = {0.43, 0, 0, 5.5511e-17};
+    //    cy = {0.45, 1.2, -3.45, 1.9};
+    // }
+    //     else if (t < 6*traj_duration) {
+    //    cx = {0.43, 0, 0.705, -0.51};
+    //    cy = {0.1, 0, 0.15, 0.2};
+    // }
+    //     else if (t < 7*traj_duration) {
+    //    cx = {0.625, -0.12, -0.345, 0.27};
+    //    cy = {0.45, 0.9, -2.85, 1.6};
+    // } else {
+    //     set_motor_pwms(0, 0);
+    //     exit(0);
+    // }
+    // tf = t + traj_duration;
 }
 
 void setup() {
