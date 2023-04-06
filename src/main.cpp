@@ -298,6 +298,41 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
 }
 
 /*
+Generate the path and its coefficients for the given HLC target. Calculations from here:
+https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+*/
+
+void generate_path(float x_puck, float y_puck, float x_initial, float y_initial, float vx_initial, float vy_initial, float vf_magnitude, float path_time) {
+    float table_length = 2;
+    float x_goal = 0.52;
+    float mallet_plus_puck_radius = 0.05 + 0.03175; 
+
+    float vf_x = x_goal - x_puck;
+    float vf_y = table_length = y_puck;
+
+    float original_vf_norm = sqrt(vf_x*vf_x + vf_y*vf_y);
+
+    //Back off from the "intecept point" because the collision occurs when the mallet and puck
+    //are radius_puck + radius_mallet apart from each other.
+    float intercept_point_x = x_puck - vf_x/original_vf_norm*mallet_plus_puck_radius;
+    float intercept_point_y = y_puck - vf_y/original_vf_norm*mallet_plus_puck_radius;
+
+    //Scale the final velocity at the intercept
+    float v_3_x = vf_x / original_vf_norm * vf_magnitude;
+    float v_3_y = vf_y / original_vf_norm * vf_magnitude;
+
+    //Find control point locations
+    float q1_x = x_initial + vx_initial * path_time/3;
+    float q1_y = y_initial + vy_initial * path_time/3;
+    
+    float q2_x = intercept_point_x - v_3_x * path_time / 3;
+    float q2_y = intercept_point_y - v_3_y * path_time / 3;
+
+    cx = {{x_initial, 3*q1_x-3*x_initial, 3*x_initial-6*q1_x+3*q2_x, 3*q1_x-x_initial-3*q2_x+intercept_point_x}};
+    cy = {{y_initial, 3*q1_y-3*y_initial, 3*y_initial-6*q1_y+3*q2_y, 3*q1_y-y_initial-3*q2_y+intercept_point_y}};
+}
+
+/*
 Get the target position, velocity, and arrival time from the high-level controller
 */
 void get_target_from_hlc() {
