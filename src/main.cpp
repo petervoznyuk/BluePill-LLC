@@ -44,10 +44,11 @@ float ki = 0;
 float kd = 0.0;
 float max_pwm = 100;
 
-int path_section_num = 0;
-float traj_durations[];
-float x_traj_coeffs[][4];
-float y_traj_coeffs[][4];
+// Bezier curve trajectory parameters
+int path_section_num = -1;
+float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2};
+array<array<float, 4>, 7> x_traj_coeffs = {{{0,0,1.29,-0.86},{0.43,0,-0.65,0.46},{0.24,0.08,0.41,-0.3},{0.43,0,0,5.5511e-17},{0.43,0,0,5.5511e-17},{0.43,0,0.665,-0.47},{0.625,-0.08,-0.425,0.31}}};
+array<array<float, 4>, 7> y_traj_coeffs = {{{0,0,0.3,-0.2},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3},{0.1,0,0.25,0.1},{0.45,0.8,-2.65,1.5},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3}}};
 
 array<float,2> prev_pos = {{0,0}};
 float t;
@@ -302,55 +303,20 @@ Get the target position, velocity, and arrival time from the high-level controll
 void get_target_from_hlc() {
     // TODO: In future, read the serial interface and update target position and velocity if information is available.
     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
-    traj_duration = 0.3;
     
     if (t > tf) {
         path_section_num++;
         
-        if (path_section_num > traj_durations.size()) {
+        if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
+            set_motor_pwms(0,0);
             exit(0);
         }
 
         cx = x_traj_coeffs[path_section_num];
         cy = y_traj_coeffs[path_section_num];
+        traj_duration = traj_durations[path_section_num];
         tf += traj_durations[path_section_num];
-        
     }
-
-    
-    
-
-    // if (t < traj_duration) {
-    //    cx = {0, 0, 1.29, -0.86};
-    //    cy = {0, 0, 0.3, -0.2};
-    // } else if (t < 2*traj_duration) {
-    //    cx = {0.43, 0, -0.69, 0.5};
-    //    cy = {0.1, 0, 0.15, 0.2};
-    // } 
-    // else if (t < 3*traj_duration) {
-    //    cx = {0.24, 0.12, 0.33, -0.26};
-    //    cy = {0.45, 0.9, -2.85, 1.6};
-    // }
-    // else if (t < 4*traj_duration) {
-    //    cx = {0.43, 0, 0, 5.5511e-17};
-    //    cy = {0.1, 0, -0.15, 0.5};
-    // }
-    //     else if (t < 5*traj_duration) {
-    //    cx = {0.43, 0, 0, 5.5511e-17};
-    //    cy = {0.45, 1.2, -3.45, 1.9};
-    // }
-    //     else if (t < 6*traj_duration) {
-    //    cx = {0.43, 0, 0.705, -0.51};
-    //    cy = {0.1, 0, 0.15, 0.2};
-    // }
-    //     else if (t < 7*traj_duration) {
-    //    cx = {0.625, -0.12, -0.345, 0.27};
-    //    cy = {0.45, 0.9, -2.85, 1.6};
-    // } else {
-    //     set_motor_pwms(0, 0);
-    //     exit(0);
-    // }
-    // tf = t + traj_duration;
 }
 
 void setup() {
