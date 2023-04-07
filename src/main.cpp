@@ -46,13 +46,16 @@ float max_pwm = 100;
 
 // Bezier curve trajectory parameters
 int path_section_num = 1;
-float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2};
+array<array<float,1>,7> traj_durations = {
+    {0.2,0.2,0.2,0.2,0.2,0.2,0.2}
+};
 array<array<array<float,4>,7>,1> x_traj_coeffs = {{
     {{{0,0,1.29,-0.86},{0.43,0,-0.65,0.46},{0.24,0.08,0.41,-0.3},{0.43,0,0,5.5511e-17},{0.43,0,0,5.5511e-17},{0.43,0,0.665,-0.47},{0.625,-0.08,-0.425,0.31}}}
 }};
 array<array<array<float,4>,7>,1> y_traj_coeffs = {{
     {{{0,0,0.3,-0.2},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3},{0.1,0,0.25,0.1},{0.45,0.8,-2.65,1.5},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3}}}
 }};
+int demoNum = 0;
 
 array<float,2> prev_pos = {{0,0}};
 float t;
@@ -75,7 +78,7 @@ float ff[2][2][4] ={{{3.790419e-06,6.066717e-03,6.925599e-02,2.323943e-18},
 array<float,4> cx = {{0,0,0,0}};
 array<float,4> cy = {{0,0,0,0}};
 
-bool DISABLE_MOTORS = true;
+bool DISABLE_MOTORS = false;
 
 /*
 Read left and right motor angles from the encoders.
@@ -353,24 +356,24 @@ void generate_path(float x_puck, float y_puck, float vf_magnitude, float path_ti
 /*
 Get the target position, velocity, and arrival time from the high-level controller
 */
-// void get_target_from_hlc() {
-//     // TODO: In future, read the serial interface and update target position and velocity if information is available.
-//     // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
+void get_target_from_hlc() {
+    // TODO: In future, read the serial interface and update target position and velocity if information is available.
+    // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
     
-//     if (t > tf) {
-//         path_section_num++;
+    if (t > tf) {
+        path_section_num++;
         
-//         if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
-//             set_motor_pwms(0,0);
-//             exit(0);
-//         }
+        if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
+            set_motor_pwms(0,0);
+            exit(0);
+        }
 
-//         cx = x_traj_coeffs[path_section_num];
-//         cy = y_traj_coeffs[path_section_num];
-//         traj_duration = traj_durations[path_section_num];
-//         tf += traj_durations[path_section_num];
-//     }
-// }
+        cx = x_traj_coeffs[demoNum][path_section_num];
+        cy = y_traj_coeffs[demoNum][path_section_num];
+        traj_duration = traj_durations[demoNum][path_section_num];
+        tf += traj_durations[demoNum][path_section_num];
+    }
+}
 
 void checkSerial() {
     if (Serial.available()) { // Check to see if at least one character is available   
@@ -382,13 +385,18 @@ void checkSerial() {
             DISABLE_MOTORS = true;
         } else if (ch == 's') {
             DISABLE_MOTORS = false;
+            start_time = micros() / 1e6;
         } else if (ch == 'd') {
-            int demoNum = Serial.parseInt();
+            demoNum = Serial.parseInt();
             Serial.print("Starting demo #");
             Serial.println(demoNum);
+            
             // Stop the current demo
             // Home the table
             // Update the path coefficient lists
+            // Reset start time
+            home_table(9,6,10);
+            start_time = micros() / 1e6;
         }
     }
 }
@@ -417,7 +425,7 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    // home_table(9, 6, 10);
+    home_table(9, 6, 10);
 
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward");
@@ -439,48 +447,37 @@ void loop() {
 
     // // Update xf, yf, vxf, vyf, and traj_duration
 
-    // if (t > tf) {
-    //     float x_puck = 0.45;
-    //     float y_puck =  0.43;
-
-    //     if (t < 0.05) {
-    //         generate_path(x_puck, y_puck, 3.0, 0.3);
-    //     } else if (path_section_num == 2) {
-    //         generate_path(0.5, 0.1, 0.0, 0.5);
-    //     } else {
-    //         set_motor_pwms(0,0);
-    //         exit(0);
-    //     }
-    //     path_start_time = t;
-    //     path_section_num += 1;
-    // }
+    if (t > tf) {
+        get_target_from_hlc();
+        path_start_time = t;
+    }
         
-    // float u = (t-path_start_time) / traj_duration;
-    // float power_2 = u*u;
-    // float power_3 = power_2*u;
+    float u = (t-path_start_time) / traj_duration;
+    float power_2 = u*u;
+    float power_3 = power_2*u;
 
-    // float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
-    // float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
+    float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
+    float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
 
-    // if(x_pos < X_MIN) {
-    //     x_pos = X_MIN;
-    // } else if(x_pos > X_MAX) {
-    //     x_pos = X_MAX;
-    // }
+    if(x_pos < X_MIN) {
+        x_pos = X_MIN;
+    } else if(x_pos > X_MAX) {
+        x_pos = X_MAX;
+    }
 
-    // if(y_pos < Y_MIN) {
-    //     y_pos = Y_MIN;
-    // } else if(y_pos > Y_MAX) {
-    //     y_pos = Y_MAX;
-    // }
+    if(y_pos < Y_MIN) {
+        y_pos = Y_MIN;
+    } else if(y_pos > Y_MAX) {
+        y_pos = Y_MAX;
+    }
 
-    // command_motors(x_pos, y_pos, t, previous_time);
+    command_motors(x_pos, y_pos, t, previous_time);
 
-    // previous_time = t;
-    // xf_prev = xf;
-    // yf_prev = yf;
-    Serial.print(t);
-    Serial.println(" running main loop");
+    previous_time = t;
+    xf_prev = xf;
+    yf_prev = yf;
+    // Serial.print(t);
+    // Serial.println(" running main loop");
 }
 
 
