@@ -347,7 +347,8 @@ void generate_path(float x_puck, float y_puck, float vf_magnitude, float path_ti
     cy = {{y_initial, 3*q1_y-3*y_initial, 3*y_initial-6*q1_y+3*q2_y, 3*q1_y-y_initial-3*q2_y+intercept_point_y}};
 
     traj_duration = path_time;
-    tf += path_time;
+    path_start_time = t;
+    tf = path_start_time + path_time;
 }
 
 /*
@@ -395,7 +396,7 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(9, 6, 10);
+    home_table(9, 5, 10);
 
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward");
@@ -415,20 +416,34 @@ void loop() {
     float y_puck;
 
     if (path_section_num == 1) {
+        Serial.println("Trying serial...");
         if (Serial.available()) {
             temp = Serial.parseFloat();
             x_puck = Serial.parseFloat();
             y_puck = Serial.parseFloat();
             temp = Serial.parseFloat();
             temp = Serial.parseFloat();
-        }
-        if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
-            generate_path(x_puck, y_puck, 3.0, 0.3);
+            Serial.println(x_puck);
+            Serial.println(y_puck);
+        
+            if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
+                Serial.println("Generating path");
+                
+                generate_path(x_puck, y_puck, 3.0, 0.3);
+            } else {
+                exit(0);
+            }
+            path_section_num++;
         } else {
-            exit(0);
+            Serial.println("Did not receive any messages :(");
+            return;
         }
-        path_start_time = t;
-        path_section_num++;
+    }
+
+    if (t > tf && path_section_num != 1) {
+        Serial.println("Quitting :(((())))");
+        set_motor_pwms(0,0);
+        exit(0);
     }
    
     float u = (t-path_start_time) / traj_duration;
