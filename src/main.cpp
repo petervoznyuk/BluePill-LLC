@@ -403,30 +403,34 @@ void setup() {
     previous_time = 0;
     start_time = micros();
     tf = 0;
+
+    float x_puck = 0.45;
+    float y_puck =  0.43;
 }
 
 void loop() {
-
     t = (micros() - start_time) / 1000000.0;
+    float temp;
+    float x_puck;
+    float y_puck;
 
-    // Update xf, yf, vxf, vyf, and traj_duration
-
-    if (t > tf) {
-        float x_puck = 0.45;
-        float y_puck =  0.43;
-
-        if (t < 0.05) {
+    if (path_section_num == 1) {
+        if (Serial.available()) {
+            temp = Serial.parseFloat();
+            x_puck = Serial.parseFloat();
+            y_puck = Serial.parseFloat();
+            temp = Serial.parseFloat();
+            temp = Serial.parseFloat();
+        }
+        if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
             generate_path(x_puck, y_puck, 3.0, 0.3);
-        } else if (path_section_num == 2) {
-            generate_path(0.5, 0.1, 0.0, 0.5);
         } else {
-            set_motor_pwms(0,0);
             exit(0);
         }
         path_start_time = t;
-        path_section_num += 1;
+        path_section_num++;
     }
-        
+   
     float u = (t-path_start_time) / traj_duration;
     float power_2 = u*u;
     float power_3 = power_2*u;
