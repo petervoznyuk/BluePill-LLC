@@ -2,4 +2,4 @@
 ~/.platformio/penv/Scripts/platformio.exe run --target upload --environment bluepill_f103c8
 # Start serial monitor to read from and write to the Blue Pill
 # See https://docs.platformio.org/en/latest/core/userguide/device/cmd_monitor.html#cmd-device-monitor-filters
-~/.platformio/penv/Scripts/platformio.exe device monitor --eol=LF --filter send_on_enter > data/serialtest_$(date +%Y%m%d)_time$(date +%H%M).csv
+~/.platformio/penv/Scripts/platformio.exe device monitor --eol=LF --filter send_on_enter > data/$(date +%Y%m%d)_time$(date +%H%M).csv

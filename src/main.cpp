@@ -15,10 +15,12 @@
 #define PWM_FREQ_HZ 10000
 #define ROLLOVER_ANGLE_DEGS 180
 #define PULLEY_RADIUS 0.035 //meters
-#define X_MIN 0.0 //meters
-#define X_MAX 0.80 //meters
-#define Y_MIN 0.0 //meters
-#define Y_MAX 0.85 //meters
+#define X_OFFSET 0.0699 //meters
+#define Y_OFFSET 0.0508 //meters
+#define X_MIN X_OFFSET //meters
+#define X_MAX 1-X_OFFSET //meters
+#define Y_MIN Y_OFFSET //meters
+#define Y_MAX 1-Y_OFFSET //meters
 
 using namespace std;
 
@@ -45,7 +47,7 @@ float kd = 0.0;
 float max_pwm = 100;
 
 // Bezier curve trajectory parameters
-int path_section_num = 1;
+int path_section_num = -1;
 array<array<float,1>,7> traj_durations = {
     {0.2,0.2,0.2,0.2,0.2,0.2,0.2}
 };
@@ -253,10 +255,13 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
     set_motor_pwms(0, 0);
     delay(500);
 
+    //Offsets to set the (0,0) in (x,y) coordinates to the bottom left corner of the table
+    array<float,2> global_theta_offsets = xy_to_theta(X_OFFSET, Y_OFFSET);
+
     left_revolutions = 0;
     right_revolutions = 0;
-    left_offset = read_motor_angles()[0];
-    right_offset = read_motor_angles()[1];
+    left_offset = read_motor_angles()[0] - global_theta_offsets[0];
+    right_offset = read_motor_angles()[1] - global_theta_offsets[1];
     Serial.println("Fully Homed");
 }
 
