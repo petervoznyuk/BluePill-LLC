@@ -378,27 +378,31 @@ Get the target position, velocity, and arrival time from the high-level controll
 //         tf += traj_durations[path_section_num];
 //     }
 // }
-float parse(char stopChar) {
-    // Serial.println("Parsing");
-    char buffer[64] = {'0'};
-    
-    size_t pos = 0;
 
-    char c = Serial.read();
-    while (c != stopChar) {
-        if (pos < sizeof buffer - 1) {
-            buffer[pos++] = c;
-        }
-        // Serial.println(c);
-        c = Serial.read();
+
+float readFloat(char end) {
+  char buffer[10];
+  byte index = 0;
+  boolean isNegative = false;
+  while (true) {
+    while (Serial.available() == 0) {} // wait for a byte to be available
+    char incoming = Serial.read();
+    if (incoming == '-') {
+      isNegative = true;
+    } else if (incoming == '.') {
+      buffer[index++] = incoming;
+    } else if (incoming >= '0' && incoming <= '9') {
+      buffer[index++] = incoming;
+    } else if (incoming == end) {
+      break;
     }
-    
-    // Serial.print("Buffer:");
-    // buffer[pos] = '\0';
-    // Serial.println(buffer);
-    // Serial.println(atof(buffer));
-
-    return atof(buffer);
+  }
+  buffer[index] = '\0';
+  float number = atof(buffer);
+  if (isNegative) {
+    number *= -1;
+  }
+  return number;
 }
 
 void setup() {
@@ -446,28 +450,11 @@ void loop() {
     float temp;
 
     if (Serial.available()) {
-        // char incoming_4bytes[8];
-        // Serial.readBytes(incoming_4bytes, 8);
-        // temp = atof(incoming_4bytes);
-        // Serial.println(temp);
-        // float t1 = millis();
-        temp = parse(',');
-        x_puck = parse(',');
-        y_puck = parse(',');
-        temp = parse(',');
-        temp = parse('\n');
-        // float t2 = millis();
-
-        
-        // Serial.print(x_puck);
-        // Serial.print(',');
-        // Serial.println(y_puck);
-        // Serial.print("Generate path time: ");
-        // Serial.println(t2-t1);
-
-        // Serial.print(x_puck);
-        // Serial.print(',');
-        // Serial.println(y_puck);
+        temp = readFloat(',');
+        x_puck = readFloat(',');
+        y_puck = readFloat(',');
+        temp = readFloat(',');
+        temp = readFloat('\n');
 
         if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
             array<float,2> current_angles = read_motor_angles();
@@ -484,14 +471,8 @@ void loop() {
         path_section_num = 2;
     }
 
-    // Serial.print(x_puck*100.0);
-    // Serial.print(",");
-    // Serial.print(y_puck*100.0);
-    // Serial.print('\n');
-
     if (t > tf && path_section_num != 1) {
         set_motor_pwms(0,0);
-        // Serial.println("return2");
         return;
     }
    
