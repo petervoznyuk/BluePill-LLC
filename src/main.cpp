@@ -63,6 +63,7 @@ float yf;
 float vxf;
 float vyf;
 float xf_prev, yf_prev;
+float x_puck, y_puck;
 
 float ff[2][2][4] ={{{3.790419e-06,6.066717e-03,6.925599e-02,2.323943e-18},
 {-1.501957e-06,-2.396739e-03, 6.811798e-17,-6.262513e-18}}, 
@@ -297,7 +298,11 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial.print(",");
     Serial.print(feed_forward_values[0]);
     Serial.print(",");
-    Serial.println(feed_forward_values[1]);
+    Serial.print(feed_forward_values[1]);
+    Serial.print(",");
+    Serial.print(x_puck*100);
+    Serial.print(",");
+    Serial.println(y_puck*100);
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -398,8 +403,9 @@ void setup() {
 
     home_table(9, 5, 10);
 
+    delay(500);
     Serial.println("BEGIN CSV");
-    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward");
+    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,X_Puck(cm),Y_Puck(cm)");
 
     previous_time = 0;
     start_time = micros();
@@ -412,36 +418,32 @@ void setup() {
 void loop() {
     t = (micros() - start_time) / 1000000.0;
     float temp;
-    float x_puck;
-    float y_puck;
 
     if (path_section_num == 1) {
-        Serial.println("Trying serial...");
+        // Serial.println("Trying serial...");
         if (Serial.available()) {
             temp = Serial.parseFloat();
             x_puck = Serial.parseFloat();
             y_puck = Serial.parseFloat();
             temp = Serial.parseFloat();
             temp = Serial.parseFloat();
-            Serial.println(x_puck);
-            Serial.println(y_puck);
         
             if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
-                Serial.println("Generating path");
+                // Serial.println("Generating path");
                 
-                generate_path(x_puck, y_puck, 3.0, 0.3);
+                generate_path(x_puck, y_puck, 4.0, 0.2);
             } else {
                 exit(0);
             }
             path_section_num++;
         } else {
-            Serial.println("Did not receive any messages :(");
+            // Serial.println("Did not receive any messages :(");
             return;
         }
     }
 
     if (t > tf && path_section_num != 1) {
-        Serial.println("Quitting :(((())))");
+        Serial.println("Finished executing");
         set_motor_pwms(0,0);
         exit(0);
     }
