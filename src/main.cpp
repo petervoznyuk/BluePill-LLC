@@ -300,9 +300,10 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial.print(",");
     Serial.print(feed_forward_values[1]);
     Serial.print(",");
-    Serial.print(x_puck*100);
+    Serial.print(x_puck*100.0);
     Serial.print(",");
-    Serial.println(y_puck*100);
+    Serial.print(y_puck*100.0);
+    Serial.print('\n');
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -377,9 +378,33 @@ Get the target position, velocity, and arrival time from the high-level controll
 //         tf += traj_durations[path_section_num];
 //     }
 // }
+float parse(char stopChar) {
+    // Serial.println("Parsing");
+    char buffer[64] = {'0'};
+    
+    size_t pos = 0;
+
+    char c = Serial.read();
+    while (c != stopChar) {
+        if (pos < sizeof buffer - 1) {
+            buffer[pos++] = c;
+        }
+        // Serial.println(c);
+        c = Serial.read();
+    }
+    
+    // Serial.print("Buffer:");
+    // buffer[pos] = '\0';
+    // Serial.println(buffer);
+    // Serial.println(atof(buffer));
+
+    return atof(buffer);
+}
 
 void setup() {
     Serial.begin(460800);
+    // Serial.begin(115200);
+    // Serial.setTimeout(5);
     SPI.beginTransaction(SPISettings(460800, MSBFIRST, SPI_MODE1));
     
     pinMode(ENC_CHIP_SELECT_LEFT, OUTPUT);
@@ -403,49 +428,71 @@ void setup() {
 
     home_table(9, 5, 10);
 
-    delay(500);
+    while (!Serial.available()) {
+        // wait for serial to become available
+    }
+
     Serial.println("BEGIN CSV");
     Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,X_Puck(cm),Y_Puck(cm)");
 
     previous_time = 0;
     start_time = micros();
     tf = 0;
-
-    float x_puck = 0.45;
-    float y_puck =  0.43;
 }
 
 void loop() {
     t = (micros() - start_time) / 1000000.0;
+
     float temp;
 
-    if (path_section_num == 1) {
-        // Serial.println("Trying serial...");
-        if (Serial.available()) {
-            temp = Serial.parseFloat();
-            x_puck = Serial.parseFloat();
-            y_puck = Serial.parseFloat();
-            temp = Serial.parseFloat();
-            temp = Serial.parseFloat();
+    if (Serial.available()) {
+        // char incoming_4bytes[8];
+        // Serial.readBytes(incoming_4bytes, 8);
+        // temp = atof(incoming_4bytes);
+        // Serial.println(temp);
+        // float t1 = millis();
+        temp = parse(',');
+        x_puck = parse(',');
+        y_puck = parse(',');
+        temp = parse(',');
+        temp = parse('\n');
+        // float t2 = millis();
+
         
-            if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
-                // Serial.println("Generating path");
-                
-                generate_path(x_puck, y_puck, 4.0, 0.2);
-            } else {
-                exit(0);
-            }
-            path_section_num++;
+        // Serial.print(x_puck);
+        // Serial.print(',');
+        // Serial.println(y_puck);
+        // Serial.print("Generate path time: ");
+        // Serial.println(t2-t1);
+
+        // Serial.print(x_puck);
+        // Serial.print(',');
+        // Serial.println(y_puck);
+
+        if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
+            array<float,2> current_angles = read_motor_angles();
+            float current_x = theta_to_xy(current_angles[0], current_angles[1])[0];
+            
+            float x_error = x_puck - current_x;
+            float desired_path_avg_velocity = 3.0;
+            
+            generate_path(x_puck, 0.2, 0.0, x_error / desired_path_avg_velocity);
         } else {
-            // Serial.println("Did not receive any messages :(");
+            set_motor_pwms(0,0);
             return;
         }
+        path_section_num = 2;
     }
 
+    // Serial.print(x_puck*100.0);
+    // Serial.print(",");
+    // Serial.print(y_puck*100.0);
+    // Serial.print('\n');
+
     if (t > tf && path_section_num != 1) {
-        Serial.println("Finished executing");
         set_motor_pwms(0,0);
-        exit(0);
+        // Serial.println("return2");
+        return;
     }
    
     float u = (t-path_start_time) / traj_duration;
