@@ -44,7 +44,7 @@ float kp = 1.0;
 float ki = 0;
 // float kd = 0.0002;
 float kd = 0.0;
-float max_pwm = 100;
+float max_pwm = 80;
 
 // Bezier curve trajectory parameters
 int path_section_num = 1;
@@ -279,8 +279,11 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
 
     array<float, 2> feed_forward_values = feed_forward((current_time-path_start_time)/traj_duration);
 
-    float left_pwm = fmin(fmax(-max_pwm, left_pid + feed_forward_values[0]), max_pwm);
-    float right_pwm = fmin(fmax(-max_pwm, right_pid + feed_forward_values[1]), max_pwm);
+    float left_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[0]), max_pwm);
+    float right_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[1]), max_pwm);
+
+    float left_pwm = fmin(fmax(-max_pwm, left_pid + left_feed_forward), max_pwm);
+    float right_pwm = fmin(fmax(-max_pwm, right_pid + right_feed_forward), max_pwm);
 
     Serial.print(current_time*1000);
     Serial.print(",");
@@ -323,11 +326,19 @@ void generate_path(float x_puck, float y_puck, float vf_magnitude, float path_ti
     float y_initial = theta_to_xy(current_angles[0], current_angles[1])[1];
 
     float u = (t-path_start_time) / traj_duration;
-    float power_2 = u*u;
 
-    float vx_initial = (cx[1] + 2*cx[2]*u + 3*cx[3]*power_2)/traj_duration;
-    float vy_initial = (cy[1] + 2*cy[2]*u + 3*cy[3]*power_2)/traj_duration;
+    float vx_initial;
+    float vy_initial;
 
+    if ((t + 0.01 - path_start_time) / traj_duration > 1.0) {
+        float power_2 = u*u;
+
+        vx_initial = (cx[1] + 2*cx[2]*u + 3*cx[3]*power_2)/traj_duration;
+        vy_initial = (cy[1] + 2*cy[2]*u + 3*cy[3]*power_2)/traj_duration;
+    } else {
+        vx_initial = 0;
+        vy_initial = 0;
+    }
     float vf_x = x_goal - x_puck;
     float vf_y = table_length - y_puck;
 
@@ -460,10 +471,14 @@ void loop() {
             array<float,2> current_angles = read_motor_angles();
             float current_x = theta_to_xy(current_angles[0], current_angles[1])[0];
             
-            float x_error = x_puck - current_x;
-            float desired_path_avg_velocity = 3.0;
+            float x_error = abs(x_puck - current_x);
+
+            if (x_error > 0.03) {
+                float desired_path_avg_velocity = 0.5;
             
-            generate_path(x_puck, 0.2, 0.0, x_error / desired_path_avg_velocity);
+                generate_path(x_puck, 0.2, 0.0, x_error / desired_path_avg_velocity);
+            }
+
         } else {
             set_motor_pwms(0,0);
             return;
