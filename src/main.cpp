@@ -46,18 +46,14 @@ float ki = 0;
 float kd = 0.0;
 float max_pwm = 100;
 
+// ==================================
 // Bezier curve trajectory parameters
+float traj_durations[] = {0.2,0.2,0.2,0.2,0.2};
+array<array<float, 4>, 5> x_traj_coeffs = {{{0.0699,0,1.0903,-0.6602},{0.5,0.2,0.68,-0.52},{0.86,0,-0.88,0.52},{0.5,-0.2,-0.71,0.54},{0.13,0,0.91,-0.54}}};
+array<array<float, 4>, 5> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
+
 int path_section_num = -1;
-array<array<float,1>,7> traj_durations = {
-    {0.2,0.2,0.2,0.2,0.2,0.2,0.2}
-};
-array<array<array<float,4>,7>,1> x_traj_coeffs = {{
-    {{{0,0,1.29,-0.86},{0.43,0,-0.65,0.46},{0.24,0.08,0.41,-0.3},{0.43,0,0,5.5511e-17},{0.43,0,0,5.5511e-17},{0.43,0,0.665,-0.47},{0.625,-0.08,-0.425,0.31}}}
-}};
-array<array<array<float,4>,7>,1> y_traj_coeffs = {{
-    {{{0,0,0.3,-0.2},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3},{0.1,0,0.25,0.1},{0.45,0.8,-2.65,1.5},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3}}}
-}};
-int demoNum = 0;
+// ==================================
 
 array<float,2> prev_pos = {{0,0}};
 float t;
@@ -310,105 +306,25 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial.print(",");
     Serial.println(feed_forward_values[1]);
 
-    // set_motor_pwms(left_pwm, right_pwm);
-}
-
-/*
-Generate the path and its coefficients for the given HLC target. Calculations from here:
-https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-*/
-
-void generate_path(float x_puck, float y_puck, float vf_magnitude, float path_time) {
-    float table_length = 2;
-    float x_goal = 0.52;
-    float mallet_plus_puck_radius = 0.05 + 0.03175; 
-
-    array<float,2> current_angles = read_motor_angles();
-    float x_initial = theta_to_xy(current_angles[0], current_angles[1])[0];
-    float y_initial = theta_to_xy(current_angles[0], current_angles[1])[1];
-
-    float u = (t-path_start_time) / traj_duration;
-    float power_2 = u*u;
-
-    float vx_initial = (cx[1] + 2*cx[2]*u + 3*cx[3]*power_2)/traj_duration;
-    float vy_initial = (cy[1] + 2*cy[2]*u + 3*cy[3]*power_2)/traj_duration;
-
-    float vf_x = x_goal - x_puck;
-    float vf_y = table_length - y_puck;
-
-    float original_vf_norm = sqrt(vf_x*vf_x + vf_y*vf_y);
-
-    //Back off from the "intecept point" because the collision occurs when the mallet and puck
-    //are radius_puck + radius_mallet apart from each other.
-    float intercept_point_x = x_puck - vf_x/original_vf_norm*mallet_plus_puck_radius;
-    float intercept_point_y = y_puck - vf_y/original_vf_norm*mallet_plus_puck_radius;
-
-    //Scale the final velocity at the intercept
-    float v_3_x = vf_x / original_vf_norm * vf_magnitude;
-    float v_3_y = vf_y / original_vf_norm * vf_magnitude;
-
-    //Find control point locations
-    float q1_x = x_initial + vx_initial * path_time/3;
-    float q1_y = y_initial + vy_initial * path_time/3;
-    
-    float q2_x = intercept_point_x - v_3_x * path_time / 3;
-    float q2_y = intercept_point_y - v_3_y * path_time / 3;
-
-    cx = {{x_initial, 3*q1_x-3*x_initial, 3*x_initial-6*q1_x+3*q2_x, 3*q1_x-x_initial-3*q2_x+intercept_point_x}};
-    cy = {{y_initial, 3*q1_y-3*y_initial, 3*y_initial-6*q1_y+3*q2_y, 3*q1_y-y_initial-3*q2_y+intercept_point_y}};
-
-    traj_duration = path_time;
-    tf = path_start_time + traj_duration;
+    set_motor_pwms(left_pwm, right_pwm);
 }
 
 /*
 Get the target position, velocity, and arrival time from the high-level controller
 */
 void get_target_from_hlc() {
-    // TODO: In future, read the serial interface and update target position and velocity if information is available.
-    // For now, use fixed time intervals instead. Add more "else if" conditions to add path segments.
+    path_section_num++;
     
-    if (t > tf) {
-        path_section_num++;
-        
-        if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
-            set_motor_pwms(0,0);
-            exit(0);
-        }
-
-        cx = x_traj_coeffs[demoNum][path_section_num];
-        cy = y_traj_coeffs[demoNum][path_section_num];
-        traj_duration = traj_durations[demoNum][path_section_num];
-        tf = path_start_time + traj_durations[demoNum][path_section_num];
+    if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
+        path_section_num = 1;
+        // set_motor_pwms(0,0);
+        // exit(0);
     }
-}
 
-void checkSerial() {
-    if (Serial.available()) { // Check to see if at least one character is available   
-        // TODO: Interpret anything in the serial buffer as a message from the HLC
-        // Assume this message contains the target position, velocity, and intercept time
-        char ch = Serial.read();
-        if (ch == 'q') {
-            set_motor_pwms(0,0);
-            DISABLE_MOTORS = true;
-        } else if (ch == 's') {
-            DISABLE_MOTORS = false;
-            Serial.println("BEGIN CSV");
-            Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward");
-            // start_time = micros() / 1e6;
-        } else if (ch == 'd') {
-            demoNum = Serial.parseInt();
-            Serial.print("Starting demo #");
-            Serial.println(demoNum);
-            
-            // Stop the current demo
-            // Home the table
-            // Update the path coefficient lists
-            // Reset start time
-            home_table(9,6,10);
-            start_time = micros() / 1e6;
-        }
-    }
+    cx = x_traj_coeffs[path_section_num];
+    cy = y_traj_coeffs[path_section_num];
+    traj_duration = traj_durations[path_section_num];
+    tf = t + traj_durations[path_section_num];
 }
 
 void setup() {
@@ -437,28 +353,22 @@ void setup() {
 
     home_table(9, 6, 10);
 
+    Serial.println("BEGIN CSV");
+    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,X_Puck(cm),Y_Puck(cm)");
+
     previous_time = 0;
     start_time = micros();
     tf = 0;
-    // delay(10000);
 }
 
 void loop() {
-    checkSerial();
-
     t = (micros() - start_time) / 1000000.0;
 
-    if (DISABLE_MOTORS) {
-        return;
-    }
-
-    // // Update xf, yf, vxf, vyf, and traj_duration
-
     if (t > tf) {
-        get_target_from_hlc();
         path_start_time = t;
+        get_target_from_hlc();
     }
-        
+    
     float u = (t-path_start_time) / traj_duration;
     float power_2 = u*u;
     float power_3 = power_2*u;
@@ -483,8 +393,5 @@ void loop() {
     previous_time = t;
     xf_prev = xf;
     yf_prev = yf;
-    // Serial.print(t);
-    // Serial.println(" running main loop");
 }
-
 
