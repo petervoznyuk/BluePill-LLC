@@ -285,9 +285,12 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     right_accumulated_error += right_error;
 
     array<float, 2> feed_forward_values = feed_forward((current_time-path_start_time)/traj_duration);
+    
+    float left_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[0]), max_pwm);
+    float right_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[1]), max_pwm);
 
-    float left_pwm = fmin(fmax(-max_pwm, left_pid + feed_forward_values[0]), max_pwm);
-    float right_pwm = fmin(fmax(-max_pwm, right_pid + feed_forward_values[1]), max_pwm);
+    float left_pwm = fmin(fmax(-max_pwm, left_pid + left_feed_forward), max_pwm);
+    float right_pwm = fmin(fmax(-max_pwm, right_pid + right_feed_forward), max_pwm);
 
     Serial.print(current_time*1000);
     Serial.print(",");
