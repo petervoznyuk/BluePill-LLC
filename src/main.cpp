@@ -80,7 +80,7 @@ float ff[2][2][4] ={{{3.790419e-06,6.066717e-03,6.925599e-02,2.323943e-18},
 array<float,4> cx = {{0,0,0,0}};
 array<float,4> cy = {{0,0,0,0}};
 
-bool DISABLE_MOTORS = false;
+bool DISABLE_MOTORS = true;
 
 /*
 Read left and right motor angles from the encoders.
@@ -307,7 +307,7 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial.print(",");
     Serial.println(feed_forward_values[1]);
 
-    set_motor_pwms(left_pwm, right_pwm);
+    // set_motor_pwms(left_pwm, right_pwm);
 }
 
 /*
@@ -355,7 +355,7 @@ void generate_path(float x_puck, float y_puck, float vf_magnitude, float path_ti
     cy = {{y_initial, 3*q1_y-3*y_initial, 3*y_initial-6*q1_y+3*q2_y, 3*q1_y-y_initial-3*q2_y+intercept_point_y}};
 
     traj_duration = path_time;
-    tf += path_time;
+    tf = path_start_time + traj_duration;
 }
 
 /*
@@ -376,7 +376,7 @@ void get_target_from_hlc() {
         cx = x_traj_coeffs[demoNum][path_section_num];
         cy = y_traj_coeffs[demoNum][path_section_num];
         traj_duration = traj_durations[demoNum][path_section_num];
-        tf += traj_durations[demoNum][path_section_num];
+        tf = path_start_time + traj_durations[demoNum][path_section_num];
     }
 }
 
@@ -390,7 +390,9 @@ void checkSerial() {
             DISABLE_MOTORS = true;
         } else if (ch == 's') {
             DISABLE_MOTORS = false;
-            start_time = micros() / 1e6;
+            Serial.println("BEGIN CSV");
+            Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward");
+            // start_time = micros() / 1e6;
         } else if (ch == 'd') {
             demoNum = Serial.parseInt();
             Serial.print("Starting demo #");
@@ -432,19 +434,16 @@ void setup() {
 
     home_table(9, 6, 10);
 
-    Serial.println("BEGIN CSV");
-    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward");
-
     previous_time = 0;
     start_time = micros();
     tf = 0;
+    // delay(10000);
 }
 
 void loop() {
+    checkSerial();
 
     t = (micros() - start_time) / 1000000.0;
-
-    checkSerial();
 
     if (DISABLE_MOTORS) {
         return;
