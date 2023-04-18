@@ -1,0 +1,591 @@
+Processing bluepill_f103c8 (platform: ststm32; board: bluepill_f103c8; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/ststm32/bluepill_f103c8.html
+PLATFORM: ST STM32 (15.4.1) > BluePill F103C8
+HARDWARE: STM32F103C8T6 72MHz, 20KB RAM, 64KB Flash
+DEBUG: Current (stlink) External (blackmagic, cmsis-dap, jlink, stlink)
+PACKAGES: 
+ - framework-arduinoststm32 @ 4.20200.221104 (2.2.0) 
+ - framework-cmsis @ 2.50700.210515 (5.7.0) 
+ - tool-dfuutil @ 1.11.0 
+ - tool-openocd @ 2.1100.211028 (11.0) 
+ - tool-stm32duino @ 1.0.2 
+ - toolchain-gccarmnoneeabi @ 1.90201.191206 (9.2.1)
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 15 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoEigen @ 0.2.3
+|-- SPI @ 1.0
+Building in release mode
+Compiling .pio\build\bluepill_f103c8\src\main.cpp.o
+Linking .pio\build\bluepill_f103c8\firmware.elf
+Checking size .pio\build\bluepill_f103c8\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   5.7% (used 1164 bytes from 20480 bytes)
+Flash: [========  ]  77.8% (used 50988 bytes from 65536 bytes)
+Building .pio\build\bluepill_f103c8\firmware.bin
+Configuring upload protocol...
+AVAILABLE: blackmagic, cmsis-dap, dfu, jlink, mbed, serial, stlink
+CURRENT: upload_protocol = serial
+Looking for upload port...
+Using manually specified: COM9
+Uploading .pio\build\bluepill_f103c8\firmware.bin
+stm32flash 0.4
+
+http://stm32flash.googlecode.com/
+
+Using Parser : Raw BINARY
+Interface serial_w32: 115200 8E1
+Version      : 0x22
+Option 1     : 0x00
+Option 2     : 0x00
+Device ID    : 0x0410 (Medium-density)
+- RAM        : 20KiB  (512b reserved by bootloader)
+- Flash      : 128KiB (sector size: 4x1024)
+- Option RAM : 16b
+- System RAM : 2KiB
+Write to memory
+Erasing memory
+
+Wrote address 0x08000100 (0.50%) 
+Wrote address 0x08000200 (1.00%) 
+Wrote address 0x08000300 (1.50%) 
+Wrote address 0x08000400 (2.00%) 
+Wrote address 0x08000500 (2.50%) 
+Wrote address 0x08000600 (3.00%) 
+Wrote address 0x08000700 (3.49%) 
+Wrote address 0x08000800 (3.99%) 
+Wrote address 0x08000900 (4.49%) 
+Wrote address 0x08000a00 (4.99%) 
+Wrote address 0x08000b00 (5.49%) 
+Wrote address 0x08000c00 (5.99%) 
+Wrote address 0x08000d00 (6.49%) 
+Wrote address 0x08000e00 (6.99%) 
+Wrote address 0x08000f00 (7.49%) 
+Wrote address 0x08001000 (7.99%) 
+Wrote address 0x08001100 (8.49%) 
+Wrote address 0x08001200 (8.99%) 
+Wrote address 0x08001300 (9.48%) 
+Wrote address 0x08001400 (9.98%) 
+Wrote address 0x08001500 (10.48%) 
+Wrote address 0x08001600 (10.98%) 
+Wrote address 0x08001700 (11.48%) 
+Wrote address 0x08001800 (11.98%) 
+Wrote address 0x08001900 (12.48%) 
+Wrote address 0x08001a00 (12.98%) 
+Wrote address 0x08001b00 (13.48%) 
+Wrote address 0x08001c00 (13.98%) 
+Wrote address 0x08001d00 (14.48%) 
+Wrote address 0x08001e00 (14.98%) 
+Wrote address 0x08001f00 (15.47%) 
+Wrote address 0x08002000 (15.97%) 
+Wrote address 0x08002100 (16.47%) 
+Wrote address 0x08002200 (16.97%) 
+Wrote address 0x08002300 (17.47%) 
+Wrote address 0x08002400 (17.97%) 
+Wrote address 0x08002500 (18.47%) 
+Wrote address 0x08002600 (18.97%) 
+Wrote address 0x08002700 (19.47%) 
+Wrote address 0x08002800 (19.97%) 
+Wrote address 0x08002900 (20.47%) 
+Wrote address 0x08002a00 (20.97%) 
+Wrote address 0x08002b00 (21.46%) 
+Wrote address 0x08002c00 (21.96%) 
+Wrote address 0x08002d00 (22.46%) 
+Wrote address 0x08002e00 (22.96%) 
+Wrote address 0x08002f00 (23.46%) 
+Wrote address 0x08003000 (23.96%) 
+Wrote address 0x08003100 (24.46%) 
+Wrote address 0x08003200 (24.96%) 
+Wrote address 0x08003300 (25.46%) 
+Wrote address 0x08003400 (25.96%) 
+Wrote address 0x08003500 (26.46%) 
+Wrote address 0x08003600 (26.96%) 
+Wrote address 0x08003700 (27.45%) 
+Wrote address 0x08003800 (27.95%) 
+Wrote address 0x08003900 (28.45%) 
+Wrote address 0x08003a00 (28.95%) 
+Wrote address 0x08003b00 (29.45%) 
+Wrote address 0x08003c00 (29.95%) 
+Wrote address 0x08003d00 (30.45%) 
+Wrote address 0x08003e00 (30.95%) 
+Wrote address 0x08003f00 (31.45%) 
+Wrote address 0x08004000 (31.95%) 
+Wrote address 0x08004100 (32.45%) 
+Wrote address 0x08004200 (32.95%) 
+Wrote address 0x08004300 (33.45%) 
+Wrote address 0x08004400 (33.94%) 
+Wrote address 0x08004500 (34.44%) 
+Wrote address 0x08004600 (34.94%) 
+Wrote address 0x08004700 (35.44%) 
+Wrote address 0x08004800 (35.94%) 
+Wrote address 0x08004900 (36.44%) 
+Wrote address 0x08004a00 (36.94%) 
+Wrote address 0x08004b00 (37.44%) 
+Wrote address 0x08004c00 (37.94%) 
+Wrote address 0x08004d00 (38.44%) 
+Wrote address 0x08004e00 (38.94%) 
+Wrote address 0x08004f00 (39.44%) 
+Wrote address 0x08005000 (39.93%) 
+Wrote address 0x08005100 (40.43%) 
+Wrote address 0x08005200 (40.93%) 
+Wrote address 0x08005300 (41.43%) 
+Wrote address 0x08005400 (41.93%) 
+Wrote address 0x08005500 (42.43%) 
+Wrote address 0x08005600 (42.93%) 
+Wrote address 0x08005700 (43.43%) 
+Wrote address 0x08005800 (43.93%) 
+Wrote address 0x08005900 (44.43%) 
+Wrote address 0x08005a00 (44.93%) 
+Wrote address 0x08005b00 (45.43%) 
+Wrote address 0x08005c00 (45.92%) 
+Wrote address 0x08005d00 (46.42%) 
+Wrote address 0x08005e00 (46.92%) 
+Wrote address 0x08005f00 (47.42%) 
+Wrote address 0x08006000 (47.92%) 
+Wrote address 0x08006100 (48.42%) 
+Wrote address 0x08006200 (48.92%) 
+Wrote address 0x08006300 (49.42%) 
+Wrote address 0x08006400 (49.92%) 
+Wrote address 0x08006500 (50.42%) 
+Wrote address 0x08006600 (50.92%) 
+Wrote address 0x08006700 (51.42%) 
+Wrote address 0x08006800 (51.91%) 
+Wrote address 0x08006900 (52.41%) 
+Wrote address 0x08006a00 (52.91%) 
+Wrote address 0x08006b00 (53.41%) 
+Wrote address 0x08006c00 (53.91%) 
+Wrote address 0x08006d00 (54.41%) 
+Wrote address 0x08006e00 (54.91%) 
+Wrote address 0x08006f00 (55.41%) 
+Wrote address 0x08007000 (55.91%) 
+Wrote address 0x08007100 (56.41%) 
+Wrote address 0x08007200 (56.91%) 
+Wrote address 0x08007300 (57.41%) 
+Wrote address 0x08007400 (57.90%) 
+Wrote address 0x08007500 (58.40%) 
+Wrote address 0x08007600 (58.90%) 
+Wrote address 0x08007700 (59.40%) 
+Wrote address 0x08007800 (59.90%) 
+Wrote address 0x08007900 (60.40%) 
+Wrote address 0x08007a00 (60.90%) 
+Wrote address 0x08007b00 (61.40%) 
+Wrote address 0x08007c00 (61.90%) 
+Wrote address 0x08007d00 (62.40%) 
+Wrote address 0x08007e00 (62.90%) 
+Wrote address 0x08007f00 (63.40%) 
+Wrote address 0x08008000 (63.90%) 
+Wrote address 0x08008100 (64.39%) 
+Wrote address 0x08008200 (64.89%) 
+Wrote address 0x08008300 (65.39%) 
+Wrote address 0x08008400 (65.89%) 
+Wrote address 0x08008500 (66.39%) 
+Wrote address 0x08008600 (66.89%) 
+Wrote address 0x08008700 (67.39%) 
+Wrote address 0x08008800 (67.89%) 
+Wrote address 0x08008900 (68.39%) 
+Wrote address 0x08008a00 (68.89%) 
+Wrote address 0x08008b00 (69.39%) 
+Wrote address 0x08008c00 (69.89%) 
+Wrote address 0x08008d00 (70.38%) 
+Wrote address 0x08008e00 (70.88%) 
+Wrote address 0x08008f00 (71.38%) 
+Wrote address 0x08009000 (71.88%) 
+Wrote address 0x08009100 (72.38%) 
+Wrote address 0x08009200 (72.88%) 
+Wrote address 0x08009300 (73.38%) 
+Wrote address 0x08009400 (73.88%) 
+Wrote address 0x08009500 (74.38%) 
+Wrote address 0x08009600 (74.88%) 
+Wrote address 0x08009700 (75.38%) 
+Wrote address 0x08009800 (75.88%) 
+Wrote address 0x08009900 (76.37%) 
+Wrote address 0x08009a00 (76.87%) 
+Wrote address 0x08009b00 (77.37%) 
+Wrote address 0x08009c00 (77.87%) 
+Wrote address 0x08009d00 (78.37%) 
+Wrote address 0x08009e00 (78.87%) 
+Wrote address 0x08009f00 (79.37%) 
+Wrote address 0x0800a000 (79.87%) 
+Wrote address 0x0800a100 (80.37%) 
+Wrote address 0x0800a200 (80.87%) 
+Wrote address 0x0800a300 (81.37%) 
+Wrote address 0x0800a400 (81.87%) 
+Wrote address 0x0800a500 (82.36%) 
+Wrote address 0x0800a600 (82.86%) 
+Wrote address 0x0800a700 (83.36%) 
+Wrote address 0x0800a800 (83.86%) 
+Wrote address 0x0800a900 (84.36%) 
+Wrote address 0x0800aa00 (84.86%) 
+Wrote address 0x0800ab00 (85.36%) 
+Wrote address 0x0800ac00 (85.86%) 
+Wrote address 0x0800ad00 (86.36%) 
+Wrote address 0x0800ae00 (86.86%) 
+Wrote address 0x0800af00 (87.36%) 
+Wrote address 0x0800b000 (87.86%) 
+Wrote address 0x0800b100 (88.36%) 
+Wrote address 0x0800b200 (88.85%) 
+Wrote address 0x0800b300 (89.35%) 
+Wrote address 0x0800b400 (89.85%) 
+Wrote address 0x0800b500 (90.35%) 
+Wrote address 0x0800b600 (90.85%) 
+Wrote address 0x0800b700 (91.35%) 
+Wrote address 0x0800b800 (91.85%) 
+Wrote address 0x0800b900 (92.35%) 
+Wrote address 0x0800ba00 (92.85%) 
+Wrote address 0x0800bb00 (93.35%) 
+Wrote address 0x0800bc00 (93.85%) 
+Wrote address 0x0800bd00 (94.35%) 
+Wrote address 0x0800be00 (94.84%) 
+Wrote address 0x0800bf00 (95.34%) 
+Wrote address 0x0800c000 (95.84%) 
+Wrote address 0x0800c100 (96.34%) 
+Wrote address 0x0800c200 (96.84%) 
+Wrote address 0x0800c300 (97.34%) 
+Wrote address 0x0800c400 (97.84%) 
+Wrote address 0x0800c500 (98.34%) 
+Wrote address 0x0800c600 (98.84%) 
+Wrote address 0x0800c700 (99.34%) 
+Wrote address 0x0800c800 (99.84%) 
+Wrote address 0x0800c854 (100.00%) Done.
+
+Starting execution at address 0x08000000... done.
+
+========================= [SUCCESS] Took 14.32 seconds =========================
+--- Terminal on COM9 | 460800 8-N-1
+--- Available filters and text transformations: colorize, debug, default, direct, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+Fully Homed
+BEGIN CSV
+Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM
+0.00,nan,nan,nan,nan,-20.00,-20.00
+1.74,nan,nan,nan,nan,-20.00,-20.00
+3.43,nan,nan,nan,nan,-20.00,-20.00
+5.13,nan,nan,nan,nan,-20.00,-20.00
+6.86,nan,nan,nan,nan,-20.00,-20.00
+8.56,nan,nan,nan,nan,-20.00,-20.00
+10.25,nan,nan,nan,nan,-20.00,-20.00
+11.97,nan,nan,nan,nan,-20.00,-20.00
+13.69,nan,nan,nan,nan,-20.00,-20.00
+15.39,nan,nan,nan,nan,-20.00,-20.00
+17.08,nan,nan,nan,nan,-20.00,-20.00
+18.78,nan,nan,nan,nan,-20.00,-20.00
+20.48,nan,nan,nan,nan,-20.00,-20.00
+22.19,nan,nan,nan,nan,-20.00,-20.00
+23.91,nan,nan,nan,nan,-20.00,-20.00
+25.62,nan,nan,nan,nan,-20.00,-20.00
+27.34,nan,nan,nan,nan,-20.00,-20.00
+29.04,nan,nan,nan,nan,-20.00,-20.00
+30.73,nan,nan,nan,nan,-20.00,-20.00
+32.44,nan,nan,nan,nan,-20.00,-20.00
+34.13,nan,nan,nan,nan,-20.00,-20.00
+35.83,nan,nan,nan,nan,-20.00,-20.00
+37.52,nan,nan,nan,nan,-20.00,-20.00
+39.22,nan,nan,nan,nan,-20.00,-20.00
+40.93,nan,nan,nan,nan,-20.00,-20.00
+42.65,nan,nan,nan,nan,-20.00,-20.00
+44.37,nan,nan,nan,nan,-20.00,-20.00
+46.09,nan,nan,nan,nan,-20.00,-20.00
+47.81,nan,nan,nan,nan,-20.00,-20.00
+49.52,nan,nan,nan,nan,-20.00,-20.00
+51.23,nan,nan,nan,nan,-20.00,-20.00
+52.94,nan,nan,nan,nan,-20.00,-20.00
+54.66,nan,nan,nan,nan,-20.00,-20.00
+56.36,nan,nan,nan,nan,-20.00,-20.00
+58.06,nan,nan,nan,nan,-20.00,-20.00
+59.74,nan,nan,nan,nan,-20.00,-20.00
+61.45,nan,nan,nan,nan,-20.00,-20.00
+63.15,nan,nan,nan,nan,-20.00,-20.00
+64.84,nan,nan,nan,nan,-20.00,-20.00
+66.54,nan,nan,nan,nan,-20.00,-20.00
+68.24,nan,nan,nan,nan,-20.00,-20.00
+69.93,nan,nan,nan,nan,-20.00,-20.00
+71.63,nan,nan,nan,nan,-20.00,-20.00
+73.33,nan,nan,nan,nan,-20.00,-20.00
+75.03,nan,nan,nan,nan,-20.00,-20.00
+76.73,nan,nan,nan,nan,-20.00,-20.00
+78.45,nan,nan,nan,nan,-20.00,-20.00
+80.17,nan,nan,nan,nan,-20.00,-20.00
+81.89,nan,nan,nan,nan,-20.00,-20.00
+83.61,nan,nan,nan,nan,-20.00,-20.00
+85.33,nan,nan,nan,nan,-20.00,-20.00
+87.05,nan,nan,nan,nan,-20.00,-20.00
+88.77,nan,nan,nan,nan,-20.00,-20.00
+90.49,nan,nan,nan,nan,-20.00,-20.00
+92.21,nan,nan,nan,nan,-20.00,-20.00
+93.93,nan,nan,nan,nan,-20.00,-20.00
+95.62,nan,nan,nan,nan,-20.00,-20.00
+97.33,nan,nan,nan,nan,-20.00,-20.00
+99.04,nan,nan,nan,nan,-20.00,-20.00
+100.76,nan,nan,nan,nan,-20.00,-20.00
+102.47,nan,nan,nan,nan,-20.00,-20.00
+104.19,nan,nan,nan,nan,-20.00,-20.00
+105.91,nan,nan,nan,nan,-20.00,-20.00
+107.63,nan,nan,nan,nan,-20.00,-20.00
+109.35,nan,nan,nan,nan,-20.00,-20.00
+111.05,nan,nan,nan,nan,-20.00,-20.00
+112.75,nan,nan,nan,nan,-20.00,-20.00
+114.45,nan,nan,nan,nan,-20.00,-20.00
+116.15,nan,nan,nan,nan,-20.00,-20.00
+117.85,nan,nan,nan,nan,-20.00,-20.00
+119.55,nan,nan,nan,nan,-20.00,-20.00
+121.25,nan,nan,nan,nan,-20.00,-20.00
+122.95,nan,nan,nan,nan,-20.00,-20.00
+124.65,nan,nan,nan,nan,-20.00,-20.00
+126.35,nan,nan,nan,nan,-20.00,-20.00
+128.05,nan,nan,nan,nan,-20.00,-20.00
+129.74,nan,nan,nan,nan,-20.00,-20.00
+131.44,nan,nan,nan,nan,-20.00,-20.00
+133.14,nan,nan,nan,nan,-20.00,-20.00
+134.84,nan,nan,nan,nan,-20.00,-20.00
+136.53,nan,nan,nan,nan,-20.00,-20.00
+138.24,nan,nan,nan,nan,-20.00,-20.00
+139.94,nan,nan,nan,nan,-20.00,-20.00
+141.63,nan,nan,nan,nan,-20.00,-20.00
+143.33,nan,nan,nan,nan,-20.00,-20.00
+145.03,nan,nan,nan,nan,-20.00,-20.00
+146.73,nan,nan,nan,nan,-20.00,-20.00
+148.44,nan,nan,nan,nan,-20.00,-20.00
+150.12,nan,nan,nan,nan,-20.00,-20.00
+151.83,nan,nan,nan,nan,-20.00,-20.00
+153.53,nan,nan,nan,nan,-20.00,-20.00
+155.25,nan,nan,nan,nan,-20.00,-20.00
+156.97,nan,nan,nan,nan,-20.00,-20.00
+158.69,nan,nan,nan,nan,-20.00,-20.00
+160.41,nan,nan,nan,nan,-20.00,-20.00
+162.13,nan,nan,nan,nan,-20.00,-20.00
+163.86,nan,nan,nan,nan,-20.00,-20.00
+165.58,nan,nan,nan,nan,-20.00,-20.00
+167.30,nan,nan,nan,nan,-20.00,-20.00
+169.02,nan,nan,nan,nan,-20.00,-20.00
+170.75,nan,nan,nan,nan,-20.00,-20.00
+172.47,nan,nan,nan,nan,-20.00,-20.00
+174.19,nan,nan,nan,nan,-20.00,-20.00
+175.90,nan,nan,nan,nan,-20.00,-20.00
+177.62,nan,nan,nan,nan,-20.00,-20.00
+179.34,nan,nan,nan,nan,-20.00,-20.00
+181.07,nan,nan,nan,nan,-20.00,-20.00
+182.79,nan,nan,nan,nan,-20.00,-20.00
+184.51,nan,nan,nan,nan,-20.00,-20.00
+186.24,nan,nan,nan,nan,-20.00,-20.00
+187.95,nan,nan,nan,nan,-20.00,-20.00
+189.66,nan,nan,nan,nan,-20.00,-20.00
+191.38,nan,nan,nan,nan,-20.00,-20.00
+193.10,nan,nan,nan,nan,-20.00,-20.00
+194.82,nan,nan,nan,nan,-20.00,-20.00
+196.53,nan,nan,nan,nan,-20.00,-20.00
+198.26,nan,nan,nan,nan,-20.00,-20.00
+199.98,nan,nan,nan,nan,-20.00,-20.00
+201.70,nan,nan,nan,nan,-20.00,-20.00
+203.42,nan,nan,nan,nan,-20.00,-20.00
+205.14,nan,nan,nan,nan,-20.00,-20.00
+206.87,nan,nan,nan,nan,-20.00,-20.00
+208.58,nan,nan,nan,nan,-20.00,-20.00
+210.31,nan,nan,nan,nan,-20.00,-20.00
+212.02,nan,nan,nan,nan,-20.00,-20.00
+213.74,nan,nan,nan,nan,-20.00,-20.00
+215.46,nan,nan,nan,nan,-20.00,-20.00
+217.18,nan,nan,nan,nan,-20.00,-20.00
+218.88,nan,nan,nan,nan,-20.00,-20.00
+220.59,nan,nan,nan,nan,-20.00,-20.00
+222.29,nan,nan,nan,nan,-20.00,-20.00
+223.99,nan,nan,nan,nan,-20.00,-20.00
+225.69,nan,nan,nan,nan,-20.00,-20.00
+227.40,nan,nan,nan,nan,-20.00,-20.00
+229.10,nan,nan,nan,nan,-20.00,-20.00
+230.80,nan,nan,nan,nan,-20.00,-20.00
+232.50,nan,nan,nan,nan,-20.00,-20.00
+234.19,nan,nan,nan,nan,-20.00,-20.00
+235.90,nan,nan,nan,nan,-20.00,-20.00
+237.60,nan,nan,nan,nan,-20.00,-20.00
+239.29,nan,nan,nan,nan,-20.00,-20.00
+241.00,nan,nan,nan,nan,-20.00,-20.00
+242.70,nan,nan,nan,nan,-20.00,-20.00
+244.40,nan,nan,nan,nan,-20.00,-20.00
+246.10,nan,nan,nan,nan,-20.00,-20.00
+247.80,nan,nan,nan,nan,-20.00,-20.00
+249.50,nan,nan,nan,nan,-20.00,-20.00
+251.18,nan,nan,nan,nan,-20.00,-20.00
+252.89,nan,nan,nan,nan,-20.00,-20.00
+254.59,nan,nan,nan,nan,-20.00,-20.00
+256.29,nan,nan,nan,nan,-20.00,-20.00
+257.99,nan,nan,nan,nan,-20.00,-20.00
+259.69,nan,nan,nan,nan,-20.00,-20.00
+261.39,nan,nan,nan,nan,-20.00,-20.00
+263.09,nan,nan,nan,nan,-20.00,-20.00
+264.79,nan,nan,nan,nan,-20.00,-20.00
+266.49,nan,nan,nan,nan,-20.00,-20.00
+268.19,nan,nan,nan,nan,-20.00,-20.00
+269.89,nan,nan,nan,nan,-20.00,-20.00
+271.58,nan,nan,nan,nan,-20.00,-20.00
+273.29,nan,nan,nan,nan,-20.00,-20.00
+274.99,nan,nan,nan,nan,-20.00,-20.00
+276.69,nan,nan,nan,nan,-20.00,-20.00
+278.39,nan,nan,nan,nan,-20.00,-20.00
+280.09,nan,nan,nan,nan,-20.00,-20.00
+281.79,nan,nan,nan,nan,-20.00,-20.00
+283.49,nan,nan,nan,nan,-20.00,-20.00
+285.18,nan,nan,nan,nan,-20.00,-20.00
+286.88,nan,nan,nan,nan,-20.00,-20.00
+288.58,nan,nan,nan,nan,-20.00,-20.00
+290.29,nan,nan,nan,nan,-20.00,-20.00
+291.99,nan,nan,nan,nan,-20.00,-20.00
+293.69,nan,nan,nan,nan,-20.00,-20.00
+295.40,nan,nan,nan,nan,-20.00,-20.00
+297.10,nan,nan,nan,nan,-20.00,-20.00
+298.80,nan,nan,nan,nan,-20.00,-20.00
+300.49,nan,nan,nan,nan,-20.00,-20.00
+302.19,nan,nan,nan,nan,-20.00,-20.00
+303.90,nan,nan,nan,nan,-20.00,-20.00
+305.58,nan,nan,nan,nan,-20.00,-20.00
+307.28,nan,nan,nan,nan,-20.00,-20.00
+309.00,nan,nan,nan,nan,-20.00,-20.00
+310.73,nan,nan,nan,nan,-20.00,-20.00
+312.45,nan,nan,nan,nan,-20.00,-20.00
+314.17,nan,nan,nan,nan,-20.00,-20.00
+315.89,nan,nan,nan,nan,-20.00,-20.00
+317.61,nan,nan,nan,nan,-20.00,-20.00
+319.34,nan,nan,nan,nan,-20.00,-20.00
+321.06,nan,nan,nan,nan,-20.00,-20.00
+322.78,nan,nan,nan,nan,-20.00,-20.00
+324.50,nan,nan,nan,nan,-20.00,-20.00
+326.23,nan,nan,nan,nan,-20.00,-20.00
+327.95,nan,nan,nan,nan,-20.00,-20.00
+329.68,nan,nan,nan,nan,-20.00,-20.00
+331.40,nan,nan,nan,nan,-20.00,-20.00
+333.12,nan,nan,nan,nan,-20.00,-20.00
+334.85,nan,nan,nan,nan,-20.00,-20.00
+336.57,nan,nan,nan,nan,-20.00,-20.00
+338.29,nan,nan,nan,nan,-20.00,-20.00
+340.02,nan,nan,nan,nan,-20.00,-20.00
+341.74,nan,nan,nan,nan,-20.00,-20.00
+343.46,nan,nan,nan,nan,-20.00,-20.00
+345.18,nan,nan,nan,nan,-20.00,-20.00
+346.90,nan,nan,nan,nan,-20.00,-20.00
+348.62,nan,nan,nan,nan,-20.00,-20.00
+350.35,nan,nan,nan,nan,-20.00,-20.00
+352.07,nan,nan,nan,nan,-20.00,-20.00
+353.79,nan,nan,nan,nan,-20.00,-20.00
+355.51,nan,nan,nan,nan,-20.00,-20.00
+357.24,nan,nan,nan,nan,-20.00,-20.00
+358.96,nan,nan,nan,nan,-20.00,-20.00
+360.68,nan,nan,nan,nan,-20.00,-20.00
+362.41,nan,nan,nan,nan,-20.00,-20.00
+364.12,nan,nan,nan,nan,-20.00,-20.00
+365.85,nan,nan,nan,nan,-20.00,-20.00
+367.58,nan,nan,nan,nan,-20.00,-20.00
+369.29,nan,nan,nan,nan,-20.00,-20.00
+371.01,nan,nan,nan,nan,-20.00,-20.00
+372.73,nan,nan,nan,nan,-20.00,-20.00
+374.45,nan,nan,nan,nan,-20.00,-20.00
+376.14,nan,nan,nan,nan,-20.00,-20.00
+377.86,nan,nan,nan,nan,-20.00,-20.00
+379.57,nan,nan,nan,nan,-20.00,-20.00
+381.29,nan,nan,nan,nan,-20.00,-20.00
+383.01,nan,nan,nan,nan,-20.00,-20.00
+384.73,nan,nan,nan,nan,-20.00,-20.00
+386.44,nan,nan,nan,nan,-20.00,-20.00
+388.17,nan,nan,nan,nan,-20.00,-20.00
+389.89,nan,nan,nan,nan,-20.00,-20.00
+391.61,nan,nan,nan,nan,-20.00,-20.00
+393.32,nan,nan,nan,nan,-20.00,-20.00
+395.04,nan,nan,nan,nan,-20.00,-20.00
+396.76,nan,nan,nan,nan,-20.00,-20.00
+398.48,nan,nan,nan,nan,-20.00,-20.00
+400.20,nan,nan,nan,nan,-20.00,-20.00
+401.92,nan,nan,nan,nan,-20.00,-20.00
+403.64,nan,nan,nan,nan,-20.00,-20.00
+405.37,nan,nan,nan,nan,-20.00,-20.00
+407.09,nan,nan,nan,nan,-20.00,-20.00
+408.80,nan,nan,nan,nan,-20.00,-20.00
+410.52,nan,nan,nan,nan,-20.00,-20.00
+412.24,nan,nan,nan,nan,-20.00,-20.00
+413.96,nan,nan,nan,nan,-20.00,-20.00
+415.68,nan,nan,nan,nan,-20.00,-20.00
+417.40,nan,nan,nan,nan,-20.00,-20.00
+419.13,nan,nan,nan,nan,-20.00,-20.00
+420.85,nan,nan,nan,nan,-20.00,-20.00
+422.58,nan,nan,nan,nan,-20.00,-20.00
+424.29,nan,nan,nan,nan,-20.00,-20.00
+426.02,nan,nan,nan,nan,-20.00,-20.00
+427.74,nan,nan,nan,nan,-20.00,-20.00
+429.47,nan,nan,nan,nan,-20.00,-20.00
+431.19,nan,nan,nan,nan,-20.00,-20.00
+432.91,nan,nan,nan,nan,-20.00,-20.00
+434.63,nan,nan,nan,nan,-20.00,-20.00
+436.33,nan,nan,nan,nan,-20.00,-20.00
+438.04,nan,nan,nan,nan,-20.00,-20.00
+439.74,nan,nan,nan,nan,-20.00,-20.00
+441.44,nan,nan,nan,nan,-20.00,-20.00
+443.15,nan,nan,nan,nan,-20.00,-20.00
+444.85,nan,nan,nan,nan,-20.00,-20.00
+446.55,nan,nan,nan,nan,-20.00,-20.00
+448.25,nan,nan,nan,nan,-20.00,-20.00
+449.95,nan,nan,nan,nan,-20.00,-20.00
+451.65,nan,nan,nan,nan,-20.00,-20.00
+453.35,nan,nan,nan,nan,-20.00,-20.00
+455.06,nan,nan,nan,nan,-20.00,-20.00
+456.75,nan,nan,nan,nan,-20.00,-20.00
+458.45,nan,nan,nan,nan,-20.00,-20.00
+460.15,nan,nan,nan,nan,-20.00,-20.00
+461.85,nan,nan,nan,nan,-20.00,-20.00
+463.56,nan,nan,nan,nan,-20.00,-20.00
+465.25,nan,nan,nan,nan,-20.00,-20.00
+466.96,nan,nan,nan,nan,-20.00,-20.00
+468.66,nan,nan,nan,nan,-20.00,-20.00
+470.36,nan,nan,nan,nan,-20.00,-20.00
+472.06,nan,nan,nan,nan,-20.00,-20.00
+473.76,nan,nan,nan,nan,-20.00,-20.00
+475.46,nan,nan,nan,nan,-20.00,-20.00
+477.17,nan,nan,nan,nan,-20.00,-20.00
+478.87,nan,nan,nan,nan,-20.00,-20.00
+480.57,nan,nan,nan,nan,-20.00,-20.00
+482.25,nan,nan,nan,nan,-20.00,-20.00
+483.96,nan,nan,nan,nan,-20.00,-20.00
+485.66,nan,nan,nan,nan,-20.00,-20.00
+487.36,nan,nan,nan,nan,-20.00,-20.00
+489.06,nan,nan,nan,nan,-20.00,-20.00
+490.76,nan,nan,nan,nan,-20.00,-20.00
+492.47,nan,nan,nan,nan,-20.00,-20.00
+494.17,nan,nan,nan,nan,-20.00,-20.00
+495.86,nan,nan,nan,nan,-20.00,-20.00
+497.57,nan,nan,nan,nan,-20.00,-20.00
+499.27,nan,nan,nan,nan,-20.00,-20.00
+500.94,nan,nan,nan,nan,-20.00,-20.00
+502.61,nan,nan,nan,nan,-20.00,-20.00
+504.31,nan,nan,nan,nan,-20.00,-20.00
+506.01,nan,nan,nan,nan,-20.00,-20.00
+507.70,nan,nan,nan,nan,-20.00,-20.00
+509.40,nan,nan,nan,nan,-20.00,-20.00
+511.10,nan,nan,nan,nan,-20.00,-20.00
+512.80,nan,nan,nan,nan,-20.00,-20.00
+514.50,nan,nan,nan,nan,-20.00,-20.00
+516.19,nan,nan,nan,nan,-20.00,-20.00
+517.89,nan,nan,nan,nan,-20.00,-20.00
+519.59,nan,nan,nan,nan,-20.00,-20.00
+521.29,nan,nan,nan,nan,-20.00,-20.00
+522.99,nan,nan,nan,nan,-20.00,-20.00
+524.69,nan,nan,nan,nan,-20.00,-20.00
+526.39,nan,nan,nan,nan,-20.00,-20.00
+528.09,nan,nan,nan,nan,-20.00,-20.00
+529.79,nan,nan,nan,nan,-20.00,-20.00
+531.49,nan,nan,nan,nan,-20.00,-20.00
+533.19,nan,nan,nan,nan,-20.00,-20.00
+534.89,nan,nan,nan,nan,-20.00,-20.00
+536.59,nan,nan,nan,nan,-20.00,-20.00
+538.29,nan,nan,nan,nan,-20.00,-20.00
+539.99,nan,nan,nan,nan,-20.00,-20.00
+541.68,nan,nan,nan,nan,-20.00,-20.00
+543.38,nan,nan,nan,nan,-20.00,-20.00
+545.08,nan,nan,nan,nan,-20.00,-20.00
+546.78,nan,nan,nan,nan,-20.00,-20.00
+548.48,nan,nan,nan,nan,-20.00,-20.00
+550.18,nan,nan,nan,nan,-20.00,-20.00
+551.88,nan,nan,nan,nan,-20.00,-20.00
+553.58,nan,nan,nan,nan,-20.00,-20.00
+555.29,nan,nan,nan,nan,-20.00,-20.00
+556.98,nan,nan,nan,nan,-20.00,-2�␀␀␀

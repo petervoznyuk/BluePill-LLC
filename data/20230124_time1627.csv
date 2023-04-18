@@ -1,0 +1,390 @@
+Processing bluepill_f103c8 (platform: ststm32; board: bluepill_f103c8; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/ststm32/bluepill_f103c8.html
+PLATFORM: ST STM32 (15.4.1) > BluePill F103C8
+HARDWARE: STM32F103C8T6 72MHz, 20KB RAM, 64KB Flash
+DEBUG: Current (stlink) External (blackmagic, cmsis-dap, jlink, stlink)
+PACKAGES: 
+ - framework-arduinoststm32 @ 4.20200.221104 (2.2.0) 
+ - framework-cmsis @ 2.50700.210515 (5.7.0) 
+ - tool-dfuutil @ 1.11.0 
+ - tool-openocd @ 2.1100.211028 (11.0) 
+ - tool-stm32duino @ 1.0.2 
+ - toolchain-gccarmnoneeabi @ 1.90201.191206 (9.2.1)
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 15 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoEigen @ 0.2.3
+|-- SPI @ 1.0
+Building in release mode
+Compiling .pio\build\bluepill_f103c8\src\main.cpp.o
+Linking .pio\build\bluepill_f103c8\firmware.elf
+Checking size .pio\build\bluepill_f103c8\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   5.7% (used 1172 bytes from 20480 bytes)
+Flash: [========  ]  77.9% (used 51068 bytes from 65536 bytes)
+Building .pio\build\bluepill_f103c8\firmware.bin
+Configuring upload protocol...
+AVAILABLE: blackmagic, cmsis-dap, dfu, jlink, mbed, serial, stlink
+CURRENT: upload_protocol = serial
+Looking for upload port...
+Using manually specified: COM9
+Uploading .pio\build\bluepill_f103c8\firmware.bin
+stm32flash 0.4
+
+http://stm32flash.googlecode.com/
+
+Using Parser : Raw BINARY
+Interface serial_w32: 115200 8E1
+Version      : 0x22
+Option 1     : 0x00
+Option 2     : 0x00
+Device ID    : 0x0410 (Medium-density)
+- RAM        : 20KiB  (512b reserved by bootloader)
+- Flash      : 128KiB (sector size: 4x1024)
+- Option RAM : 16b
+- System RAM : 2KiB
+Write to memory
+Erasing memory
+
+Wrote address 0x08000100 (0.50%) 
+Wrote address 0x08000200 (1.00%) 
+Wrote address 0x08000300 (1.50%) 
+Wrote address 0x08000400 (1.99%) 
+Wrote address 0x08000500 (2.49%) 
+Wrote address 0x08000600 (2.99%) 
+Wrote address 0x08000700 (3.49%) 
+Wrote address 0x08000800 (3.99%) 
+Wrote address 0x08000900 (4.49%) 
+Wrote address 0x08000a00 (4.98%) 
+Wrote address 0x08000b00 (5.48%) 
+Wrote address 0x08000c00 (5.98%) 
+Wrote address 0x08000d00 (6.48%) 
+Wrote address 0x08000e00 (6.98%) 
+Wrote address 0x08000f00 (7.48%) 
+Wrote address 0x08001000 (7.97%) 
+Wrote address 0x08001100 (8.47%) 
+Wrote address 0x08001200 (8.97%) 
+Wrote address 0x08001300 (9.47%) 
+Wrote address 0x08001400 (9.97%) 
+Wrote address 0x08001500 (10.47%) 
+Wrote address 0x08001600 (10.96%) 
+Wrote address 0x08001700 (11.46%) 
+Wrote address 0x08001800 (11.96%) 
+Wrote address 0x08001900 (12.46%) 
+Wrote address 0x08001a00 (12.96%) 
+Wrote address 0x08001b00 (13.46%) 
+Wrote address 0x08001c00 (13.96%) 
+Wrote address 0x08001d00 (14.45%) 
+Wrote address 0x08001e00 (14.95%) 
+Wrote address 0x08001f00 (15.45%) 
+Wrote address 0x08002000 (15.95%) 
+Wrote address 0x08002100 (16.45%) 
+Wrote address 0x08002200 (16.95%) 
+Wrote address 0x08002300 (17.44%) 
+Wrote address 0x08002400 (17.94%) 
+Wrote address 0x08002500 (18.44%) 
+Wrote address 0x08002600 (18.94%) 
+Wrote address 0x08002700 (19.44%) 
+Wrote address 0x08002800 (19.94%) 
+Wrote address 0x08002900 (20.43%) 
+Wrote address 0x08002a00 (20.93%) 
+Wrote address 0x08002b00 (21.43%) 
+Wrote address 0x08002c00 (21.93%) 
+Wrote address 0x08002d00 (22.43%) 
+Wrote address 0x08002e00 (22.93%) 
+Wrote address 0x08002f00 (23.42%) 
+Wrote address 0x08003000 (23.92%) 
+Wrote address 0x08003100 (24.42%) 
+Wrote address 0x08003200 (24.92%) 
+Wrote address 0x08003300 (25.42%) 
+Wrote address 0x08003400 (25.92%) 
+Wrote address 0x08003500 (26.42%) 
+Wrote address 0x08003600 (26.91%) 
+Wrote address 0x08003700 (27.41%) 
+Wrote address 0x08003800 (27.91%) 
+Wrote address 0x08003900 (28.41%) 
+Wrote address 0x08003a00 (28.91%) 
+Wrote address 0x08003b00 (29.41%) 
+Wrote address 0x08003c00 (29.90%) 
+Wrote address 0x08003d00 (30.40%) 
+Wrote address 0x08003e00 (30.90%) 
+Wrote address 0x08003f00 (31.40%) 
+Wrote address 0x08004000 (31.90%) 
+Wrote address 0x08004100 (32.40%) 
+Wrote address 0x08004200 (32.89%) 
+Wrote address 0x08004300 (33.39%) 
+Wrote address 0x08004400 (33.89%) 
+Wrote address 0x08004500 (34.39%) 
+Wrote address 0x08004600 (34.89%) 
+Wrote address 0x08004700 (35.39%) 
+Wrote address 0x08004800 (35.89%) 
+Wrote address 0x08004900 (36.38%) 
+Wrote address 0x08004a00 (36.88%) 
+Wrote address 0x08004b00 (37.38%) 
+Wrote address 0x08004c00 (37.88%) 
+Wrote address 0x08004d00 (38.38%) 
+Wrote address 0x08004e00 (38.88%) 
+Wrote address 0x08004f00 (39.37%) 
+Wrote address 0x08005000 (39.87%) 
+Wrote address 0x08005100 (40.37%) 
+Wrote address 0x08005200 (40.87%) 
+Wrote address 0x08005300 (41.37%) 
+Wrote address 0x08005400 (41.87%) 
+Wrote address 0x08005500 (42.36%) 
+Wrote address 0x08005600 (42.86%) 
+Wrote address 0x08005700 (43.36%) 
+Wrote address 0x08005800 (43.86%) 
+Wrote address 0x08005900 (44.36%) 
+Wrote address 0x08005a00 (44.86%) 
+Wrote address 0x08005b00 (45.35%) 
+Wrote address 0x08005c00 (45.85%) 
+Wrote address 0x08005d00 (46.35%) 
+Wrote address 0x08005e00 (46.85%) 
+Wrote address 0x08005f00 (47.35%) 
+Wrote address 0x08006000 (47.85%) 
+Wrote address 0x08006100 (48.35%) 
+Wrote address 0x08006200 (48.84%) 
+Wrote address 0x08006300 (49.34%) 
+Wrote address 0x08006400 (49.84%) 
+Wrote address 0x08006500 (50.34%) 
+Wrote address 0x08006600 (50.84%) 
+Wrote address 0x08006700 (51.34%) 
+Wrote address 0x08006800 (51.83%) 
+Wrote address 0x08006900 (52.33%) 
+Wrote address 0x08006a00 (52.83%) 
+Wrote address 0x08006b00 (53.33%) 
+Wrote address 0x08006c00 (53.83%) 
+Wrote address 0x08006d00 (54.33%) 
+Wrote address 0x08006e00 (54.82%) 
+Wrote address 0x08006f00 (55.32%) 
+Wrote address 0x08007000 (55.82%) 
+Wrote address 0x08007100 (56.32%) 
+Wrote address 0x08007200 (56.82%) 
+Wrote address 0x08007300 (57.32%) 
+Wrote address 0x08007400 (57.81%) 
+Wrote address 0x08007500 (58.31%) 
+Wrote address 0x08007600 (58.81%) 
+Wrote address 0x08007700 (59.31%) 
+Wrote address 0x08007800 (59.81%) 
+Wrote address 0x08007900 (60.31%) 
+Wrote address 0x08007a00 (60.81%) 
+Wrote address 0x08007b00 (61.30%) 
+Wrote address 0x08007c00 (61.80%) 
+Wrote address 0x08007d00 (62.30%) 
+Wrote address 0x08007e00 (62.80%) 
+Wrote address 0x08007f00 (63.30%) 
+Wrote address 0x08008000 (63.80%) 
+Wrote address 0x08008100 (64.29%) 
+Wrote address 0x08008200 (64.79%) 
+Wrote address 0x08008300 (65.29%) 
+Wrote address 0x08008400 (65.79%) 
+Wrote address 0x08008500 (66.29%) 
+Wrote address 0x08008600 (66.79%) 
+Wrote address 0x08008700 (67.28%) 
+Wrote address 0x08008800 (67.78%) 
+Wrote address 0x08008900 (68.28%) 
+Wrote address 0x08008a00 (68.78%) 
+Wrote address 0x08008b00 (69.28%) 
+Wrote address 0x08008c00 (69.78%) 
+Wrote address 0x08008d00 (70.27%) 
+Wrote address 0x08008e00 (70.77%) 
+Wrote address 0x08008f00 (71.27%) 
+Wrote address 0x08009000 (71.77%) 
+Wrote address 0x08009100 (72.27%) 
+Wrote address 0x08009200 (72.77%) 
+Wrote address 0x08009300 (73.27%) 
+Wrote address 0x08009400 (73.76%) 
+Wrote address 0x08009500 (74.26%) 
+Wrote address 0x08009600 (74.76%) 
+Wrote address 0x08009700 (75.26%) 
+Wrote address 0x08009800 (75.76%) 
+Wrote address 0x08009900 (76.26%) 
+Wrote address 0x08009a00 (76.75%) 
+Wrote address 0x08009b00 (77.25%) 
+Wrote address 0x08009c00 (77.75%) 
+Wrote address 0x08009d00 (78.25%) 
+Wrote address 0x08009e00 (78.75%) 
+Wrote address 0x08009f00 (79.25%) 
+Wrote address 0x0800a000 (79.74%) 
+Wrote address 0x0800a100 (80.24%) 
+Wrote address 0x0800a200 (80.74%) 
+Wrote address 0x0800a300 (81.24%) 
+Wrote address 0x0800a400 (81.74%) 
+Wrote address 0x0800a500 (82.24%) 
+Wrote address 0x0800a600 (82.73%) 
+Wrote address 0x0800a700 (83.23%) 
+Wrote address 0x0800a800 (83.73%) 
+Wrote address 0x0800a900 (84.23%) 
+Wrote address 0x0800aa00 (84.73%) 
+Wrote address 0x0800ab00 (85.23%) 
+Wrote address 0x0800ac00 (85.73%) 
+Wrote address 0x0800ad00 (86.22%) 
+Wrote address 0x0800ae00 (86.72%) 
+Wrote address 0x0800af00 (87.22%) 
+Wrote address 0x0800b000 (87.72%) 
+Wrote address 0x0800b100 (88.22%) 
+Wrote address 0x0800b200 (88.72%) 
+Wrote address 0x0800b300 (89.21%) 
+Wrote address 0x0800b400 (89.71%) 
+Wrote address 0x0800b500 (90.21%) 
+Wrote address 0x0800b600 (90.71%) 
+Wrote address 0x0800b700 (91.21%) 
+Wrote address 0x0800b800 (91.71%) 
+Wrote address 0x0800b900 (92.20%) 
+Wrote address 0x0800ba00 (92.70%) 
+Wrote address 0x0800bb00 (93.20%) 
+Wrote address 0x0800bc00 (93.70%) 
+Wrote address 0x0800bd00 (94.20%) 
+Wrote address 0x0800be00 (94.70%) 
+Wrote address 0x0800bf00 (95.20%) 
+Wrote address 0x0800c000 (95.69%) 
+Wrote address 0x0800c100 (96.19%) 
+Wrote address 0x0800c200 (96.69%) 
+Wrote address 0x0800c300 (97.19%) 
+Wrote address 0x0800c400 (97.69%) 
+Wrote address 0x0800c500 (98.19%) 
+Wrote address 0x0800c600 (98.68%) 
+Wrote address 0x0800c700 (99.18%) 
+Wrote address 0x0800c800 (99.68%) 
+Wrote address 0x0800c8a4 (100.00%) Done.
+
+Starting execution at address 0x08000000... done.
+
+========================= [SUCCESS] Took 13.53 seconds =========================
+--- Terminal on COM9 | 460800 8-N-1
+--- Available filters and text transformations: colorize, debug, default, direct, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+Fully Homed
+BEGIN CSV
+Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM
+0.00,-0.00,-0.00,0.09,-0.04,-100.00,100.00
+2.00,0.00,0.00,-0.31,0.15,1.08,-0.54
+3.98,0.02,0.02,-1.92,1.34,6.78,-4.73
+5.96,0.04,0.04,-2.60,1.27,9.16,-4.49
+7.97,0.07,0.07,-3.48,0.92,12.16,-3.22
+9.94,0.11,0.11,-5.10,1.58,18.00,-5.59
+11.95,0.16,0.16,-6.84,1.85,23.83,-6.43
+13.96,0.22,0.22,-8.23,1.80,28.76,-6.30
+15.95,0.29,0.29,-9.79,2.04,34.34,-7.17
+17.93,0.37,0.37,-10.70,1.78,37.67,-6.27
+19.93,0.45,0.45,-10.20,1.52,35.74,-5.31
+21.94,0.55,0.55,-8.35,1.93,29.16,-6.76
+23.95,0.65,0.65,-9.39,1.96,32.67,-6.81
+25.96,0.76,0.76,-12.09,2.15,42.17,-7.51
+27.97,0.88,0.88,-14.80,2.92,51.68,-10.21
+29.96,1.01,1.01,-17.23,3.60,60.42,-12.63
+31.96,1.15,1.15,-18.65,4.24,65.34,-14.86
+33.96,1.29,1.29,-19.60,4.59,68.59,-16.07
+35.95,1.45,1.45,-20.20,4.94,70.86,-17.34
+37.96,1.61,1.61,-21.25,5.73,74.33,-20.06
+39.95,1.78,1.78,-22.52,6.88,79.01,-24.13
+41.97,1.95,1.95,-23.39,7.60,81.35,-26.44
+43.99,2.14,2.14,-23.87,7.98,82.86,-27.69
+46.01,2.34,2.34,-23.68,8.68,82.22,-30.13
+48.03,2.54,2.54,-22.93,9.51,79.73,-33.08
+50.05,2.75,2.75,-22.41,10.35,78.01,-36.03
+52.06,2.97,2.97,-22.36,11.12,77.98,-38.78
+54.08,3.20,3.20,-22.35,11.67,77.58,-40.50
+56.10,3.43,3.43,-21.99,12.04,76.51,-41.89
+58.10,3.67,3.67,-21.25,12.28,74.36,-42.99
+60.10,3.92,3.92,-20.49,12.48,71.64,-43.63
+62.10,4.17,4.17,-19.85,12.15,69.36,-42.45
+64.10,4.43,4.43,-19.33,11.60,67.74,-40.66
+66.10,4.70,4.70,-18.71,10.74,65.55,-37.63
+68.09,4.98,4.98,-18.21,9.73,63.85,-34.13
+70.09,5.26,5.26,-17.96,8.61,62.95,-30.19
+72.09,5.55,5.55,-17.42,7.21,61.03,-25.25
+74.08,5.85,5.85,-16.36,5.52,57.29,-19.32
+76.08,6.15,6.15,-16.19,4.02,56.65,-14.07
+78.08,6.46,6.46,-16.34,2.72,57.22,-9.54
+80.11,6.78,6.78,-15.65,1.16,54.28,-4.04
+82.12,7.11,7.11,-14.38,-0.42,50.03,1.45
+84.14,7.44,7.44,-13.36,-1.56,46.51,5.43
+86.16,7.78,7.78,-12.75,-2.53,44.29,8.78
+88.18,8.13,8.13,-12.16,-3.52,42.29,12.23
+90.20,8.48,8.48,-11.07,-4.46,38.45,15.50
+92.21,8.84,8.84,-9.77,-5.12,34.12,17.87
+94.24,9.20,9.20,-8.61,-5.67,29.79,19.62
+96.25,9.58,9.58,-7.58,-5.87,26.38,20.41
+98.27,9.95,9.95,-6.75,-5.82,23.48,20.27
+100.28,10.34,10.34,-5.78,-5.58,20.16,19.48
+102.30,10.73,10.73,-5.14,-5.32,17.84,18.47
+104.32,11.12,11.12,-4.49,-4.94,15.62,17.19
+106.34,11.52,11.52,-4.38,-4.42,15.18,15.31
+108.37,11.93,11.93,-4.61,-3.80,15.98,13.18
+110.38,12.34,12.34,-4.97,-3.27,17.36,11.43
+112.38,12.76,12.76,-5.50,-2.83,19.28,9.93
+114.38,13.18,13.18,-6.42,-2.42,22.44,8.45
+116.38,13.60,13.60,-7.42,-1.82,25.94,6.38
+118.38,14.03,14.03,-8.85,-1.63,31.04,5.70
+120.37,14.47,14.47,-10.32,-1.36,36.23,4.78
+122.37,14.91,14.91,-11.99,-0.92,41.88,3.22
+124.37,15.36,15.36,-13.83,-0.37,48.45,1.31
+126.37,15.81,15.81,-15.81,-0.09,55.26,0.31
+128.37,16.26,16.26,-17.72,0.31,62.11,-1.08
+130.37,16.72,16.72,-19.89,0.75,69.51,-2.61
+132.37,17.19,17.19,-21.64,1.45,75.95,-5.09
+134.37,17.66,17.66,-22.83,2.29,79.90,-8.00
+136.36,18.13,18.13,-23.18,3.21,81.30,-11.25
+138.36,18.61,18.61,-23.72,4.02,82.95,-14.06
+140.36,19.09,19.09,-24.16,4.77,84.66,-16.71
+142.36,19.58,19.58,-24.85,5.98,86.93,-20.91
+144.36,20.07,20.07,-24.69,7.27,86.61,-25.51
+146.36,20.57,20.57,-24.10,8.37,84.29,-29.28
+148.36,21.07,21.07,-23.18,9.27,81.00,-32.41
+150.36,21.57,21.57,-22.66,10.09,79.23,-35.26
+152.37,22.08,22.08,-21.52,10.90,75.27,-38.12
+154.37,22.60,22.60,-19.86,11.49,69.42,-40.18
+156.39,23.12,23.12,-18.50,11.76,64.25,-40.82
+158.42,23.65,23.65,-17.66,11.56,61.11,-40.00
+160.45,24.18,24.18,-17.11,10.96,59.39,-38.05
+162.48,24.71,24.71,-16.27,10.11,56.36,-35.01
+164.51,25.25,25.25,-15.24,8.88,52.69,-30.69
+166.54,25.79,25.79,-14.47,7.16,50.14,-24.81
+168.57,26.34,26.34,-14.10,5.03,48.77,-17.40
+170.60,26.88,26.88,-13.68,3.01,47.49,-10.45
+172.62,27.44,27.44,-13.60,0.86,47.18,-2.97
+174.64,27.99,27.99,-13.67,-1.38,47.57,4.82
+176.67,28.54,28.54,-13.67,-3.74,47.36,12.94
+178.69,29.10,29.10,-13.32,-5.80,46.23,20.14
+180.71,29.66,29.66,-12.77,-7.49,44.36,26.04
+182.74,30.23,30.23,-12.46,-9.12,43.12,31.56
+184.78,30.80,30.80,-12.13,-10.48,41.90,36.22
+186.79,31.37,31.37,-11.47,-11.43,39.93,39.76
+188.83,31.95,31.95,-10.82,-11.84,37.43,40.97
+190.85,32.52,32.52,-9.86,-12.17,34.18,42.20
+192.88,33.10,33.10,-8.57,-12.33,29.74,42.79
+194.90,33.68,33.68,-7.60,-11.65,26.39,40.44
+196.92,34.26,34.26,-7.10,-10.28,24.63,35.69
+198.95,34.84,34.84,-5.83,-8.85,20.21,30.71
+200.96,35.43,35.43,-4.09,-7.43,14.24,25.86
+202.98,36.01,36.01,-2.83,-5.54,9.84,19.24
+205.01,36.60,36.60,-2.12,-3.21,7.35,11.14
+207.02,37.19,37.19,-1.70,-1.05,5.91,3.67
+209.04,37.78,37.78,-1.63,0.86,5.66,-2.98
+211.06,38.38,38.38,-1.88,2.68,6.52,-9.32
+213.07,38.97,38.97,-2.35,4.24,8.19,-14.77
+215.09,39.57,39.57,-3.41,5.49,11.84,-19.08
+217.12,40.17,40.17,-4.97,6.31,17.24,-21.89
+219.13,40.76,40.76,-6.88,6.72,23.98,-23.45
+221.13,41.36,41.36,-9.38,6.68,32.78,-23.35
+223.14,41.95,41.95,-12.21,6.26,42.63,-21.86
+225.14,42.55,42.55,-15.17,5.54,53.03,-19.35
+227.15,43.15,43.15,-18.15,4.44,63.46,-15.52
+229.15,43.75,43.75,-21.11,3.30,73.63,-11.50
+231.16,44.35,44.35,-23.63,2.24,82.54,-7.83
+233.17,44.95,44.95,-26.20,1.05,91.44,-3.68
+235.17,45.55,45.55,-28.76,-0.04,100.00,0.15
+237.15,46.15,46.15,-30.30,-0.68,100.00,2.40
+239.13,46.74,46.74,-31.24,-1.25,100.00,4.41
+241.13,47.34,47.34,-31.89,-1.52,100.00,5.31
+243.12,47.93,47.93,-31.98,-1.30,100.00,4.56
+245.11,48.53,48.53,-31.42,-0.88,100.00,3.09
+247.09,49.13,49.13,-30.39,-0.42,100.00,1.47
+249.08,49.73,49.73,-29.19,0.26,100.00,-0.93
+251.06,50.32,50.32,-27.14,1.21,95.69,-4.26
