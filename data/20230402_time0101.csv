@@ -1,0 +1,156 @@
+Processing bluepill_f103c8 (platform: ststm32; board: bluepill_f103c8; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/ststm32/bluepill_f103c8.html
+PLATFORM: ST STM32 (15.4.1) > BluePill F103C8
+HARDWARE: STM32F103C8T6 72MHz, 20KB RAM, 64KB Flash
+DEBUG: Current (stlink) External (blackmagic, cmsis-dap, jlink, stlink)
+PACKAGES: 
+ - framework-arduinoststm32 @ 4.20200.221104 (2.2.0) 
+ - framework-cmsis @ 2.50700.210515 (5.7.0) 
+ - tool-dfuutil @ 1.11.0 
+ - tool-openocd @ 2.1100.211028 (11.0) 
+ - tool-stm32duino @ 1.0.2 
+ - toolchain-gccarmnoneeabi @ 1.90201.191206 (9.2.1)
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 15 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoEigen @ 0.2.3
+|-- SPI @ 1.0
+Building in release mode
+Compiling .pio\build\bluepill_f103c8\src\main.cpp.o
+Linking .pio\build\bluepill_f103c8\firmware.elf
+Checking size .pio\build\bluepill_f103c8\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   5.8% (used 1180 bytes from 20480 bytes)
+Flash: [===       ]  32.8% (used 21468 bytes from 65536 bytes)
+Building .pio\build\bluepill_f103c8\firmware.bin
+Configuring upload protocol...
+AVAILABLE: blackmagic, cmsis-dap, dfu, jlink, mbed, serial, stlink
+CURRENT: upload_protocol = serial
+Looking for upload port...
+Using manually specified: COM9
+Uploading .pio\build\bluepill_f103c8\firmware.bin
+stm32flash 0.4
+
+http://stm32flash.googlecode.com/
+
+Using Parser : Raw BINARY
+Interface serial_w32: 115200 8E1
+Version      : 0x22
+Option 1     : 0x00
+Option 2     : 0x00
+Device ID    : 0x0410 (Medium-density)
+- RAM        : 20KiB  (512b reserved by bootloader)
+- Flash      : 128KiB (sector size: 4x1024)
+- Option RAM : 16b
+- System RAM : 2KiB
+Write to memory
+Erasing memory
+
+Wrote address 0x08000100 (1.18%) 
+Wrote address 0x08000200 (2.35%) 
+Wrote address 0x08000300 (3.53%) 
+Wrote address 0x08000400 (4.71%) 
+Wrote address 0x08000500 (5.88%) 
+Wrote address 0x08000600 (7.06%) 
+Wrote address 0x08000700 (8.24%) 
+Wrote address 0x08000800 (9.41%) 
+Wrote address 0x08000900 (10.59%) 
+Wrote address 0x08000a00 (11.76%) 
+Wrote address 0x08000b00 (12.94%) 
+Wrote address 0x08000c00 (14.12%) 
+Wrote address 0x08000d00 (15.29%) 
+Wrote address 0x08000e00 (16.47%) 
+Wrote address 0x08000f00 (17.65%) 
+Wrote address 0x08001000 (18.82%) 
+Wrote address 0x08001100 (20.00%) 
+Wrote address 0x08001200 (21.18%) 
+Wrote address 0x08001300 (22.35%) 
+Wrote address 0x08001400 (23.53%) 
+Wrote address 0x08001500 (24.71%) 
+Wrote address 0x08001600 (25.88%) 
+Wrote address 0x08001700 (27.06%) 
+Wrote address 0x08001800 (28.24%) 
+Wrote address 0x08001900 (29.41%) 
+Wrote address 0x08001a00 (30.59%) 
+Wrote address 0x08001b00 (31.76%) 
+Wrote address 0x08001c00 (32.94%) 
+Wrote address 0x08001d00 (34.12%) 
+Wrote address 0x08001e00 (35.29%) 
+Wrote address 0x08001f00 (36.47%) 
+Wrote address 0x08002000 (37.65%) 
+Wrote address 0x08002100 (38.82%) 
+Wrote address 0x08002200 (40.00%) 
+Wrote address 0x08002300 (41.18%) 
+Wrote address 0x08002400 (42.35%) 
+Wrote address 0x08002500 (43.53%) 
+Wrote address 0x08002600 (44.71%) 
+Wrote address 0x08002700 (45.88%) 
+Wrote address 0x08002800 (47.06%) 
+Wrote address 0x08002900 (48.24%) 
+Wrote address 0x08002a00 (49.41%) 
+Wrote address 0x08002b00 (50.59%) 
+Wrote address 0x08002c00 (51.76%) 
+Wrote address 0x08002d00 (52.94%) 
+Wrote address 0x08002e00 (54.12%) 
+Wrote address 0x08002f00 (55.29%) 
+Wrote address 0x08003000 (56.47%) 
+Wrote address 0x08003100 (57.65%) 
+Wrote address 0x08003200 (58.82%) 
+Wrote address 0x08003300 (60.00%) 
+Wrote address 0x08003400 (61.18%) 
+Wrote address 0x08003500 (62.35%) 
+Wrote address 0x08003600 (63.53%) 
+Wrote address 0x08003700 (64.71%) 
+Wrote address 0x08003800 (65.88%) 
+Wrote address 0x08003900 (67.06%) 
+Wrote address 0x08003a00 (68.24%) 
+Wrote address 0x08003b00 (69.41%) 
+Wrote address 0x08003c00 (70.59%) 
+Wrote address 0x08003d00 (71.76%) 
+Wrote address 0x08003e00 (72.94%) 
+Wrote address 0x08003f00 (74.12%) 
+Wrote address 0x08004000 (75.29%) 
+Wrote address 0x08004100 (76.47%) 
+Wrote address 0x08004200 (77.65%) 
+Wrote address 0x08004300 (78.82%) 
+Wrote address 0x08004400 (80.00%) 
+Wrote address 0x08004500 (81.18%) 
+Wrote address 0x08004600 (82.35%) 
+Wrote address 0x08004700 (83.53%) 
+Wrote address 0x08004800 (84.71%) 
+Wrote address 0x08004900 (85.88%) 
+Wrote address 0x08004a00 (87.06%) 
+Wrote address 0x08004b00 (88.24%) 
+Wrote address 0x08004c00 (89.41%) 
+Wrote address 0x08004d00 (90.59%) 
+Wrote address 0x08004e00 (91.76%) 
+Wrote address 0x08004f00 (92.94%) 
+Wrote address 0x08005000 (94.12%) 
+Wrote address 0x08005100 (95.29%) 
+Wrote address 0x08005200 (96.47%) 
+Wrote address 0x08005300 (97.65%) 
+Wrote address 0x08005400 (98.82%) 
+Wrote address 0x08005500 (100.00%) Done.
+
+Starting execution at address 0x08000000... done.
+
+========================= [SUCCESS] Took 14.96 seconds =========================
+--- Terminal on COM9 | 460800 8-N-1
+--- Available filters and text transformations: colorize, debug, default, direct, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+Fully Homed
+BEGIN CSV
+Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward
+0.00,0.00,0.00,-0.07,0.02,-0.07,0.02,1.77,-0.55
+1.35,0.00,0.00,0.05,0.04,0.05,0.04,1.80,-0.54
+2.71,0.00,0.00,0.02,0.03,0.02,0.03,1.82,-0.54
+4.05,0.00,0.00,0.08,0.05,0.08,0.05,1.85,-0.54
+5.39,0.00,0.00,-0.02,0.04,-0.02,0.04,1.87,-0.53
+6.74,0.00,0.00,0.09,0.07,0.09,0.07,1.90,-0.53
+8.09,0.01,0.00,0.07,0.01,0.07,0.01,1.93,-0.52
+9.44,0.01,0.01,0.20,0.09,0.20,0.09,1.95,-0.52

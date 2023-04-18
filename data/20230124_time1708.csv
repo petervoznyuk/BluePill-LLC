@@ -1,0 +1,61 @@
+Processing bluepill_f103c8 (platform: ststm32; board: bluepill_f103c8; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/ststm32/bluepill_f103c8.html
+PLATFORM: ST STM32 (15.4.1) > BluePill F103C8
+HARDWARE: STM32F103C8T6 72MHz, 20KB RAM, 64KB Flash
+DEBUG: Current (stlink) External (blackmagic, cmsis-dap, jlink, stlink)
+PACKAGES: 
+ - framework-arduinoststm32 @ 4.20200.221104 (2.2.0) 
+ - framework-cmsis @ 2.50700.210515 (5.7.0) 
+ - tool-dfuutil @ 1.11.0 
+ - tool-openocd @ 2.1100.211028 (11.0) 
+ - tool-stm32duino @ 1.0.2 
+ - toolchain-gccarmnoneeabi @ 1.90201.191206 (9.2.1)
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 15 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoEigen @ 0.2.3
+|-- SPI @ 1.0
+Building in release mode
+Compiling .pio\build\bluepill_f103c8\src\main.cpp.o
+Linking .pio\build\bluepill_f103c8\firmware.elf
+Checking size .pio\build\bluepill_f103c8\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   5.7% (used 1172 bytes from 20480 bytes)
+Flash: [========  ]  78.0% (used 51092 bytes from 65536 bytes)
+Building .pio\build\bluepill_f103c8\firmware.bin
+Configuring upload protocol...
+AVAILABLE: blackmagic, cmsis-dap, dfu, jlink, mbed, serial, stlink
+CURRENT: upload_protocol = serial
+Looking for upload port...
+Using manually specified: COM9
+Uploading .pio\build\bluepill_f103c8\firmware.bin
+stm32flash 0.4
+
+http://stm32flash.googlecode.com/
+
+Using Parser : Raw BINARY
+Interface serial_w32: 115200 8E1
+Version      : 0x22
+Option 1     : 0x00
+Option 2     : 0x00
+Device ID    : 0x0410 (Medium-density)
+- RAM        : 20KiB  (512b reserved by bootloader)
+- Flash      : 128KiB (sector size: 4x1024)
+- Option RAM : 16b
+- System RAM : 2KiB
+Write to memory
+Erasing memory
+
+Wrote address 0x08000100 (0.50%) 
+Wrote address 0x08000200 (1.00%) 
+Wrote address 0x08000300 (1.49%) 
+Wrote address 0x08000400 (1.99%) 
+Wrote address 0x08000500 (2.49%) 
+Wrote address 0x08000600 (2.99%) 
+Wrote address 0x08000700 (3.49%) 
+Wrote address 0x08000800 (3.99%) 
+Wrote address 0x08000900 (4.48%) 

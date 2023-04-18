@@ -1,0 +1,280 @@
+Processing bluepill_f103c8 (platform: ststm32; board: bluepill_f103c8; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/ststm32/bluepill_f103c8.html
+PLATFORM: ST STM32 (15.4.1) > BluePill F103C8
+HARDWARE: STM32F103C8T6 72MHz, 20KB RAM, 64KB Flash
+DEBUG: Current (stlink) External (blackmagic, cmsis-dap, jlink, stlink)
+PACKAGES: 
+ - framework-arduinoststm32 @ 4.20200.221104 (2.2.0) 
+ - framework-cmsis @ 2.50700.210515 (5.7.0) 
+ - tool-dfuutil @ 1.11.0 
+ - tool-openocd @ 2.1100.211028 (11.0) 
+ - tool-stm32duino @ 1.0.2 
+ - toolchain-gccarmnoneeabi @ 1.90201.191206 (9.2.1)
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 15 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoEigen @ 0.2.3
+|-- SPI @ 1.0
+Building in release mode
+Compiling .pio\build\bluepill_f103c8\src\main.cpp.o
+Linking .pio\build\bluepill_f103c8\firmware.elf
+Checking size .pio\build\bluepill_f103c8\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   5.9% (used 1200 bytes from 20480 bytes)
+Flash: [=======   ]  71.7% (used 47000 bytes from 65536 bytes)
+Building .pio\build\bluepill_f103c8\firmware.bin
+Configuring upload protocol...
+AVAILABLE: blackmagic, cmsis-dap, dfu, jlink, mbed, serial, stlink
+CURRENT: upload_protocol = serial
+Looking for upload port...
+Using manually specified: COM9
+Uploading .pio\build\bluepill_f103c8\firmware.bin
+stm32flash 0.4
+
+http://stm32flash.googlecode.com/
+
+Using Parser : Raw BINARY
+Interface serial_w32: 115200 8E1
+Version      : 0x22
+Option 1     : 0x00
+Option 2     : 0x00
+Device ID    : 0x0410 (Medium-density)
+- RAM        : 20KiB  (512b reserved by bootloader)
+- Flash      : 128KiB (sector size: 4x1024)
+- Option RAM : 16b
+- System RAM : 2KiB
+Write to memory
+Erasing memory
+
+Wrote address 0x08000100 (0.54%) 
+Wrote address 0x08000200 (1.08%) 
+Wrote address 0x08000300 (1.62%) 
+Wrote address 0x08000400 (2.17%) 
+Wrote address 0x08000500 (2.71%) 
+Wrote address 0x08000600 (3.25%) 
+Wrote address 0x08000700 (3.79%) 
+Wrote address 0x08000800 (4.33%) 
+Wrote address 0x08000900 (4.87%) 
+Wrote address 0x08000a00 (5.41%) 
+Wrote address 0x08000b00 (5.95%) 
+Wrote address 0x08000c00 (6.50%) 
+Wrote address 0x08000d00 (7.04%) 
+Wrote address 0x08000e00 (7.58%) 
+Wrote address 0x08000f00 (8.12%) 
+Wrote address 0x08001000 (8.66%) 
+Wrote address 0x08001100 (9.20%) 
+Wrote address 0x08001200 (9.74%) 
+Wrote address 0x08001300 (10.29%) 
+Wrote address 0x08001400 (10.83%) 
+Wrote address 0x08001500 (11.37%) 
+Wrote address 0x08001600 (11.91%) 
+Wrote address 0x08001700 (12.45%) 
+Wrote address 0x08001800 (12.99%) 
+Wrote address 0x08001900 (13.53%) 
+Wrote address 0x08001a00 (14.07%) 
+Wrote address 0x08001b00 (14.62%) 
+Wrote address 0x08001c00 (15.16%) 
+Wrote address 0x08001d00 (15.70%) 
+Wrote address 0x08001e00 (16.24%) 
+Wrote address 0x08001f00 (16.78%) 
+Wrote address 0x08002000 (17.32%) 
+Wrote address 0x08002100 (17.86%) 
+Wrote address 0x08002200 (18.40%) 
+Wrote address 0x08002300 (18.95%) 
+Wrote address 0x08002400 (19.49%) 
+Wrote address 0x08002500 (20.03%) 
+Wrote address 0x08002600 (20.57%) 
+Wrote address 0x08002700 (21.11%) 
+Wrote address 0x08002800 (21.65%) 
+Wrote address 0x08002900 (22.19%) 
+Wrote address 0x08002a00 (22.74%) 
+Wrote address 0x08002b00 (23.28%) 
+Wrote address 0x08002c00 (23.82%) 
+Wrote address 0x08002d00 (24.36%) 
+Wrote address 0x08002e00 (24.90%) 
+Wrote address 0x08002f00 (25.44%) 
+Wrote address 0x08003000 (25.98%) 
+Wrote address 0x08003100 (26.52%) 
+Wrote address 0x08003200 (27.07%) 
+Wrote address 0x08003300 (27.61%) 
+Wrote address 0x08003400 (28.15%) 
+Wrote address 0x08003500 (28.69%) 
+Wrote address 0x08003600 (29.23%) 
+Wrote address 0x08003700 (29.77%) 
+Wrote address 0x08003800 (30.31%) 
+Wrote address 0x08003900 (30.86%) 
+Wrote address 0x08003a00 (31.40%) 
+Wrote address 0x08003b00 (31.94%) 
+Wrote address 0x08003c00 (32.48%) 
+Wrote address 0x08003d00 (33.02%) 
+Wrote address 0x08003e00 (33.56%) 
+Wrote address 0x08003f00 (34.10%) 
+Wrote address 0x08004000 (34.64%) 
+Wrote address 0x08004100 (35.19%) 
+Wrote address 0x08004200 (35.73%) 
+Wrote address 0x08004300 (36.27%) 
+Wrote address 0x08004400 (36.81%) 
+Wrote address 0x08004500 (37.35%) 
+Wrote address 0x08004600 (37.89%) 
+Wrote address 0x08004700 (38.43%) 
+Wrote address 0x08004800 (38.97%) 
+Wrote address 0x08004900 (39.52%) 
+Wrote address 0x08004a00 (40.06%) 
+Wrote address 0x08004b00 (40.60%) 
+Wrote address 0x08004c00 (41.14%) 
+Wrote address 0x08004d00 (41.68%) 
+Wrote address 0x08004e00 (42.22%) 
+Wrote address 0x08004f00 (42.76%) 
+Wrote address 0x08005000 (43.31%) 
+Wrote address 0x08005100 (43.85%) 
+Wrote address 0x08005200 (44.39%) 
+Wrote address 0x08005300 (44.93%) 
+Wrote address 0x08005400 (45.47%) 
+Wrote address 0x08005500 (46.01%) 
+Wrote address 0x08005600 (46.55%) 
+Wrote address 0x08005700 (47.09%) 
+Wrote address 0x08005800 (47.64%) 
+Wrote address 0x08005900 (48.18%) 
+Wrote address 0x08005a00 (48.72%) 
+Wrote address 0x08005b00 (49.26%) 
+Wrote address 0x08005c00 (49.80%) 
+Wrote address 0x08005d00 (50.34%) 
+Wrote address 0x08005e00 (50.88%) 
+Wrote address 0x08005f00 (51.43%) 
+Wrote address 0x08006000 (51.97%) 
+Wrote address 0x08006100 (52.51%) 
+Wrote address 0x08006200 (53.05%) 
+Wrote address 0x08006300 (53.59%) 
+Wrote address 0x08006400 (54.13%) 
+Wrote address 0x08006500 (54.67%) 
+Wrote address 0x08006600 (55.21%) 
+Wrote address 0x08006700 (55.76%) 
+Wrote address 0x08006800 (56.30%) 
+Wrote address 0x08006900 (56.84%) 
+Wrote address 0x08006a00 (57.38%) 
+Wrote address 0x08006b00 (57.92%) 
+Wrote address 0x08006c00 (58.46%) 
+Wrote address 0x08006d00 (59.00%) 
+Wrote address 0x08006e00 (59.54%) 
+Wrote address 0x08006f00 (60.09%) 
+Wrote address 0x08007000 (60.63%) 
+Wrote address 0x08007100 (61.17%) 
+Wrote address 0x08007200 (61.71%) 
+Wrote address 0x08007300 (62.25%) 
+Wrote address 0x08007400 (62.79%) 
+Wrote address 0x08007500 (63.33%) 
+Wrote address 0x08007600 (63.88%) 
+Wrote address 0x08007700 (64.42%) 
+Wrote address 0x08007800 (64.96%) 
+Wrote address 0x08007900 (65.50%) 
+Wrote address 0x08007a00 (66.04%) 
+Wrote address 0x08007b00 (66.58%) 
+Wrote address 0x08007c00 (67.12%) 
+Wrote address 0x08007d00 (67.66%) 
+Wrote address 0x08007e00 (68.21%) 
+Wrote address 0x08007f00 (68.75%) 
+Wrote address 0x08008000 (69.29%) 
+Wrote address 0x08008100 (69.83%) 
+Wrote address 0x08008200 (70.37%) 
+Wrote address 0x08008300 (70.91%) 
+Wrote address 0x08008400 (71.45%) 
+Wrote address 0x08008500 (72.00%) 
+Wrote address 0x08008600 (72.54%) 
+Wrote address 0x08008700 (73.08%) 
+Wrote address 0x08008800 (73.62%) 
+Wrote address 0x08008900 (74.16%) 
+Wrote address 0x08008a00 (74.70%) 
+Wrote address 0x08008b00 (75.24%) 
+Wrote address 0x08008c00 (75.78%) 
+Wrote address 0x08008d00 (76.33%) 
+Wrote address 0x08008e00 (76.87%) 
+Wrote address 0x08008f00 (77.41%) 
+Wrote address 0x08009000 (77.95%) 
+Wrote address 0x08009100 (78.49%) 
+Wrote address 0x08009200 (79.03%) 
+Wrote address 0x08009300 (79.57%) 
+Wrote address 0x08009400 (80.12%) 
+Wrote address 0x08009500 (80.66%) 
+Wrote address 0x08009600 (81.20%) 
+Wrote address 0x08009700 (81.74%) 
+Wrote address 0x08009800 (82.28%) 
+Wrote address 0x08009900 (82.82%) 
+Wrote address 0x08009a00 (83.36%) 
+Wrote address 0x08009b00 (83.90%) 
+Wrote address 0x08009c00 (84.45%) 
+Wrote address 0x08009d00 (84.99%) 
+Wrote address 0x08009e00 (85.53%) 
+Wrote address 0x08009f00 (86.07%) 
+Wrote address 0x0800a000 (86.61%) 
+Wrote address 0x0800a100 (87.15%) 
+Wrote address 0x0800a200 (87.69%) 
+Wrote address 0x0800a300 (88.23%) 
+Wrote address 0x0800a400 (88.78%) 
+Wrote address 0x0800a500 (89.32%) 
+Wrote address 0x0800a600 (89.86%) 
+Wrote address 0x0800a700 (90.40%) 
+Wrote address 0x0800a800 (90.94%) 
+Wrote address 0x0800a900 (91.48%) 
+Wrote address 0x0800aa00 (92.02%) 
+Wrote address 0x0800ab00 (92.57%) 
+Wrote address 0x0800ac00 (93.11%) 
+Wrote address 0x0800ad00 (93.65%) 
+Wrote address 0x0800ae00 (94.19%) 
+Wrote address 0x0800af00 (94.73%) 
+Wrote address 0x0800b000 (95.27%) 
+Wrote address 0x0800b100 (95.81%) 
+Wrote address 0x0800b200 (96.35%) 
+Wrote address 0x0800b300 (96.90%) 
+Wrote address 0x0800b400 (97.44%) 
+Wrote address 0x0800b500 (97.98%) 
+Wrote address 0x0800b600 (98.52%) 
+Wrote address 0x0800b700 (99.06%) 
+Wrote address 0x0800b800 (99.60%) 
+Wrote address 0x0800b8bc (100.00%) Done.
+
+Starting execution at address 0x08000000... done.
+
+========================= [SUCCESS] Took 19.14 seconds =========================
+--- Terminal on COM9 | 460800 8-N-1
+--- Available filters and text transformations: colorize, debug, default, direct, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+Fully Homed
+BEGIN CSV
+Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PWM,Right_PWM
+X Bound Violated
+-0.00
+0.00
+0.01
+0.01
+0.02
+0.04
+0.05
+0.07
+0.08
+0.10
+0.12
+0.15
+0.17
+0.19
+0.22
+0.24
+0.27
+0.29
+0.32
+0.34
+0.37
+0.39
+0.41
+0.43
+0.45
+0.46
+0.47
+0.49
+0.49
+0.50
+FAILED PATH CHECK
