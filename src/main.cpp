@@ -391,7 +391,7 @@ Get the target position, velocity, and arrival time from the high-level controll
 // }
 
 
-float readFloat(char end) {
+float read_float(char end) {
   char buffer[10];
   byte index = 0;
   boolean isNegative = false;
@@ -461,11 +461,11 @@ void loop() {
     float temp;
 
     if (Serial.available()) {
-        temp = readFloat(',');
-        x_puck = readFloat(',');
-        y_puck = readFloat(',');
-        temp = readFloat(',');
-        temp = readFloat('\n');
+        temp = read_float(',');
+        x_puck = read_float(',');
+        y_puck = read_float(',');
+        temp = read_float(',');
+        temp = read_float('\n');
 
         if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
             array<float,2> current_angles = read_motor_angles();
