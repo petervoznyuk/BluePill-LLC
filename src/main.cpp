@@ -107,7 +107,7 @@ Angles are returned in degrees.
 */
 array<float, 2> read_motor_angles() {
     array<float, 2> angles;
-    u_int16_t serial_response; // incoming byte from the SPI
+    uint16_t serial_response; // incoming byte from the SPI
     int chips[2] = {ENC_CHIP_SELECT_LEFT, ENC_CHIP_SELECT_RIGHT};
 
     digitalWrite(chips[0], LOW);
