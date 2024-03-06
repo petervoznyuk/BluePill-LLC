@@ -1,0 +1,74 @@
+Processing bluepill_f103c8 (platform: ststm32; board: bluepill_f103c8; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/ststm32/bluepill_f103c8.html
+PLATFORM: ST STM32 (17.0.0) > BluePill F103C8
+HARDWARE: STM32F103C8T6 72MHz, 20KB RAM, 64KB Flash
+DEBUG: Current (stlink) External (blackmagic, cmsis-dap, jlink, stlink)
+PACKAGES: 
+ - framework-arduinoststm32 @ 4.20600.231001 (2.6.0) 
+ - framework-cmsis @ 2.50700.210515 (5.7.0) 
+ - tool-dfuutil @ 1.11.0 
+ - tool-dfuutil-arduino @ 1.11.0 
+ - tool-openocd @ 3.1200.0 (12.0) 
+ - tool-stm32duino @ 1.0.2 
+ - toolchain-gccarmnoneeabi @ 1.120301.0 (12.3.1)
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 17 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoEigen @ 0.3.0
+|-- SPI @ 1.0.0
+Building in release mode
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\PeripheralPins.c.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\PeripheralPins_MALYANM200_F103CB.c.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\generic_clock.c.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\startup_M200_f103xb.S.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\variant_AFROFLIGHT_F103CB.cpp.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\variant_MALYANM200_F103CB.cpp.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\variant_MAPLEMINI_F103CB.cpp.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\variant_PILL_F103Cx.cpp.o
+Compiling .pio\build\bluepill_f103c8\FrameworkArduinoVariant\variant_generic.cpp.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_adc.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_adc_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_can.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_cec.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_comp.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_comp_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_cordic.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_cortex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_crc.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_crc_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_cryp.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_cryp_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dac.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dac_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dcache.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dcmi.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dcmi_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dfsdm.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dfsdm_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dma.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dma2d.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dma_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dsi.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_dts.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_eth.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_eth_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_exti.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_fdcan.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_firewall.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_flash.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_flash_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_flash_ramfunc.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_fmac.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_fmpi2c.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_fmpi2c_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_fmpsmbus.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_fmpsmbus_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_gfxmmu.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_gpio.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_gpio_ex.c.o
+Compiling .pio\build\bluepill_f103c8\SrcWrapper\src\HAL\stm32yyxx_hal_gpu2d.c.o
