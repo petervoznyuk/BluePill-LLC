@@ -5,12 +5,15 @@
 // #include "ArduinoEigen/ArduinoEigenCommon.h"
 
 
-#define ENC_CHIP_SELECT_LEFT PA4
-#define ENC_CHIP_SELECT_RIGHT PB5
-#define LEFT_MOTOR_PWM_PIN PB_7
-#define RIGHT_MOTOR_PWM_PIN PB_8
-#define LEFT_MOTOR_DIR_PIN PB3
-#define RIGHT_MOTOR_DIR_PIN PB4
+#define ENC_CHIP_SELECT_LEFT PB6 // prev PA4
+#define ENC_CHIP_SELECT_RIGHT PB7 // prev PB5
+#define LEFT_MOTOR_PWM_PIN PA_8 // PA_10 prev PB_7
+#define RIGHT_MOTOR_PWM_PIN PA_10 // PA_8 prev PB_8
+#define LEFT_MOTOR_DIR_PIN PB15 // PA9 prev PB3
+#define RIGHT_MOTOR_DIR_PIN PA9 // PB15 prev PB4
+#define SPI_MISO_PIN PB4
+#define SPI_SCLK_PIN PB3
+#define ENABLE_MOTOR_PIN PB11
 #define DUTY_CYCLE_CONVERSION 1024 // Accepted duty cycle values are 0-1024
 #define PWM_FREQ_HZ 10000
 #define ROLLOVER_ANGLE_DEGS 180
@@ -44,7 +47,7 @@ float kp = 1.0;
 float ki = 0;
 // float kd = 0.0002;
 float kd = 0.0;
-float max_pwm = 100;
+float max_pwm = 25;
 
 // ==================================
 // Figure-eight trajectory
@@ -64,16 +67,22 @@ float max_pwm = 100;
 // bool do_loop = false;
 // ==================================
 // Four-leaf clover
-float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.8903,-0.4602},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.34,0.36},{0.12,0,0.74,-0.36}}};
-array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.31,0.34},{0.13,0,0.71,-0.34},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
-bool do_loop = true;
+// float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
+// array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.8903,-0.4602},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.34,0.36},{0.12,0,0.74,-0.36}}};
+// array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.31,0.34},{0.13,0,0.71,-0.34},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
+// bool do_loop = true;
 // ==================================
 // Four-leaf Slow-ver
+float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
+array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
+array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
+bool do_loop = true;
+
+// New Four-leaf Slow-ver (same as before)
 // float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
 // array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
 // array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
-// bool do_loop = true;
+// bool do_loop = true; 
 
 int path_section_num = -1;
 // ==================================
@@ -90,10 +99,16 @@ float vxf;
 float vyf;
 float xf_prev, yf_prev;
 
-float ff[2][2][4] ={{{3.790419e-06,6.066717e-03,6.925599e-02,2.323943e-18},
-{-1.501957e-06,-2.396739e-03, 6.811798e-17,-6.262513e-18}}, 
-{ {-1.501957e-06,-2.396739e-03, 8.406599e-17, 2.020639e-18},
-{3.790419e-06, 6.052580e-03, 4.669578e-02,-4.398398e-17}}};
+// OLD FEEDFORWARD PARAMETERS
+// float ff[2][2][4] ={{{3.790419e-06,6.066717e-03,6.925599e-02,2.323943e-18},
+// {-1.501957e-06,-2.396739e-03, 6.811798e-17,-6.262513e-18}}, 
+// { {-1.501957e-06,-2.396739e-03, 8.406599e-17, 2.020639e-18},
+// {3.790419e-06, 6.052580e-03, 4.669578e-02,-4.398398e-17}}};
+
+float ff[2][2][4] = {{{4.061209e-06,6.499502e-03,7.033028e-02,0,},
+{-1.730826e-06,-2.761957e-03, 8.125468e-18, 0,} }, 
+{ {-1.730826e-06,-2.761957e-03,-2.463841e-17, 1.881261e-31,},
+{4.061209e-06, 6.487384e-03, 5.099296e-02,-8.099511e-18,} } };
 
 
 array<float,4> cx = {{0,0,0,0}};
@@ -138,7 +153,7 @@ array<float, 2> read_motor_angles() {
 
     angles[0] = -angles[0] + 360.0 * left_revolutions - left_offset;
     angles[1] = -angles[1] + 360.0 * right_revolutions - right_offset;
-    
+
     return angles;
 }
 
@@ -160,6 +175,9 @@ it into motor angles in degrees
 array<float,2> xy_to_theta(float x, float y) {
     float theta_l = (x + y) / PULLEY_RADIUS * 360 / (2*PI);
     float theta_r = (x - y) / PULLEY_RADIUS * 360 / (2*PI);
+    // float y_adj = Y_MAX - y;
+    // float theta_l = (x + y_adj) / PULLEY_RADIUS * 360 / (2*PI);
+    // float theta_r = (x - y_adj) / PULLEY_RADIUS * 360 / (2*PI);
 
     return {{theta_l, theta_r}};
 }
@@ -170,6 +188,12 @@ Command a motor velocity to the specified motor.
 input values should be in the range [-100,100].
 */
 void set_motor_pwms(float left, float right) {
+    float enable_motors;
+    enable_motors = digitalRead(ENABLE_MOTOR_PIN);
+    if (enable_motors == LOW) {
+        left = 0;
+        right = 0;
+    }
     if (left >= 0) {
         digitalWrite(LEFT_MOTOR_DIR_PIN, LOW);
     } else {
@@ -182,6 +206,7 @@ void set_motor_pwms(float left, float right) {
     } else {
         digitalWrite(RIGHT_MOTOR_DIR_PIN, HIGH);
     }
+    
     pwm_start(RIGHT_MOTOR_PWM_PIN, PWM_FREQ_HZ, floor(abs(right) / 100.0 * DUTY_CYCLE_CONVERSION), RESOLUTION_10B_COMPARE_FORMAT);
 }
 
@@ -268,6 +293,10 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
         previous_left_encoder = read_motor_angles()[0];
     }
 
+    // // move more into top left corner
+    // set_motor_pwms(2*y_speed, -0.5*y_speed);
+    // delay(800);
+    // set_motor_pwms(0, 0);
     //Nudge into the corner
     // set_motor_pwms(-x_speed, 0);
     // delay(500);
@@ -281,14 +310,14 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
     right_revolutions = 0;
     left_offset = read_motor_angles()[0] - global_theta_offsets[0];
     right_offset = read_motor_angles()[1] - global_theta_offsets[1];
-    Serial.println("Fully Homed");
+    Serial2.println("Fully Homed");
 }
 
 void command_motors(float x_pos, float y_pos, double current_time, double previous_time) {
     array<float, 2> target_angles = xy_to_theta(x_pos, y_pos);
 
     array<float,2> actual_angles = read_motor_angles();
-
+    array<float, 2> actual_pos = theta_to_xy(actual_angles[0], actual_angles[1]);
     //Add accumulated error update
 
     float left_error = target_angles[0] - actual_angles[0];
@@ -311,23 +340,35 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_pwm = fmin(fmax(-max_pwm, left_pid + left_feed_forward), max_pwm);
     float right_pwm = fmin(fmax(-max_pwm, right_pid + right_feed_forward), max_pwm);
 
-    Serial.print(current_time*1000);
-    Serial.print(",");
-    Serial.print(x_pos*100);
-    Serial.print(",");
-    Serial.print(y_pos*100);
-    Serial.print(",");
-    Serial.print(left_error);
-    Serial.print(",");
-    Serial.print(right_error);
-    Serial.print(",");
-    Serial.print(left_pid);
-    Serial.print(",");
-    Serial.print(right_pid);
-    Serial.print(",");
-    Serial.print(feed_forward_values[0]);
-    Serial.print(",");
-    Serial.println(feed_forward_values[1]);
+    Serial2.print(current_time*1000);
+    Serial2.print(",");
+    Serial2.print(x_pos*100);
+    Serial2.print(",");
+    Serial2.print(y_pos*100);
+    Serial2.print(",");
+    Serial2.print(actual_pos[0]*100);
+    Serial2.print(",");
+    Serial2.print(actual_pos[1]*100);
+    Serial2.print(",");
+    Serial2.print(actual_angles[0]);
+    Serial2.print(",");
+    Serial2.print(actual_angles[1]);
+    Serial2.print(",");
+    Serial2.print(left_error);
+    Serial2.print(",");
+    Serial2.print(right_error);
+    Serial2.print(",");
+    Serial2.print(left_pid);
+    Serial2.print(",");
+    Serial2.print(right_pid);
+    Serial2.print(",");
+    Serial2.print(feed_forward_values[0]);
+    Serial2.print(",");
+    Serial2.print(feed_forward_values[1]);
+    Serial2.print(",");
+    Serial2.print(left_pwm);
+    Serial2.print(",");
+    Serial2.println(right_pwm);
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -352,13 +393,17 @@ void get_target_from_hlc() {
     tf = t + traj_durations[path_section_num];
 }
 
+HardwareSerial Serial2(PA3, PA2);
 void setup() {
-    Serial.begin(460800);
+    Serial2.begin(460800);
+    SPI.setMISO(SPI_MISO_PIN);
+    SPI.setSCLK(SPI_SCLK_PIN);
     SPI.beginTransaction(SPISettings(460800, MSBFIRST, SPI_MODE1));
     pinMode(LED_BUILTIN, OUTPUT); // set this pin as output
     
     pinMode(ENC_CHIP_SELECT_LEFT, OUTPUT);
     pinMode(ENC_CHIP_SELECT_RIGHT, OUTPUT);
+    pinMode(ENABLE_MOTOR_PIN, INPUT);
     
     // Turn green LED on
     pinMode(PC13, OUTPUT);
@@ -376,10 +421,10 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(15, 6, 10);
+    // home_table(10, 6, 10);
 
-    Serial.println("BEGIN CSV");
-    Serial.println("Time(ms),X_Target(cm),Y_Target(cm),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,X_Puck(cm),Y_Puck(cm)");
+    Serial2.println("BEGIN CSV");
+    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM, Right_PWM");
 
     previous_time = 0;
     start_time = micros();
@@ -389,34 +434,57 @@ void setup() {
 void loop() {
     t = (micros() - start_time) / 1000000.0;
 
-    if (t > tf) {
-        path_start_time = t;
-        get_target_from_hlc();
-    }
+    std::array<float,2> angles = read_motor_angles();
+    std::array<float,2> pos = theta_to_xy(angles[0], angles[1]);
+    Serial2.print(t*1000);
+    Serial2.print(",");
+    Serial2.print(0.0);
+    Serial2.print(",");
+    Serial2.print(0.0);
+    Serial2.print(",");
+    Serial2.print(angles[0]);
+    Serial2.print(",");
+    Serial2.print(angles[1]);
+    Serial2.print(",");
+    Serial2.print(pos[0]);
+    Serial2.print(",");
+    Serial2.println(pos[1]);
+
+    // float enable_motors;
+    // enable_motors = digitalRead(ENABLE_MOTOR_PIN);
+    // if (enable_motors == LOW) {
+    //     set_motor_pwms(0, 0);
+    //     exit(0);
+    // }
+
+    // if (t > tf) {
+    //     path_start_time = t;
+    //     get_target_from_hlc();
+    // }
     
-    float u = (t-path_start_time) / traj_duration;
-    float power_2 = u*u;
-    float power_3 = power_2*u;
+    // float u = (t-path_start_time) / traj_duration;
+    // float power_2 = u*u;
+    // float power_3 = power_2*u;
 
-    float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
-    float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
+    // float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
+    // float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
 
-    if(x_pos < X_MIN) {
-        x_pos = X_MIN;
-    } else if(x_pos > X_MAX) {
-        x_pos = X_MAX;
-    }
+    // if(x_pos < X_MIN) {
+    //     x_pos = X_MIN;
+    // } else if(x_pos > X_MAX) {
+    //     x_pos = X_MAX;
+    // }
 
-    if(y_pos < Y_MIN) {
-        y_pos = Y_MIN;
-    } else if(y_pos > Y_MAX) {
-        y_pos = Y_MAX;
-    }
+    // if(y_pos < Y_MIN) {
+    //     y_pos = Y_MIN;
+    // } else if(y_pos > Y_MAX) {
+    //     y_pos = Y_MAX;
+    // }
 
-    command_motors(x_pos, y_pos, t, previous_time);
+    // command_motors(x_pos, y_pos, t, previous_time);
 
-    previous_time = t;
-    xf_prev = xf;
-    yf_prev = yf;
+    // previous_time = t;
+    // xf_prev = xf;
+    // yf_prev = yf;
 }
 
