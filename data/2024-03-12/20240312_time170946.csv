@@ -1,0 +1,63 @@
+Processing bluepill_f103c8 (platform: ststm32; board: bluepill_f103c8; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/ststm32/bluepill_f103c8.html
+PLATFORM: ST STM32 (17.0.0) > BluePill F103C8
+HARDWARE: STM32F103C8T6 72MHz, 20KB RAM, 64KB Flash
+DEBUG: Current (stlink) External (blackmagic, cmsis-dap, jlink, stlink)
+PACKAGES: 
+ - framework-arduinoststm32 @ 4.20600.231001 (2.6.0) 
+ - framework-cmsis @ 2.50700.210515 (5.7.0) 
+ - tool-dfuutil @ 1.11.0 
+ - tool-dfuutil-arduino @ 1.11.0 
+ - tool-openocd @ 3.1200.0 (12.0) 
+ - tool-stm32duino @ 1.0.2 
+ - toolchain-gccarmnoneeabi @ 1.120301.0 (12.3.1)
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 17 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoEigen @ 0.3.0
+|-- SPI @ 1.0.0
+Building in release mode
+Checking size .pio\build\bluepill_f103c8\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   8.0% (used 1632 bytes from 20480 bytes)
+Flash: [====      ]  39.3% (used 25724 bytes from 65536 bytes)
+Configuring upload protocol...
+AVAILABLE: blackmagic, cmsis-dap, dfu, jlink, mbed, stlink
+CURRENT: upload_protocol = stlink
+Uploading .pio\build\bluepill_f103c8\firmware.elf
+--- Terminal on COM5 | 460800 8-N-1
+--- Available filters and text transformations: colorize, debug, default, direct, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+
+271.41,0.00,0.00,-0.03,0.01,73.72,25.73,0.00,0.00
+272.69,0.00,0.00,-0.03,0.01,73.74,25.75,0.00,0.00
+273.64,0.00,0.00,-0.03,0.01,73.72,25.73,0.00,0.00
+274.94,0.00,0.00,-0.03,0.01,73.72,25.66,0.00,0.00
+276.24,0.00,0.00,-0.03,0.01,73.72,25.71,0.00,0.00
+277.05,0.00,0.00,-0.03,0.01,73.76,25.73,0.00,0.00
+278.32,0.00,0.00,-0.03,0.01,73.74,25.73,0.00,0.00
+279.33,0.00,0.00,-0.03,0.01,73.74,25.73,0.00,0.00
+280.57,0.00,0.00,-0.03,0.01,73.70,25.73,0.00,0.00
+281.91,0.00,0.00,-0.03,0.01,73.67,25.77,0.00,0.00
+282.72,0.00,0.00,-0.03,0.01,73.67,25.71,0.00,0.00
+284.01,0.00,0.00,-0.03,0.01,73.70,25.75,0.00,0.00
+284.89,0.00,0.00,-0.03,0.01,73.81,25.71,0.00,0.00
+286.19,0.00,0.00,-0.03,0.01,73.72,25.73,0.00,0.00
+287.04,0.00,0.00,-0.03,0.01,73.72,25.80,0.00,0.00
+288.31,0.00,0.00,-0.03,0.01,73.72,25.73,0.00,0.00
+289.58,0.00,0.00,-0.03,0.01,73.74,25.71,0.00,0.00
+290.64,0.00,0.00,-0.03,0.01,73.74,25.75,0.00,0.00
+291.81,0.00,0.00,-0.03,0.01,73.67,25.71,0.00,0.00
+292.69,0.00,0.00,-0.03,0.01,73.72,25.71,0.00,0.00
+293.96,0.00,0.00,-0.03,0.01,73.76,25.73,0.00,0.00
+295.24,0.00,0.00,-0.03,0.01,73.74,25.75,0.00,0.00
+296.26,0.00,0.00,-0.03,0.01,73.74,25.73,0.00,0.00
+297.46,0.00,0.00,-0.03,0.01,73.74,25.71,0.00,0.00
+298.33,0.00,0.00,-0.03,0.01,73.72,25.77,0.00,0.00
+299.61,0.00,0.00,-0.03,0.01,73.74,25.75,0.00,0.00
+========================= [SUCCESS] Took 10.16 seconds =========================
