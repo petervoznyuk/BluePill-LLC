@@ -50,11 +50,11 @@ float right_accumulated_error = 0;
 float left_previous_error = 0;
 float right_previous_error = 0;
 double previous_time;
-float kp = 1.0;
+float kp = 0.40;
 float ki = 0;
 // float kd = 0.0002;
-float kd = 0.0;
-float max_pwm = 20;
+float kd = 0.01;
+float max_pwm = 40;
 
 // ==================================
 // Figure-eight trajectory
@@ -112,6 +112,8 @@ float vxf;
 float vyf;
 float xf_prev, yf_prev;
 float x_puck, y_puck;
+float x_pos, y_pos;
+
 
 // OLD FEEDFORWARD PARAMETERS
 // float ff[2][2][4] ={{{3.790419e-06,6.066717e-03,6.925599e-02,2.323943e-18},
@@ -320,6 +322,8 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
 }
 
 void command_motors(float x_pos, float y_pos, double current_time, double previous_time) {
+    // x_pos = fmin(fmax(X_MIN, x_pos), X_MAX);
+    // y_pos = fmin(fmax(Y_MIN, y_pos), Y_MAX);
     std::array<float, 2> target_angles = xy_to_theta(x_pos, y_pos);
 
     std::array<float,2> actual_angles = read_motor_angles();
@@ -461,8 +465,8 @@ float read_float(char end) {
   byte index = 0;
   boolean isNegative = false;
   while (true) {
-    while (Serial.available() == 0) {} // wait for a byte to be available
-    char incoming = Serial.read();
+    while (Serial2.available() == 0) {} // wait for a byte to be available
+    char incoming = Serial2.read();
     if (incoming == '-') {
       isNegative = true;
     } else if (incoming == '.') {
@@ -552,7 +556,7 @@ void setup() {
 
     home_table(9, 5, 10);
 
-    while (!Serial.available()) {
+    while (!Serial2.available()) {
         // wait for serial to become available
     }
     delay(500);
@@ -646,56 +650,78 @@ void loop() {
     // }
 
     float temp;
-
-    if (Serial.available()) {
+ 
+    if (Serial2.available()) {
         temp = read_float(',');
         x_puck = read_float(',');
         y_puck = read_float(',');
         temp = read_float(',');
         temp = read_float('\n');
 
-        if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
-            std::array<float,2> current_angles = read_motor_angles();
-            float current_x = theta_to_xy(current_angles[0], current_angles[1])[0];
-            
-            float x_error = abs(x_puck - current_x);
+        Serial2.print(x_puck * 100);
+        Serial2.print(",");
+        Serial2.println(y_puck * 100);
 
-            if (x_error > 0.03) {
-                float desired_path_avg_velocity = 0.1;
-            
-                generate_path(x_puck, 0.2, 0.0, x_error / desired_path_avg_velocity);
+        std::array<float,2> current_angles = read_motor_angles();
+        std::array<float,2> current_pos = theta_to_xy(current_angles[0], current_angles[1]);
+        float x_error = abs(x_puck - current_pos[0]); 
+        float y_error = abs(y_puck-1 - current_pos[1]); 
+
+            // if (x_error > 0.03) {
+            //     float desired_path_avg_velocity = 0.1;
+
+        if (x_puck > 0.1 && x_puck < 0.9) {
+            if (x_error > 0.02) {
+                x_pos = x_puck;
             }
-
-        } else {
-            set_motor_pwms(0,0);
-            return;
         }
-        path_section_num = 2;
+        if (y_puck-1 > 0.1 && y_puck-1 < 0.9) {
+            if (y_error > 0.02) {
+                y_pos = y_puck-1;
+            }
+        }
     }
+            // std::array<float,2> current_angles = read_motor_angles();
+            // float current_x = theta_to_xy(current_angles[0], current_angles[1])[0];
+            
+            // float x_error = abs(x_puck - current_x);
 
-    if (t > tf && path_section_num != 1) {
-        set_motor_pwms(0,0);
-        return;
-    }
+            // if (x_error > 0.03) {
+            //     float desired_path_avg_velocity = 0.1;
+            
+            //     generate_path(x_puck, 0.2, 0.0, x_error / desired_path_avg_velocity);
+            // }
+
+    //     } else {
+    //         set_motor_pwms(0,0);
+    //         return;
+    //     }
+    //     path_section_num = 2;
+    //     }
+
+    // if (t > tf && path_section_num != 1) {
+    //     set_motor_pwms(0,0);
+    //     return;
+    // }
   
-    float u = (t-path_start_time) / traj_duration;
-    float power_2 = u*u;
-    float power_3 = power_2*u;
+    // float u = (t-path_start_time) / traj_duration;
+    // float power_2 = u*u;
+    // float power_3 = power_2*u;
 
-    float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
-    float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
+    // float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
+    // float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
 
-    if(x_pos < X_MIN) {
-        x_pos = X_MIN;
-    } else if(x_pos > X_MAX) {
-        x_pos = X_MAX;
-    }
+    // if(x_pos < X_MIN) {
+    //     x_pos = X_MIN;
+    // } else if(x_pos > X_MAX) {
+    //     x_pos = X_MAX;
+    // }
 
-    if(y_pos < Y_MIN) {
-        y_pos = Y_MIN;
-    } else if(y_pos > Y_MAX) {
-        y_pos = Y_MAX;
-    }
+    // if(y_pos < Y_MIN) {
+    //     y_pos = Y_MIN;
+    // } else if(y_pos > Y_MAX) {
+    //     y_pos = Y_MAX;
+    // }
 
     command_motors(x_pos, y_pos, t, previous_time);
 
