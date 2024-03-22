@@ -42,7 +42,7 @@ machine_distance = 2 #cm from AI end
 
 # HSV values to detect puck  # define range of red color in HSV
 lower_puck = np.array([0,100,100])
-upper_puck = np.array([10,255,255])
+upper_puck = np.array([20,255,255])
 
 # Use table corners to perform perspective transform
 rectangle_dim = (table_dim_cm[0] + 2 * aruco_border_cm + machine_distance, table_dim_cm[1] + 2 * aruco_border_cm) # This is the dimensions of the rectangle formed by the four ArUco marker corners.
@@ -137,7 +137,10 @@ def Track_puck(image, M):
     size = [key_point.size for key_point in keypoints]
     index = max(range(len(size)), key=size.__getitem__)
     puckxy = keypoints[index].pt
-    puckxy = tuple(map(int,puckxy))
+    puckxy = tuple(float(elem)/scaling_factor for elem in puckxy)
+
+    # Rotate the coordinate system by 180
+    puckxy = tuple(map(lambda i, j: i - j, table_dim_cm, puckxy))
 
     return puckxy
 
@@ -201,7 +204,7 @@ while True:
 
 # To test/debug the puck tracking I will draw on a circle where the puck is supposed to be and record the frames as a video
 
-out = cv2.VideoWriter('Tracking_test.avi',cv2.VideoWriter_fourcc('M','J','P','G'), FRAME_RATE, (output_length_pixels,output_width_pixels))
+# out = cv2.VideoWriter('Tracking_test.avi',cv2.VideoWriter_fourcc('M','J','P','G'), FRAME_RATE, (output_length_pixels,output_width_pixels))
 oldpuckxy = (0,0)
 
 # Puck tracking and recording
@@ -215,7 +218,7 @@ while True:
 
     # Get the xy coordinates of the puck
     puckxy = Track_puck(frame,M)
-    #print(puckxy)
+    print(puckxy)
 
     # If no puck is detected -1 is returned. That must be handled
     if puckxy == -1:
@@ -226,11 +229,12 @@ while True:
     image = cv2.undistort(frame, camera_matrix, distortion_coeffs, None, optimalcameramtx)
     image = cv2.warpPerspective(image,M,(output_length_pixels, output_width_pixels),flags=cv2.INTER_LINEAR)
 
+    puckxy_pixels = tuple(int(elem*scaling_factor) for elem in puckxy)
     # Draw a circle on the puck in the image
-    image = cv2.circle(image, puckxy, 2, (0,255,255),2)
+    image = cv2.circle(image, puckxy_pixels, 2, (0,255,255),2)
 
     cv2.imshow('Processed image', image)
-    out.write(image)
+    # out.write(image)
 
     # Press 'q' to break and finish recording
     if cv2.waitKey(1)&0XFF == ord('q'):
@@ -238,5 +242,5 @@ while True:
 
 print("Video complete. Closing...")
 vid.release()
-out.release()
+# out.release()
 cv2.destroyAllWindows()
