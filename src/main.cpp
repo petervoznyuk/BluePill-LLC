@@ -56,50 +56,6 @@ float ki = 0;
 float kd = 0.0;
 float max_pwm = 20;
 
-// ==================================
-// Figure-eight trajectory
-// float traj_durations[] = {0.2,0.2,0.2,0.2,0.2};
-// std::array<std::array<float, 4>, 5> x_traj_coeffs = {{{0.0699,0,1.0903,-0.6602},{0.5,0.2,0.68,-0.52},{0.86,0,-0.88,0.52},{0.5,-0.2,-0.71,0.54},{0.13,0,0.91,-0.54}}};
-// std::array<std::array<float, 4>, 5> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
-// ==================================
-// 3 shots v6 (best) (1,2,3)
-// float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
-// std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3}}};
-// std::array<std::array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13}}};
-// bool do_loop = false;
-// 3 shots (2,3,1)
-// float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
-// std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875}}};
-// std::array<std::array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},}};
-// bool do_loop = false;
-// ==================================
-// Four-leaf clover
-// float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-// std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.8903,-0.4602},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.34,0.36},{0.12,0,0.74,-0.36}}};
-// std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.31,0.34},{0.13,0,0.71,-0.34},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
-// bool do_loop = true;
-// ==================================
-// Four-leaf Slow-ver
-// float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
-// std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
-// std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
-// bool do_loop = true;
-
-// // New Four-leaf
-// float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-// std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.05,0,0.73,-0.32},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.7,-0.1},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.8,-0.2},{0.46,0.4,0.19,-0.26},{0.79,0,-0.59,0.26},{0.46,-0.4,-0.19,0.26},{0.13,0,0.49,-0.16}}};
-// std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.05,0,0.95,-0.5},{0.5,0.4,0.19,-0.26},{0.83,0,-0.59,0.26},{0.5,-0.4,-0.19,0.26},{0.17,0,0.49,-0.16},{0.5,0.5,-0.4,-0.1},{0.5,-0.6,0.7,-0.1},{0.5,0.5,-0.3,-0.2},{0.5,-0.7,1,-0.3}}};
-// bool do_loop = true;
-
-// int path_section_num = -1;
-// ==================================
-
-// Bezier curve trajectory parameters
-int path_section_num = 1;
-float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0,0,1.29,-0.86},{0.43,0,-0.65,0.46},{0.24,0.08,0.41,-0.3},{0.43,0,0,5.5511e-17},{0.43,0,0,5.5511e-17},{0.43,0,0.665,-0.47},{0.625,-0.08,-0.425,0.31}}};
-std::array<std::array<float, 4>, 7> y_traj_coeffs = {{{0,0,0.3,-0.2},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3},{0.1,0,0.25,0.1},{0.45,0.8,-2.65,1.5},{0.1,0,0.45,-0.1},{0.45,0.6,-2.25,1.3}}};
-
 std::array<float,2> prev_pos = {{0,0}};
 float t;
 float tf;
@@ -439,87 +395,24 @@ void generate_path(float x_puck, float y_puck, float vf_magnitude, float path_ti
 /*
 Get the target position, velocity, and arrival time from the high-level controller
 */
-// void get_target_from_hlc() {
-//     path_section_num++;
+void get_target_from_hlc() {
+
+    // Generate coefficients for the current path
+    // call generate_path() which sets global cx and cy arrays for the path
+    path_section_num++;
     
-//     if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
-//         path_section_num = 1;
-//         if (!do_loop) {
-//             set_motor_pwms(0,0);
-//             exit(0);
-//         }
-//     }
+    if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
+        path_section_num = 1;
+        if (!do_loop) {
+            set_motor_pwms(0,0);
+            exit(0);
+        }
+    }
 
-//     cx = x_traj_coeffs[path_section_num];
-//     cy = y_traj_coeffs[path_section_num];
-//     traj_duration = traj_durations[path_section_num];
-//     tf = t + traj_durations[path_section_num];
-// }
-
-float read_float(char end) {
-  char buffer[10];
-  byte index = 0;
-  boolean isNegative = false;
-  while (true) {
-    while (Serial.available() == 0) {} // wait for a byte to be available
-    char incoming = Serial.read();
-    if (incoming == '-') {
-      isNegative = true;
-    } else if (incoming == '.') {
-      buffer[index++] = incoming;
-    } else if (incoming >= '0' && incoming <= '9') {
-      buffer[index++] = incoming;
-    } else if (incoming == end) {
-      break;
-    }
-  }
-  buffer[index] = '\0';
-  float number = atof(buffer);
-  if (isNegative) {
-    number *= -1;
-  }
-  return number;
-}
-
-std::array<float,2> get_pwm_from_direction(std::string direction, float pwm) {
-    std::array<float,2> pwm_outs;
-    if (direction == "left") {
-        pwm_outs[0] = -pwm;
-        pwm_outs[1] = -pwm;
-    }
-    else if (direction == "right") {
-        pwm_outs[0] = pwm;
-        pwm_outs[1] = pwm;
-    }
-    else if (direction == "down") {
-        pwm_outs[0] = -pwm;
-        pwm_outs[1] = pwm;
-    }
-    else if (direction == "up") {
-        pwm_outs[0] = pwm;
-        pwm_outs[1] = -pwm;
-    }
-    else if (direction == "LONLY") {
-        pwm_outs[0] = pwm;
-        pwm_outs[1] = 0;
-    }
-    else if (direction == "RONLY") {
-        pwm_outs[0] = 0;
-        pwm_outs[1] = pwm;
-    }
-    else if (direction == "LONLY_REV") {
-        pwm_outs[0] = -pwm;
-        pwm_outs[1] = 0;
-    }
-    else if (direction == "RONLY_REV") {
-        pwm_outs[0] = 0;
-        pwm_outs[1] = -pwm;
-    }
-    else {
-        pwm_outs[0] = 0;
-        pwm_outs[1] = 0;
-    }
-    return pwm_outs;
+    cx = x_traj_coeffs[path_section_num];
+    cy = y_traj_coeffs[path_section_num];
+    traj_duration = traj_durations[path_section_num];
+    tf = t + traj_durations[path_section_num];
 }
 
 HardwareSerial Serial2(PA3, PA2);
@@ -568,114 +461,9 @@ void setup() {
 void loop() {
     t = (micros() - start_time) / 1000000.0;
 
-    // std::std::array<float,2> angles = read_motor_angles();
-    // std::std::array<float,2> pos = theta_to_xy(angles[0], angles[1]);
-
-    // float switch_time = 0.08; // SHOULD BE ~0.1 MAX, THIS IS TIME PER DIRECTION
-    // float delay_time = 0.0; // WAIT HALF A SECOND
-    // float test_pwm = 0;
-    // std::std::array<float,2> pwm_out;
-    // bool motors_stopped = false;
-
-    // float enable_motors;
-    // enable_motors = digitalRead(ENABLE_MOTOR_PIN);
-    // if (enable_motors == LOW) {
-    //     if (motors_stopped == false) {
-    //         test_pwm = 0;
-    //         set_motor_pwms(0, 0);
-    //         exit(0);
-    //     }
-    //     motors_stopped = true;
-    // }
-    // else {
-    //     if (t < delay_time) {
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("off", 0);
-    //     }
-    //     else if (t < switch_time + delay_time) {
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("left", test_pwm);
-    //     }
-    //     else if (t < 2 * switch_time + delay_time) {
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("right", test_pwm);
-
-    //     } 
-    //     else if (t < 3*switch_time + delay_time) { 
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("off", 0);
-    //     }
-    //     else if (t >= 3*switch_time + delay_time) {
-    //         set_motor_pwms(0,0);
-    //         exit(0);
-    //     }
-
-    //     set_motor_pwms(pwm_out[0], pwm_out[1]);
-    // }
-
-
-    // Serial2.print(t*1000);
-    // Serial2.print(",");
-    // Serial2.print(0.0);
-    // Serial2.print(",");
-    // Serial2.print(0.0);
-    // Serial2.print(",");
-    // Serial2.print(pos[0] * 100);
-    // Serial2.print(",");
-    // Serial2.print(pos[1] * 100);
-    // Serial2.print(",");
-    // Serial2.print(angles[0]);
-    // Serial2.print(",");
-    // Serial2.print(angles[1]);
-    // Serial2.print(",");
-    // Serial2.print(pwm_out[0]);
-    // Serial2.print(",");
-    // Serial2.println(pwm_out[1]);
-
-
-    float enable_motors;
-    enable_motors = digitalRead(ENABLE_MOTOR_PIN);
-    if (enable_motors == LOW) {
-        set_motor_pwms(0, 0);
-        exit(0);
-    }
-
-    // if (t > tf) {
-    //     path_start_time = t;
-    //     get_target_from_hlc();
-    // }
-
-    float temp;
-
-    if (Serial.available()) {
-        temp = read_float(',');
-        x_puck = read_float(',');
-        y_puck = read_float(',');
-        temp = read_float(',');
-        temp = read_float('\n');
-
-        if (x_puck > X_MIN && x_puck < X_MAX && y_puck > Y_MIN && y_puck < Y_MAX) {
-            std::array<float,2> current_angles = read_motor_angles();
-            float current_x = theta_to_xy(current_angles[0], current_angles[1])[0];
-            
-            float x_error = abs(x_puck - current_x);
-
-            if (x_error > 0.03) {
-                float desired_path_avg_velocity = 0.1;
-            
-                generate_path(x_puck, 0.2, 0.0, x_error / desired_path_avg_velocity);
-            }
-
-        } else {
-            set_motor_pwms(0,0);
-            return;
-        }
-        path_section_num = 2;
-    }
-
-    if (t > tf && path_section_num != 1) {
-        set_motor_pwms(0,0);
-        return;
+    if (t > tf) {
+        path_start_time = t;
+        get_target_from_hlc();
     }
   
     float u = (t-path_start_time) / traj_duration;
