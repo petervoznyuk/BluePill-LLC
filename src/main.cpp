@@ -19,6 +19,8 @@
 #define PWM_FREQ_HZ 10000               //
 #define ROLLOVER_ANGLE_DEGS 180         //
 #define PULLEY_RADIUS 0.035             //meters
+#define MALLET_RADIUS 0.05
+#define PUCK_RADIUS 0.03175
 #define MAX_PWM 20
 
 //Coordinate Definitions
@@ -44,6 +46,8 @@
 #define KI 0.0
 #define KD 0.0
 
+HardwareSerial Serial2(PA3, PA2);
+
 // Define Global Variables
 int left_revolutions = 0;
 int right_revolutions = 0;
@@ -58,17 +62,11 @@ float left_previous_error = 0;
 float right_previous_error = 0;
 double previous_time;
 
-std::array<float,2> prev_pos = {{0,0}};
 float t;
 float tf;
 float path_start_time;
 
 float traj_duration = -1; //Initialize to non-zero because it gets used to find the initial velocity in generate_path()
-float xf;
-float yf;
-float vxf;
-float vyf;
-float xf_prev, yf_prev;
 float x_puck, y_puck;
 
 float ff[2][2][4] = {
@@ -225,7 +223,6 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
 }
 //End Agent Code
 
-
 /*
 Read left and right motor angles from the encoders.
 Angles are returned in degrees.
@@ -289,15 +286,13 @@ std::array<float,2> xy_to_theta(float x, float y) {
     return {{theta_l, theta_r}};
 }
 
-
 /*
 Command a motor velocity to the specified motor.
 input values should be in the range [-100,100].
 */
 void set_motor_pwms(float left, float right) {
-    float enable_motors;
-    enable_motors = digitalRead(ENABLE_MOTOR_PIN);
-    if (enable_motors == LOW) {
+    bool enable_motors = digitalRead(ENABLE_MOTOR_PIN);
+    if (!enable_motors) {
         left = 0;
         right = 0;
     }
@@ -481,10 +476,6 @@ https://en.wikipedia.org/wiki/B%C3%A9zier_curve
 */
 
 void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time) {
-    float table_length = 2;
-    float x_goal = 0.52;
-    float mallet_plus_puck_radius = 0.05 + 0.03175; 
-
     std::array<float,2> current_angles = read_motor_angles();
     float x_initial = theta_to_xy(current_angles[0], current_angles[1])[0];
     float y_initial = theta_to_xy(current_angles[0], current_angles[1])[1];
@@ -506,16 +497,14 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
     float vf_x = math.cos(theta);
     float vf_y = math.sin(theta);
 
-    float original_vf_norm = sqrt(vf_x*vf_x + vf_y*vf_y);
-
     //Back off from the "intecept point" because the collision occurs when the mallet and puck
     //are radius_puck + radius_mallet apart from each other.
-    float intercept_point_x = x_puck - vf_x/original_vf_norm*mallet_plus_puck_radius;
-    float intercept_point_y = y_puck - vf_y/original_vf_norm*mallet_plus_puck_radius;
+    float intercept_point_x = x_puck - vf_x * (MALLET_RADIUS+PUCK_RADIUS);
+    float intercept_point_y = y_puck - vf_y * (MALLET_RADIUS+PUCK_RADIUS);
 
     //Scale the final velocity at the intercept
-    float v_3_x = vf_x / original_vf_norm * vf_magnitude;
-    float v_3_y = vf_y / original_vf_norm * vf_magnitude;
+    float v_3_x = vf_x * vf_magnitude;
+    float v_3_y = vf_y * vf_magnitude;
 
     //Find control point locations
     float q1_x = x_initial + vx_initial * path_time/3;
@@ -532,29 +521,6 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
     tf = path_start_time + path_time;
 }
 
-/*
-Get the target position, velocity, and arrival time from the high-level controller
-*/
-void get_target_from_hlc() {
-
-    // Generate coefficients for the current path
-    // call generate_path() which sets global cx and cy arrays for the path
-    path_section_num++;
-    
-    if (path_section_num >= sizeof(traj_durations) / sizeof(int)) {
-        path_section_num = 1;
-        if (!do_loop) {
-            set_motor_pwms(0,0);
-            exit(0);
-        }
-    }
-
-    cx = x_traj_coeffs[path_section_num];
-    cy = y_traj_coeffs[path_section_num];
-    traj_duration = traj_durations[path_section_num];
-    tf = t + traj_durations[path_section_num];
-}
-
 void read_camera(){
     if (Serial2.available()) {
         temp = read_float(',');
@@ -565,7 +531,6 @@ void read_camera(){
     }
 }
 
-HardwareSerial Serial2(PA3, PA2);
 void setup() {
     Serial2.begin(460800);
     SPI.setMISO(SPI_MISO_PIN);
@@ -621,12 +586,11 @@ void loop() {
     x2 = x_puck;
     y2 = y_puck;
 
-    classical_agent(xm, ym, x1, y1, x2, y2);
-
     if (t > tf) {
         path_start_time = t;
-        get_target_from_hlc();
     }
+
+    classical_agent(xm, ym, x1, y1, x2, y2);
   
     float u = (t-path_start_time) / traj_duration;
     float power_2 = u*u;
@@ -648,8 +612,5 @@ void loop() {
     }
 
     command_motors(x_pos, y_pos, t, previous_time);
-
     previous_time = t;
-    xf_prev = xf;
-    yf_prev = yf;
 }
