@@ -1,13 +1,3 @@
 {
-    "files.associations": {
-        "eigen": "cpp",
-        "dense": "cpp",
-        "sparse": "cpp",
-        "core": "cpp",
-        "array": "cpp",
-        "cmath": "cpp",
-        "complex": "cpp",
-        "*.tcc": "cpp",
-        "algorithm": "cpp"
-    }
+  "C_Cpp_Runner.msvcBatchPath": ""
 }
