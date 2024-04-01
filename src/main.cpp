@@ -69,6 +69,9 @@ float path_start_time;
 float traj_duration = -1; //Initialize to non-zero because it gets used to find the initial velocity in generate_path()
 float x_puck, y_puck;
 
+float xp_prev = -1;
+float yp_prev = -1;
+
 float ff[2][2][4] = {
                         {
                             {4.474910e-06, 7.149068e-03, 5.342087e-02,-9.214972e-17,},
@@ -521,13 +524,18 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
     tf = path_start_time + path_time;
 }
 
-void read_camera(){
+bool read_camera(){
+    float temp;
     if (Serial2.available()) {
         temp = read_float(',');
         x_puck = read_float(',');
         y_puck = read_float(',');
         temp = read_float(',');
         temp = read_float('\n');
+        return true;
+    }
+    else{
+        return false;
     }
 }
 
@@ -568,6 +576,12 @@ void setup() {
     Serial2.println("BEGIN CSV");
     Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM, Right_PWM");
 
+    while(!read_camera()){
+        //wait for first frame to be saved
+    }
+    xp_prev = x_puck; //TODO define variables as global
+    yp_prev = y_puck;
+
     previous_time = 0;
     start_time = micros();
     tf = 0;
@@ -579,19 +593,12 @@ void loop() {
     std::array<float,2> current_angles = read_motor_angles();
     std::array<float,2> current_pos = theta_to_xy(current_angles[0], current_angles[1]);
 
-    xm = current_pos[0];
-    ym = current_pos[1];
-    x1 = x2;
-    y1 = y2;
-    x2 = x_puck;
-    y2 = y_puck;
-
-    if (t > tf) {
-        path_start_time = t;
+    if(read_camera()){
+        classical_agent(current_pos[0], current_pos[1], xp_prev, yp_prev, x_puck, y_puck);
+        xp_prev = x_puck;
+        yp_prev = y_puck;
     }
-
-    classical_agent(xm, ym, x1, y1, x2, y2);
-  
+    
     float u = (t-path_start_time) / traj_duration;
     float power_2 = u*u;
     float power_3 = power_2*u;
