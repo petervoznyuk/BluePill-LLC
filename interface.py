@@ -7,7 +7,7 @@ import sys
 from datetime import datetime
 
 class PuckTracker():
-    def __init__(self, com_port="COM5"):
+    def __init__(self, com_port="COM3"):
         self.start_time = time.time()
         self.dir_path = os.path.dirname(os.path.realpath(__file__))
         self.com_port = com_port

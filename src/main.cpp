@@ -39,7 +39,7 @@
 #define STATIONARY_THRESHOLD 0.02       //meters - if puck has travelled less than this distance between frames it is stationary
 #define FRAMERATE 60                    //FPS - Of the camera
 #define DEFAULT_INTERCEPT_TIME 0.2      //s - Time to destination if destination is stationary
-#define DEFAULT_INTERCEPT_SPEED 4       //m/s - Speed to hit puck at
+#define DEFAULT_INTERCEPT_SPEED 0       //m/s - Speed to hit puck at
 
 //PID Controller Constants
 #define KP 1.0
@@ -140,7 +140,7 @@ float time_to_intersection(float x1, float y1, float x2, float y2){
 State agent_state_selector(float x1, float y1, float x2, float y2){
     bool puck_in_our_half = y2<ICE_HEIGHT/2;
     Direction puck_direction = LEAVING;
-    if(abs(y2-y1) <STATIONARY_THRESHOLD and abs(x2-x1) <STATIONARY_THRESHOLD){
+    if(abs(y2-y1) < STATIONARY_THRESHOLD && abs(x2-x1) < STATIONARY_THRESHOLD){
         puck_direction = STATIONARY;
     }
     else if(y1-y2 > 0){
@@ -149,7 +149,7 @@ State agent_state_selector(float x1, float y1, float x2, float y2){
     if(puck_direction == APPROACHING){
         return DEFEND;
     }
-    else if(puck_direction == STATIONARY and puck_in_our_half){
+    else if(puck_direction == STATIONARY && puck_in_our_half){
         return ATTACK;
     }
     else{
@@ -488,6 +488,10 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     Serial2.print(left_pwm);
     Serial2.print(",");
     Serial2.println(right_pwm);
+    Serial2.print(",");
+    Serial2.print(x_puck);
+    Serial2.print(",");
+    Serial2.print(y_puck);
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -615,10 +619,10 @@ void setup() {
     while (!Serial.available()) {
         // wait for serial to become available
     }
-    delay(500);
+    delay(500); 
 
     Serial2.println("BEGIN CSV");
-    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM, Right_PWM");
+    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,x_puck,y_puck");
 
     while(!read_camera()){
         //wait for first frame to be saved
