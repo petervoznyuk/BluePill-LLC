@@ -4,3 +4,4 @@ platformio.ini
 run_table.sh
 *.zip
 run_table.sh
+.vscode/settings.json
