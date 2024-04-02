@@ -99,6 +99,25 @@ enum Direction{
   LEAVING
 };
 
+// Function prototypes
+float location_of_intersection(float x1, float y1, float x2, float y2);
+float time_to_intersection(float x1, float y1, float x2, float y2);
+State agent_state_selector(float x1, float y1, float x2, float y2);
+float bounce_coordinate_calculator(bool left_bounce, float xi, float yi);
+float get_attack_angle(float x1, float y1, float x2, float y2);
+void execute_shot(float t, float x, float y, float theta, float v);
+void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2);
+std::array<float, 2> read_motor_angles();
+std::array<float,2> theta_to_xy(float theta_l, float theta_r);
+std::array<float,2> xy_to_theta(float x, float y);
+void set_motor_pwms(float left, float right);
+float pid(float error, float accumulated_error, float previous_error, double dt);
+void home_table(float x_speed, float y_speed, float position_threshold);
+void command_motors(float x_pos, float y_pos, double current_time, double previous_time);
+void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time);
+bool read_camera();
+float read_float(char end);
+
 float location_of_intersection(float x1, float y1, float x2, float y2) {
   float h = y1 - INTERSECTION_Y;
   float w = h*(x1-x2)/(y1-y2) - x1;
@@ -152,7 +171,7 @@ float get_attack_angle(float x1, float y1, float x2, float y2){
 }
 
 void execute_shot(float t, float x, float y, float theta, float v){
-  generate_path(x, y, theta, v, t)
+  generate_path(x, y, theta, v, t);
 }
 
 void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2){
@@ -434,11 +453,11 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
 
     std::array<float, 2> feed_forward_values = feed_forward((current_time-path_start_time)/traj_duration);
     
-    float left_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[0]), max_pwm);
-    float right_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[1]), max_pwm);
+    float left_feed_forward = fmin(fmax(-MAX_PWM, feed_forward_values[0]), MAX_PWM);
+    float right_feed_forward = fmin(fmax(-MAX_PWM, feed_forward_values[1]), MAX_PWM);
 
-    float left_pwm = fmin(fmax(-max_pwm, left_pid + left_feed_forward), max_pwm);
-    float right_pwm = fmin(fmax(-max_pwm, right_pid + right_feed_forward), max_pwm);
+    float left_pwm = fmin(fmax(-MAX_PWM, left_pid + left_feed_forward), MAX_PWM);
+    float right_pwm = fmin(fmax(-MAX_PWM, right_pid + right_feed_forward), MAX_PWM);
 
     Serial2.print(current_time*1000);
     Serial2.print(",");
@@ -497,8 +516,8 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
         vx_initial = 0;
         vy_initial = 0;
     }
-    float vf_x = math.cos(theta);
-    float vf_y = math.sin(theta);
+    float vf_x = cos(vf_theta);
+    float vf_y = sin(vf_theta);
 
     //Back off from the "intecept point" because the collision occurs when the mallet and puck
     //are radius_puck + radius_mallet apart from each other.
@@ -524,7 +543,32 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
     tf = path_start_time + path_time;
 }
 
-bool read_camera(){
+float read_float(char end) {
+  char buffer[10];
+  byte index = 0;
+  bool isNegative = false;
+  while (true) {
+    while (Serial2.available() == 0) {} // wait for a byte to be available
+    char incoming = Serial2.read();
+    if (incoming == '-') {
+      isNegative = true;
+    } else if (incoming == '.') {
+      buffer[index++] = incoming;
+    } else if (incoming >= '0' && incoming <= '9') {
+      buffer[index++] = incoming;
+    } else if (incoming == end) {
+      break;
+    }
+  }
+  buffer[index] = '\0';
+  float number = atof(buffer);
+  if (isNegative) {
+    number *= -1;
+  }
+  return number;
+}
+
+bool read_camera() {
     float temp;
     if (Serial2.available()) {
         temp = read_float(',');
@@ -579,7 +623,7 @@ void setup() {
     while(!read_camera()){
         //wait for first frame to be saved
     }
-    xp_prev = x_puck; //TODO define variables as global
+    xp_prev = x_puck;
     yp_prev = y_puck;
 
     previous_time = 0;
