@@ -39,7 +39,7 @@
 #define STATIONARY_THRESHOLD 0.02       //meters - if puck has travelled less than this distance between frames it is stationary
 #define FRAMERATE 60                    //FPS - Of the camera
 #define DEFAULT_INTERCEPT_TIME 0.2      //s - Time to destination if destination is stationary
-#define DEFAULT_INTERCEPT_SPEED 0       //m/s - Speed to hit puck at
+#define DEFAULT_INTERCEPT_SPEED 1       //m/s - Speed to hit puck at
 
 //PID Controller Constants
 #define KP 1.0
@@ -171,6 +171,16 @@ float get_attack_angle(float x1, float y1, float x2, float y2){
 }
 
 void execute_shot(float t, float x, float y, float theta, float v){
+  Serial2.println("t, x_cmd, y_cmd, theta, v");
+  Serial2.print(t);
+  Serial2.print(",");
+  Serial2.print(x);
+  Serial2.print(",");
+  Serial2.print(y);
+  Serial2.print(",");
+  Serial2.print(theta);
+  Serial2.print(",");
+  Serial2.print(v);
   generate_path(x, y, theta, v, t);
 }
 
@@ -192,12 +202,14 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
 
   switch(new_state){
     case HOME:
+      Serial2.println("HOME STATE");
       destination_x = ICE_WIDTH/2;
       destination_y = HOME_Y;
       approach_angle = atan((ym-HOME_Y)/(xm-ICE_WIDTH/2));
       approach_speed = 0;
     break;
     case ATTACK:
+      Serial2.println("ATTACK STATE");
       shot_type = random(0,3); //0 is left, 1 is right, 2 is straight
       left_bounce = shot_type == 0;
       straight_shot = shot_type == 2;
@@ -218,6 +230,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
       }
     break;
     case DEFEND:
+      Serial2.println("DEFEND STATE");
       shot_type = random(0,3); //0 is left, 1 is right, 2 is straight
       left_bounce = shot_type == 0;
       straight_shot = shot_type == 2;
@@ -240,8 +253,8 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
         time_to_destination = time_to_intersection(x1, y1, x2, y2);
       }
     break;
-    execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed);
   }
+  execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed);
 }
 //End Agent Code
 
@@ -313,6 +326,7 @@ Command a motor velocity to the specified motor.
 input values should be in the range [-100,100].
 */
 void set_motor_pwms(float left, float right) {
+    // Serial2.println("COMMANDING MOTORS");
     bool enable_motors = digitalRead(ENABLE_MOTOR_PIN);
     if (!enable_motors) {
         left = 0;
@@ -459,40 +473,40 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_pwm = fmin(fmax(-MAX_PWM, left_pid + left_feed_forward), MAX_PWM);
     float right_pwm = fmin(fmax(-MAX_PWM, right_pid + right_feed_forward), MAX_PWM);
 
-    Serial2.print(current_time*1000);
-    Serial2.print(",");
-    Serial2.print(x_pos*100);
-    Serial2.print(",");
-    Serial2.print(y_pos*100);
-    Serial2.print(",");
-    Serial2.print(actual_pos[0]*100);
-    Serial2.print(",");
-    Serial2.print(actual_pos[1]*100);
-    Serial2.print(",");
-    Serial2.print(actual_angles[0]);
-    Serial2.print(",");
-    Serial2.print(actual_angles[1]);
-    Serial2.print(",");
-    Serial2.print(left_error);
-    Serial2.print(",");
-    Serial2.print(right_error);
-    Serial2.print(",");
-    Serial2.print(left_pid);
-    Serial2.print(",");
-    Serial2.print(right_pid);
-    Serial2.print(",");
-    Serial2.print(feed_forward_values[0]);
-    Serial2.print(",");
-    Serial2.print(feed_forward_values[1]);
-    Serial2.print(",");
-    Serial2.print(left_pwm);
-    Serial2.print(",");
-    Serial2.println(right_pwm);
-    Serial2.print(",");
-    Serial2.print(x_puck);
-    Serial2.print(",");
-    Serial2.print(y_puck);
-
+    // Serial2.print(current_time*1000);
+    // Serial2.print(",");
+    // Serial2.print(x_pos*100);
+    // Serial2.print(",");
+    // Serial2.print(y_pos*100);
+    // Serial2.print(",");
+    // Serial2.print(actual_pos[0]*100);
+    // Serial2.print(",");
+    // Serial2.print(actual_pos[1]*100);
+    // Serial2.print(",");
+    // Serial2.print(actual_angles[0]);
+    // Serial2.print(",");
+    // Serial2.print(actual_angles[1]);
+    // Serial2.print(",");
+    // Serial2.print(left_error);
+    // Serial2.print(",");
+    // Serial2.print(right_error);
+    // Serial2.print(",");
+    // Serial2.print(left_pid);
+    // Serial2.print(",");
+    // Serial2.print(right_pid);
+    // Serial2.print(",");
+    // Serial2.print(feed_forward_values[0]);
+    // Serial2.print(",");
+    // Serial2.print(feed_forward_values[1]);
+    // Serial2.print(",");
+    // Serial2.print(left_pwm);
+    // Serial2.print(",");
+    // Serial2.println(right_pwm);
+    // Serial2.print(",");
+    // Serial2.print(x_puck);
+    // Serial2.print(",");
+    // Serial2.print(y_puck);
+    
     set_motor_pwms(left_pwm, right_pwm);
 }
 
@@ -614,18 +628,20 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(9, 5, 10);
+    home_table(12, 5, 10);
 
-    while (!Serial.available()) {
+    while (!Serial2.available()) {
         // wait for serial to become available
     }
     delay(500); 
-
+    
     Serial2.println("BEGIN CSV");
-    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,x_puck,y_puck");
+    // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,x_puck,y_puck");
+    // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,x_puck,y_puck");
 
     while(!read_camera()){
         //wait for first frame to be saved
+        Serial2.println("WAITING FOR CAMERA");
     }
     xp_prev = x_puck;
     yp_prev = y_puck;
@@ -641,7 +657,8 @@ void loop() {
     std::array<float,2> current_angles = read_motor_angles();
     std::array<float,2> current_pos = theta_to_xy(current_angles[0], current_angles[1]);
 
-    if(read_camera()){
+    if(read_camera() && t > path_start_time + traj_duration){
+        // Serial2.println("CAMERA READ");
         classical_agent(current_pos[0], current_pos[1], xp_prev, yp_prev, x_puck, y_puck);
         xp_prev = x_puck;
         yp_prev = y_puck;

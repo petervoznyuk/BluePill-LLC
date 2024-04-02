@@ -1,0 +1,162 @@
+BEGIN CSV
+Fully Homed
+BEGIN CSV
+HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.12,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.27,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.41,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.42,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,0.38,0.00DEFEND STATE
+t, x_cmd, y_cmd, theta, v
+0.25,0.25,0.20,1.44,1.00DEFEND STATE
+t, x_cmd, y_cmd, theta, v
+0.90,0.05,0.20,-1.54,1.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.37,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.33,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.47,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00HOME STATE
+t, x_cmd, y_cmd, theta, v
+0.20,0.50,0.10,-0.44,0.00DEFEND STATE
+t, x_cmd, y_cmd, theta, v
+120.23,-0.02,0.20,1.29,1.00
