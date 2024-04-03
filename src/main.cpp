@@ -39,7 +39,7 @@
 #define STATIONARY_THRESHOLD 0.02       //meters - if puck has travelled less than this distance between frames it is stationary
 #define FRAMERATE 60                    //FPS - Of the camera
 #define DEFAULT_INTERCEPT_TIME 0.2      //s - Time to destination if destination is stationary
-#define DEFAULT_INTERCEPT_SPEED 1       //m/s - Speed to hit puck at
+#define DEFAULT_INTERCEPT_SPEED 0       //m/s - Speed to hit puck at
 
 //PID Controller Constants
 #define KP 1.0
@@ -146,6 +146,7 @@ State agent_state_selector(float x1, float y1, float x2, float y2){
     else if(y1-y2 > 0){
         puck_direction = APPROACHING;
     }
+
     if(puck_direction == APPROACHING){
         return DEFEND;
     }
@@ -628,7 +629,7 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(12, 5, 10);
+    home_table(12, 10, 10);
 
     while (!Serial2.available()) {
         // wait for serial to become available
@@ -657,7 +658,7 @@ void loop() {
     std::array<float,2> current_angles = read_motor_angles();
     std::array<float,2> current_pos = theta_to_xy(current_angles[0], current_angles[1]);
 
-    if(read_camera() && t > path_start_time + traj_duration){
+    if(read_camera() && t > (path_start_time + traj_duration)){
         // Serial2.println("CAMERA READ");
         classical_agent(current_pos[0], current_pos[1], xp_prev, yp_prev, x_puck, y_puck);
         xp_prev = x_puck;
