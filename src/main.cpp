@@ -70,6 +70,10 @@ float path_start_time;
 float traj_duration = -1;  // Initialize to non-zero because it gets used to find the initial velocity in generate_path()
 float x_puck, y_puck;
 
+// Define variables to home when puck is missing
+float puck_missing_frames = 0.0;
+float PUCK_MISSING_HOME_THRESHOLD = 6;
+
 float xp_prev = -1;
 float yp_prev = -1;
 
@@ -161,6 +165,9 @@ State agent_state_selector(float x1, float y1, float x2, float y2) {
         puck_direction = STATIONARY;
     } else if (y1 - y2 > 0) {
         puck_direction = APPROACHING;
+    }
+    if (puck_missing_frames > PUCK_MISSING_HOME_THRESHOLD) {
+        return HOME;
     }
 
     if (puck_direction == APPROACHING) {
@@ -615,7 +622,7 @@ bool read_camera() {
         temp = read_float(',');
         x_puck = read_float(',');
         y_puck = read_float(',');
-        temp = read_float(',');
+        puck_missing_frames = read_float(',');
         temp = read_float('\n');
         return true;
     } else {

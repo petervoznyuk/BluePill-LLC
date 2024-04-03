@@ -252,6 +252,7 @@ class AirHockeyAgent():
         self.x_pos = -1
         self.y_pos = -1
         self.puck_vel = [0.0, 0.0]
+        self.missing_frames = 0
         
         # # Make the image 200x400, two pixels per cm
         # self.des_image_shape = (200, 400)
@@ -291,7 +292,7 @@ class AirHockeyAgent():
 
 
     def send_to_bluepill(self):
-        msg = f"{round(self.frame_time,4)},{round(self.x_pos,4)},{round(self.y_pos,4)},{round(0.0,4)},{round(0.0,4)}\n"
+        msg = f"{round(self.frame_time,4)},{round(self.x_pos,4)},{round(self.y_pos,4)},{round(self.missing_frames,4)},{round(0.0,4)}\n"
         print("Sending: " + msg)
         self.serial.write(msg.encode())
 
@@ -325,6 +326,9 @@ class AirHockeyAgent():
         if puckyx != -1:
             self.x_pos = puckyx[1]
             self.y_pos = puckyx[0]
+            self.missing_frames = 0
+        else:
+            self.missing_frames += 1
         # cv2.imshow('Frame',self.frame)
         # cv2.waitKey(1)
         
@@ -350,9 +354,9 @@ if __name__ == '__main__':
                     help="Calibrate the table", action="store_true", default=False)
     parser.add_option("-p", "--port",
                     dest="com_port", default="COM5",
-                    help="Define com_port")
+                    help="Define com_port, default COM5")
     parser.add_option("-v", "--camera",
-                    dest="camera_number", default=1,
+                    dest="camera_number", default=1, type="int",
                     help="Define camera number")
     parser.add_option("-d", "--display",
                     dest="do_display", default=False, action="store_true",
