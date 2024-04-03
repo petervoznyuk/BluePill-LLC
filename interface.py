@@ -5,12 +5,14 @@ import cv2
 import serial
 import sys
 from time import sleep
+import pickle
+from optparse import OptionParser
 from datetime import datetime
 
 class PuckTracker():
-    def __init__(self, cameraIndex=1):
+    def __init__(self, cameraIndex=1, do_calibrate=False, do_display=False):
         #Define Constants
-
+        self.do_display = do_display
         self.FRAME_RATE = 60
 
         self.camera_matrix = np.array([[527.48423865, 0, 282.80328981],[0, 526.83629526, 213.53076347],[0, 0, 1]])
@@ -82,8 +84,15 @@ class PuckTracker():
             if cv2.waitKey(1)&0XFF == ord('q'):
                 break
                 
-        # Calibration
-        self.M = self.calibration(frame)
+        if do_calibrate:
+            # Calibration
+            self.M = self.calibration(frame)
+        else:
+            try:
+                self.M = pickle.load(open("calibrationMat.bin", "rb"))
+            except:
+                print("Calibration Failed, no matrix saved")
+                exit(1)
 
         # Write the pre- and post- calibration images to confirm it calibrated correctly
         cv2.imwrite('Uncalibrated.png',frame)
@@ -161,6 +170,7 @@ class PuckTracker():
         M = cv2.getPerspectiveTransform(table_corners,output_pts)
         #image = cv2.warpPerspective(image,M,(output_length_pixels, output_width_pixels),flags=cv2.INTER_LINEAR)
         #cv2.imshow(image)
+        pickle.dump(M, open("calibrationMat.bin", "wb"))
 
         print("Calibration complete.")
         
@@ -204,6 +214,13 @@ class PuckTracker():
         size = [key_point.size for key_point in keypoints]
         index = max(range(len(size)), key=size.__getitem__)
         puckyx = keypoints[index].pt
+
+        if self.do_display:
+            # Draw a circle on the puck in the image
+            disp_loc = tuple(map(int,puckyx))
+            disp_image = cv2.circle(image, disp_loc, 2, (0,255,255),2)
+            cv2.imshow('Processed image', disp_image)
+
         puckyx = tuple(float(elem)/(self.scaling_factor*100) for elem in puckyx)
 
         # Rotate the coordinate system by 180
@@ -217,7 +234,7 @@ class PuckTracker():
 
 
 class AirHockeyAgent():
-    def __init__(self, com_port="COM3"):
+    def __init__(self, com_port="COM3", camera_number=1, do_calibrate=False, do_display=False):
         self.start_time = time.time()
         self.dir_path = os.path.dirname(os.path.realpath(__file__))
         self.com_port = com_port
@@ -249,7 +266,7 @@ class AirHockeyAgent():
         # self.vid = cv2.VideoCapture('udp://0.0.0.0:10000?overrun_nonfatal=1&fifo_size=5000000')
 
         # Initialize puck tracker
-        self.puck_Tracker = PuckTracker(1)
+        self.puck_Tracker = PuckTracker(camera_number, do_calibrate, do_display)
         # print("about to readall")
         self.serial.read_all()
         self.serial.read_until("\n")
@@ -280,7 +297,7 @@ class AirHockeyAgent():
 
     
     def read_from_bluepill(self):
-        print('Reading from Blue Pill')
+        # print('Reading from Blue Pill')
         data = self.serial.read_all()
         try:
             data = data.decode().replace('\r\n','\n')
@@ -311,7 +328,7 @@ class AirHockeyAgent():
         # cv2.imshow('Frame',self.frame)
         # cv2.waitKey(1)
         
-        print(f"{self.x_pos}\t{self.y_pos}")
+        # print(f"{self.x_pos}\t{self.y_pos}")
         
         if self.should_send_msg() and self.running:
             self.send_to_bluepill()
@@ -323,16 +340,32 @@ class AirHockeyAgent():
     def destroy(self):
         self.puck_Tracker.destroy()
         # self.read_from_bluepill()
-        # self.logger.close()
+        self.logger.close()
         self.serial.close()
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        com_port = sys.argv[1]    
-        agent = AirHockeyAgent(com_port)
-    else:
-        agent = AirHockeyAgent()
+    parser = OptionParser()
+    parser.add_option("-c", "--calibrate", dest="do_calibrate",
+                    help="Calibrate the table", action="store_true", default=False)
+    parser.add_option("-p", "--port",
+                    dest="com_port", default="COM5",
+                    help="Define com_port")
+    parser.add_option("-v", "--camera",
+                    dest="camera_number", default=1,
+                    help="Define camera number")
+    parser.add_option("-d", "--display",
+                    dest="do_display", default=False, action="store_true",
+                    help="Display camera feed")
+    
+    (options, args) = parser.parse_args()
+
+    com_port = options.com_port
+    do_calibrate = options.do_calibrate
+    camera_number = options.camera_number
+    do_display = options.do_display
+    
+    agent = AirHockeyAgent(com_port, camera_number, do_calibrate, do_display)
 
     try:
         while(True):
