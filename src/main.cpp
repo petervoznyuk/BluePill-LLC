@@ -185,16 +185,19 @@ float get_attack_angle(float x1, float y1, float x2, float y2) {
 }
 
 void execute_shot(float t, float x, float y, float theta, float v) {
-    Serial2.println("t, x_cmd, y_cmd, theta, v");
-    Serial2.print(t);
-    Serial2.print(",");
-    Serial2.print(x);
-    Serial2.print(",");
-    Serial2.print(y);
-    Serial2.print(",");
-    Serial2.print(theta);
-    Serial2.print(",");
-    Serial2.print(v);
+    if (STATE_LOGGING) {
+        Serial2.println("t, x_cmd, y_cmd, theta, v");
+        Serial2.print(t);
+        Serial2.print(",");
+        Serial2.print(x);
+        Serial2.print(",");
+        Serial2.print(y);
+        Serial2.print(",");
+        Serial2.print(theta);
+        Serial2.print(",");
+        Serial2.print(v);
+    }
+
     generate_path(x, y, theta, v, t);
 }
 
@@ -216,14 +219,18 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
 
     switch (new_state) {
         case HOME:
-            Serial2.println("HOME STATE");
+            if (STATE_LOGGING) {
+                Serial2.println("HOME STATE");
+            }
             destination_x = ICE_WIDTH / 2;
             destination_y = HOME_Y;
             approach_angle = atan((ym - HOME_Y) / (xm - ICE_WIDTH / 2));
             approach_speed = 0;
             break;
         case ATTACK:
-            Serial2.println("ATTACK STATE");
+            if (STATE_LOGGING) {
+                Serial2.println("ATTACK STATE");
+            }
             shot_type = 1;  // 0 is left, 1 is right, 2 is straight
             left_bounce = shot_type == 0;
             straight_shot = shot_type == 2;
@@ -243,7 +250,9 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             }
             break;
         case DEFEND:
-            Serial2.println("DEFEND STATE");
+            if (STATE_LOGGING) {
+                Serial2.println("DEFEND STATE");
+            }
             shot_type = 1;  // 0 is left, 1 is right, 2 is straight
             left_bounce = shot_type == 0;
             straight_shot = shot_type == 2;
@@ -483,39 +492,42 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_pwm = fmin(fmax(-MAX_PWM, left_pid + left_feed_forward), MAX_PWM);
     float right_pwm = fmin(fmax(-MAX_PWM, right_pid + right_feed_forward), MAX_PWM);
 
-    // Serial2.print(current_time*1000);
-    // Serial2.print(",");
-    // Serial2.print(x_pos*100);
-    // Serial2.print(",");
-    // Serial2.print(y_pos*100);
-    // Serial2.print(",");
-    // Serial2.print(actual_pos[0]*100);
-    // Serial2.print(",");
-    // Serial2.print(actual_pos[1]*100);
-    // Serial2.print(",");
-    // Serial2.print(actual_angles[0]);
-    // Serial2.print(",");
-    // Serial2.print(actual_angles[1]);
-    // Serial2.print(",");
-    // Serial2.print(left_error);
-    // Serial2.print(",");
-    // Serial2.print(right_error);
-    // Serial2.print(",");
-    // Serial2.print(left_pid);
-    // Serial2.print(",");
-    // Serial2.print(right_pid);
-    // Serial2.print(",");
-    // Serial2.print(feed_forward_values[0]);
-    // Serial2.print(",");
-    // Serial2.print(feed_forward_values[1]);
-    // Serial2.print(",");
-    // Serial2.print(left_pwm);
-    // Serial2.print(",");
-    // Serial2.println(right_pwm);
-    // Serial2.print(",");
-    // Serial2.print(x_puck);
-    // Serial2.print(",");
-    // Serial2.print(y_puck);
+    if (!STATE_LOGGING) {
+        Serial2.print(current_time*1000);
+        Serial2.print(",");
+        Serial2.print(x_pos*100);
+        Serial2.print(",");
+        Serial2.print(y_pos*100);
+        Serial2.print(",");
+        Serial2.print(actual_pos[0]*100);
+        Serial2.print(",");
+        Serial2.print(actual_pos[1]*100);
+        Serial2.print(",");
+        Serial2.print(actual_angles[0]);
+        Serial2.print(",");
+        Serial2.print(actual_angles[1]);
+        Serial2.print(",");
+        Serial2.print(left_error);
+        Serial2.print(",");
+        Serial2.print(right_error);
+        Serial2.print(",");
+        Serial2.print(left_pid);
+        Serial2.print(",");
+        Serial2.print(right_pid);
+        Serial2.print(",");
+        Serial2.print(feed_forward_values[0]);
+        Serial2.print(",");
+        Serial2.print(feed_forward_values[1]);
+        Serial2.print(",");
+        Serial2.print(left_pwm);
+        Serial2.print(",");
+        Serial2.println(right_pwm);
+        Serial2.print(",");
+        Serial2.print(x_puck);
+        Serial2.print(",");
+        Serial2.print(y_puck);
+    }
+
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -646,7 +658,9 @@ void setup() {
     delay(500);
 
     Serial2.println("BEGIN CSV");
-    // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,x_puck,y_puck");
+    if (!STATE_LOGGING) {
+        Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Mallet(cm),Y_Mallet(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,X_Puck,Y_Puck");
+    }
     // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,x_puck,y_puck");
 
     while (!read_camera()) {
