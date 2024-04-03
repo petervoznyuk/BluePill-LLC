@@ -8,6 +8,7 @@ from time import sleep
 import pickle
 from optparse import OptionParser
 from datetime import datetime
+from pathlib import Path
 
 class PuckTracker():
     def __init__(self, cameraIndex=1, do_calibrate=False, do_display=False):
@@ -282,7 +283,9 @@ class AirHockeyAgent():
 
     
     def _create_logger(self):
-        file_name = self.dir_path + '/data/2024-03-20/Mimic/' + datetime.now().strftime("%Y%m%d_time%H%M%S.csv")
+        path_name = self.dir_path + datetime.now().strftime("/data/%Y-%m-%d/")
+        Path(path_name).mkdir(parents=True, exist_ok=True)
+        file_name = path_name + datetime.now().strftime("%Y%m%d_time%H%M%S.csv")
         self.logger = open(file_name, "w")
         self.logger.write("BEGIN CSV\n")
 
