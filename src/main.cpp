@@ -40,7 +40,7 @@
 #define STATIONARY_THRESHOLD 0.02   // meters - if puck has travelled less than this distance between frames it is stationary
 #define FRAMERATE 60                // FPS - Of the camera
 #define DEFAULT_INTERCEPT_TIME 0.2  // s - Time to destination if destination is stationary
-#define DEFAULT_INTERCEPT_SPEED 0   // m/s - Speed to hit puck at
+#define DEFAULT_INTERCEPT_SPEED 1   // m/s - Speed to hit puck at
 
 // PID Controller Constants
 #define KP 1.0
@@ -124,7 +124,7 @@ enum Direction {
 // Function prototypes
 float location_of_intersection(float x1, float y1, float x2, float y2);
 float time_to_intersection(float x1, float y1, float x2, float y2);
-State agent_state_selector(float x1, float y1, float x2, float y2);
+State agent_state_selector(float xm, float ym, float x1, float y1, float x2, float y2);
 float bounce_coordinate_calculator(bool left_bounce, float xi, float yi);
 float get_attack_angle(float x1, float y1, float x2, float y2);
 void execute_shot(float t, float x, float y, float theta, float v);
@@ -158,17 +158,26 @@ float time_to_intersection(float x1, float y1, float x2, float y2) {
     return sqrt(h * h + w * w) / speed;
 }
 
-State agent_state_selector(float x1, float y1, float x2, float y2) {
+State agent_state_selector(float xm, float ym, float x1, float y1, float x2, float y2) {
     bool puck_in_our_half = y2 < ICE_HEIGHT / 2;
     Direction puck_direction = LEAVING;
+
+    // IF PUCK MISSING GO HOME
+    if (puck_missing_frames > PUCK_MISSING_HOME_THRESHOLD) {
+        return HOME;
+    }
+
+    // IF PUCK PAST MALLET GO HOME
+    if (y2 < ym) {
+        return HOME;
+    }
+
     if (abs(y2 - y1) < STATIONARY_THRESHOLD && abs(x2 - x1) < STATIONARY_THRESHOLD) {
         puck_direction = STATIONARY;
     } else if (y1 - y2 > 0) {
         puck_direction = APPROACHING;
     }
-    if (puck_missing_frames > PUCK_MISSING_HOME_THRESHOLD) {
-        return HOME;
-    }
+
 
     if (puck_direction == APPROACHING) {
         return DEFEND;
@@ -209,7 +218,7 @@ void execute_shot(float t, float x, float y, float theta, float v) {
 }
 
 void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2) {
-    State new_state = agent_state_selector(x1, y1, x2, y2);
+    State new_state = agent_state_selector(xm, ym, x1, y1, x2, y2);
 
     float time_to_destination = DEFAULT_INTERCEPT_TIME;
     float destination_x = 0;
@@ -528,11 +537,11 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
         Serial2.print(",");
         Serial2.print(left_pwm);
         Serial2.print(",");
-        Serial2.println(right_pwm);
+        Serial2.print(right_pwm);
         Serial2.print(",");
         Serial2.print(x_puck);
         Serial2.print(",");
-        Serial2.print(y_puck);
+        Serial2.println(y_puck);
     }
 
 
@@ -657,7 +666,7 @@ void setup() {
 
     read_motor_angles();  // Need a dummy call to get the previous angle variable set properly
 
-    home_table(12, 10, 10);
+    home_table(13, 10, 10);
 
     while (!Serial2.available()) {
         // wait for serial to become available
@@ -665,9 +674,8 @@ void setup() {
     delay(500);
 
     Serial2.println("BEGIN CSV");
-    if (!STATE_LOGGING) {
-        Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Mallet(cm),Y_Mallet(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,X_Puck,Y_Puck");
-    }
+    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Mallet(cm),Y_Mallet(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,X_Puck,Y_Puck");
+
     // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,x_puck,y_puck");
 
     while (!read_camera()) {
@@ -693,6 +701,11 @@ void loop() {
         classical_agent(current_pos[0], current_pos[1], xp_prev, yp_prev, x_puck, y_puck);
         xp_prev = x_puck;
         yp_prev = y_puck;
+    }
+
+    if (t > tf) {
+        set_motor_pwms(0,0);
+        return;
     }
 
     float u = (t - path_start_time) / traj_duration;
