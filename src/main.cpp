@@ -127,7 +127,7 @@ float time_to_intersection(float x1, float y1, float x2, float y2);
 State agent_state_selector(float xm, float ym, float x1, float y1, float x2, float y2);
 float bounce_coordinate_calculator(bool left_bounce, float xi, float yi);
 float get_attack_angle(float x1, float y1, float x2, float y2);
-void execute_shot(float t, float x, float y, float theta, float v);
+void execute_shot(float t, float x, float y, float theta, float v, bool do_offset);
 void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2);
 std::array<float, 2> read_motor_angles();
 std::array<float, 2> theta_to_xy(float theta_l, float theta_r);
@@ -136,7 +136,7 @@ void set_motor_pwms(float left, float right);
 float pid(float error, float accumulated_error, float previous_error, double dt);
 void home_table(float x_speed, float y_speed, float position_threshold);
 void command_motors(float x_pos, float y_pos, double current_time, double previous_time);
-void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time);
+void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time, bool do_offset);
 bool read_camera();
 float read_float(char end);
 
@@ -200,7 +200,7 @@ float get_attack_angle(float x1, float y1, float x2, float y2) {
     return atan((y1 - y2) / (x1 - x2));
 }
 
-void execute_shot(float t, float x, float y, float theta, float v) {
+void execute_shot(float t, float x, float y, float theta, float v, bool do_offset) {
     if (STATE_LOGGING) {
         Serial2.println("t, x_cmd, y_cmd, theta, v");
         Serial2.print(t);
@@ -214,7 +214,7 @@ void execute_shot(float t, float x, float y, float theta, float v) {
         Serial2.print(v);
     }
 
-    generate_path(x, y, theta, v, t);
+    generate_path(x, y, theta, v, t, do_offset);
 }
 
 void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2) {
@@ -229,6 +229,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
     int shot_type = 0;
     bool left_bounce = false;
     bool straight_shot = false;
+    bool do_offset = true;
     float x_bounce = 0;
     float y_bounce = 0;
     float intersection_x = 0;
@@ -242,6 +243,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             destination_y = HOME_Y;
             approach_angle = atan((ym - HOME_Y) / (xm - ICE_WIDTH / 2));
             approach_speed = 0;
+            do_offset = false;
             break;
         case ATTACK:
             if (STATE_LOGGING) {
@@ -291,7 +293,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             }
             break;
     }
-    execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed);
+    execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed, do_offset);
 }
 // End Agent Code
 
@@ -553,7 +555,7 @@ Generate the path and its coefficients for the given HLC target. Calculations fr
 https://en.wikipedia.org/wiki/B%C3%A9zier_curve
 */
 
-void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time) {
+void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time, bool do_offset) {
     std::array<float, 2> current_angles = read_motor_angles();
     float x_initial = theta_to_xy(current_angles[0], current_angles[1])[0];
     float y_initial = theta_to_xy(current_angles[0], current_angles[1])[1];
@@ -577,8 +579,17 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
 
     // Back off from the "intecept point" because the collision occurs when the mallet and puck
     // are radius_puck + radius_mallet apart from each other.
-    float intercept_point_x = x_puck - vf_x * (MALLET_RADIUS + PUCK_RADIUS);
-    float intercept_point_y = y_puck - vf_y * (MALLET_RADIUS + PUCK_RADIUS);
+    float intercept_point_x;
+    float intercept_point_y;
+    if (do_offset) {
+        intercept_point_x = x_puck - vf_x * (MALLET_RADIUS + PUCK_RADIUS);
+        intercept_point_y = y_puck - vf_y * (MALLET_RADIUS + PUCK_RADIUS);
+    }
+    else {
+        intercept_point_x = x_puck;
+        intercept_point_y = y_puck;
+    }
+
 
     // Scale the final velocity at the intercept
     float v_3_x = vf_x * vf_magnitude;
