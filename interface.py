@@ -11,9 +11,10 @@ from datetime import datetime
 from pathlib import Path
 
 class PuckTracker():
-    def __init__(self, cameraIndex=1, do_calibrate=False, do_display=False):
+    def __init__(self, cameraIndex=1, do_calibrate=False, do_display=False, mode=1):
         #Define Constants
         self.do_display = do_display
+        self.mode = mode
         self.FRAME_RATE = 60
 
         self.camera_matrix = np.array([[527.48423865, 0, 282.80328981],[0, 526.83629526, 213.53076347],[0, 0, 1]])
@@ -51,6 +52,11 @@ class PuckTracker():
         # HSV values to detect puck  # define range of red color in HSV
         self.lower_puck = np.array([0,100,100])
         self.upper_puck = np.array([20,255,255])
+
+        if mode==1:
+            self.lower_puck = 200
+            self.upper_puck = 255
+        
 
         # Use table corners to perform perspective transform
         self.rectangle_dim = (self.table_dim_cm[0] + 2 * self.aruco_border_cm + self.machine_distance, self.table_dim_cm[1] + 2 * self.aruco_border_cm) # This is the dimensions of the rectangle formed by the four ArUco marker corners.
@@ -183,7 +189,10 @@ class PuckTracker():
         if not ret:
             print('frame empty')
             return -1
-        return self.__Track_puck(frame, self.M)
+        if self.mode==0:
+            return self.__Track_puck(frame, self.M)
+        if self.mode==1:
+            return self.__Track_puck(frame[:,:,2], self.M)
 
     # Puck Tracking function - Takes an image and the calibration matrix M as inputs and returns a tuple with (x,y) coordinates of the puck
     def __Track_puck(self, image, M):
@@ -195,11 +204,14 @@ class PuckTracker():
         # This is where all of the calibration happened in the last section, but we already have a matrix M so it can be skipped
         image = cv2.warpPerspective(image,M,(self.output_length_pixels, self.output_width_pixels),flags=cv2.INTER_LINEAR)
 
-        # Turning the image to hsv format for masking/blob detection
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        if self.mode == 0:
+            # Turning the image to hsv format for masking/blob detection
+            hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        # Mask it based on the upper and lower limits as defined in constants
-        mask = cv2.inRange(hsv, self.lower_puck, self.upper_puck)  # Threshold the HSV image using inRange function to get only get the puck
+            # Mask it based on the upper and lower limits as defined in constants
+            mask = cv2.inRange(hsv, self.lower_puck, self.upper_puck)  # Threshold the HSV image using inRange function to get only get the puck
+        if self.mode == 1:
+            mask = cv2.inRange(image, self.lower_puck, self.upper_puck)  # Threshold the HSV image using inRange function to get only get the puck
         keypoints = self.blob_detector.detect(mask) # Detect blobs, whose coordinates are summarized in a keypoints object
         blobs = cv2.drawKeypoints(image, keypoints, (0,255,255), cv2.DRAW_MATCHES_FLAGS_DEFAULT)
         cv2.rectangle(blobs, (self.aruco_border_cm * self.scaling_factor, self.aruco_border_cm * self.scaling_factor),
@@ -210,6 +222,8 @@ class PuckTracker():
         
         # Find location of the largest blob
         if len(keypoints) == 0:
+            if self.do_display:
+                cv2.imshow('Processed image', image)
             return -1
 
         size = [key_point.size for key_point in keypoints]
@@ -235,7 +249,7 @@ class PuckTracker():
 
 
 class AirHockeyAgent():
-    def __init__(self, com_port="COM3", camera_number=1, do_calibrate=False, do_display=False):
+    def __init__(self, com_port="COM3", camera_number=1, do_calibrate=False, do_display=False, mode=1):
         self.start_time = time.time()
         self.dir_path = os.path.dirname(os.path.realpath(__file__))
         self.com_port = com_port
@@ -245,15 +259,15 @@ class AirHockeyAgent():
 
         self.running = False
 
-        self.XMIN = 0.1
-        self.XMAX = 0.9
-        self.YMIN = 0.1
-        self.YMAX = 1.9 
+        self.XMIN = 0.0
+        self.XMAX = 1.0
+        self.YMIN = 0.0
+        self.YMAX = 2.0 
         
         self.x_pos = -1
         self.y_pos = -1
         self.puck_vel = [0.0, 0.0]
-        self.missing_frames = 0
+        self.missing_frames = 0.0
         
         # # Make the image 200x400, two pixels per cm
         # self.des_image_shape = (200, 400)
@@ -268,7 +282,7 @@ class AirHockeyAgent():
         # self.vid = cv2.VideoCapture('udp://0.0.0.0:10000?overrun_nonfatal=1&fifo_size=5000000')
 
         # Initialize puck tracker
-        self.puck_Tracker = PuckTracker(camera_number, do_calibrate, do_display)
+        self.puck_Tracker = PuckTracker(camera_number, do_calibrate, do_display, mode)
         # print("about to readall")
         self.serial.read_all()
         self.serial.read_until("\n")
@@ -364,6 +378,9 @@ if __name__ == '__main__':
     parser.add_option("-d", "--display",
                     dest="do_display", default=False, action="store_true",
                     help="Display camera feed")
+    parser.add_option("-m", "--mode",
+                    dest="mode", default=1, type="int",
+                    help="Puck mode: 0 for no LED, 1 for LED")
     
     (options, args) = parser.parse_args()
 
@@ -371,8 +388,9 @@ if __name__ == '__main__':
     do_calibrate = options.do_calibrate
     camera_number = options.camera_number
     do_display = options.do_display
+    mode = options.mode
     
-    agent = AirHockeyAgent(com_port, camera_number, do_calibrate, do_display)
+    agent = AirHockeyAgent(com_port, camera_number, do_calibrate, do_display, mode)
 
     try:
         while(True):
