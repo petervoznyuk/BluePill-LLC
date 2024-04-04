@@ -39,8 +39,8 @@
 #define HOME_Y 0.1                  // meters - y coordinate to return to and wait for next approaching shot
 #define STATIONARY_THRESHOLD 0.02   // meters - if puck has travelled less than this distance between frames it is stationary
 #define FRAMERATE 60                // FPS - Of the camera
-#define DEFAULT_INTERCEPT_TIME 0.2  // s - Time to destination if destination is stationary
-#define DEFAULT_INTERCEPT_SPEED 1   // m/s - Speed to hit puck at
+#define DEFAULT_INTERCEPT_TIME 0.4  // s - Time to destination if destination is stationary
+#define DEFAULT_INTERCEPT_SPEED 0   // m/s - Speed to hit puck at
 
 // PID Controller Constants
 #define KP 1.0
@@ -107,6 +107,8 @@ std::array<float, 4> cx = {{0, 0, 0, 0}};
 std::array<float, 4> cy = {{0, 0, 0, 0}};
 
 bool STATE_LOGGING = false;
+float frame_time;
+float frame_time_prev;
 
 // Start Agent Code
 enum State {
@@ -154,7 +156,7 @@ float time_to_intersection(float x1, float y1, float x2, float y2) {
     float h = y1 - INTERSECTION_Y;
     float w = h * (x1 - x2) / (y1 - y2) - x1;
     float position_delta = sqrtf((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1));
-    float speed = position_delta * FRAMERATE;
+    float speed = position_delta * fmin(60, 1000/(frame_time-frame_time_prev));
     return sqrt(h * h + w * w) / speed;
 }
 
@@ -174,7 +176,7 @@ State agent_state_selector(float xm, float ym, float x1, float y1, float x2, flo
 
     if (abs(y2 - y1) < STATIONARY_THRESHOLD && abs(x2 - x1) < STATIONARY_THRESHOLD) {
         puck_direction = STATIONARY;
-    } else if (y1 - y2 > 0) {
+    } else if (y1 - y2 > 0.0) {
         puck_direction = APPROACHING;
     }
 
@@ -249,7 +251,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             if (STATE_LOGGING) {
                 Serial2.println("ATTACK STATE");
             }
-            shot_type = 1;  // 0 is left, 1 is right, 2 is straight
+            shot_type = 2;  // 0 is left, 1 is right, 2 is straight
             left_bounce = shot_type == 0;
             straight_shot = shot_type == 2;
             if (straight_shot) {
@@ -271,7 +273,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             if (STATE_LOGGING) {
                 Serial2.println("DEFEND STATE");
             }
-            shot_type = 1;  // 0 is left, 1 is right, 2 is straight
+            shot_type = 2;  // 0 is left, 1 is right, 2 is straight
             left_bounce = shot_type == 0;
             straight_shot = shot_type == 2;
             intersection_x = location_of_intersection(x1, y1, x2, y2);
@@ -639,7 +641,7 @@ float read_float(char end) {
 bool read_camera() {
     float temp;
     if (Serial2.available()) {
-        temp = read_float(',');
+        frame_time = read_float(',');
         x_puck = read_float(',');
         y_puck = read_float(',');
         puck_missing_frames = read_float(',');
@@ -693,6 +695,7 @@ void setup() {
         // wait for first frame to be saved
         Serial2.println("WAITING FOR CAMERA");
     }
+    frame_time_prev = frame_time;
     xp_prev = x_puck;
     yp_prev = y_puck;
 
@@ -710,6 +713,7 @@ void loop() {
     if (read_camera() && t > (path_start_time + traj_duration)) {
         // Serial2.println("CAMERA READ");
         classical_agent(current_pos[0], current_pos[1], xp_prev, yp_prev, x_puck, y_puck);
+        frame_time_prev = frame_time;
         xp_prev = x_puck;
         yp_prev = y_puck;
     }
