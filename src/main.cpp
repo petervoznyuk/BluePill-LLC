@@ -22,7 +22,7 @@
 #define PULLEY_RADIUS 0.035         // meters
 #define MALLET_RADIUS 0.05
 #define PUCK_RADIUS 0.03175
-#define MAX_PWM 20
+#define MAX_PWM 30
 
 // Coordinate Definitions
 #define ICE_WIDTH 0.99                     // meters - total width of the playing surface
@@ -39,8 +39,8 @@
 #define HOME_Y 0.1                  // meters - y coordinate to return to and wait for next approaching shot
 #define STATIONARY_THRESHOLD 0.02   // meters - if puck has travelled less than this distance between frames it is stationary
 #define FRAMERATE 60                // FPS - Of the camera
-#define DEFAULT_INTERCEPT_TIME 0.4  // s - Time to destination if destination is stationary
-#define DEFAULT_INTERCEPT_SPEED 0   // m/s - Speed to hit puck at
+#define DEFAULT_INTERCEPT_TIME 0.3  // s - Time to destination if destination is stationary
+#define DEFAULT_INTERCEPT_SPEED 3   // m/s - Speed to hit puck at
 
 // PID Controller Constants
 #define KP 1.0
@@ -273,26 +273,38 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             if (STATE_LOGGING) {
                 Serial2.println("DEFEND STATE");
             }
-            shot_type = 2;  // 0 is left, 1 is right, 2 is straight
-            left_bounce = shot_type == 0;
-            straight_shot = shot_type == 2;
-            intersection_x = location_of_intersection(x1, y1, x2, y2);
-            if (straight_shot) {
-                approach_angle = get_attack_angle(intersection_x, INTERSECTION_Y, ICE_WIDTH / 2, ICE_HEIGHT);
-                destination_x = intersection_x;
-                destination_y = INTERSECTION_Y;
-                time_to_destination = time_to_intersection(x1, y1, x2, y2);
-            } else {
-                y_bounce = bounce_coordinate_calculator(left_bounce, x2, y2);
-                x_bounce = 0;
-                if (!left_bounce) {
-                    x_bounce = ICE_WIDTH;
-                }
-                approach_angle = get_attack_angle(intersection_x, INTERSECTION_Y, x_bounce, y_bounce);
-                destination_x = intersection_x;
-                destination_y = INTERSECTION_Y;
-                time_to_destination = time_to_intersection(x1, y1, x2, y2);
+            // shot_type = 2;  // 0 is left, 1 is right, 2 is straight
+            // left_bounce = shot_type == 0;
+            // straight_shot = shot_type == 2;
+            // intersection_x = location_of_intersection(x1, y1, x2, y2);
+            // if (straight_shot) {
+            //     approach_angle = get_attack_angle(intersection_x, INTERSECTION_Y, ICE_WIDTH / 2, ICE_HEIGHT);
+            //     destination_x = intersection_x;
+            //     destination_y = INTERSECTION_Y;
+            //     time_to_destination = time_to_intersection(x1, y1, x2, y2);
+            // } else {
+            //     y_bounce = bounce_coordinate_calculator(left_bounce, x2, y2);
+            //     x_bounce = 0;
+            //     if (!left_bounce) {
+            //         x_bounce = ICE_WIDTH;
+            //     }
+            //     approach_angle = get_attack_angle(intersection_x, INTERSECTION_Y, x_bounce, y_bounce);
+            //     destination_x = intersection_x;
+            //     destination_y = INTERSECTION_Y;
+            //     time_to_destination = time_to_intersection(x1, y1, x2, y2);
+            // }
+
+            time_to_destination = fmin(fmax((frame_time - frame_time_prev)*2/1000, 0.02), 0.2);
+            destination_x = fmin(fmax(x2 + (x2-x1)*4.0, X_MIN), X_MAX);
+            destination_y = INTERSECTION_Y;
+            if (xm < x2){
+                approach_angle = 0;
             }
+            else {
+                approach_angle = PI;
+            }
+            approach_speed = 0;
+            do_offset = false;
             break;
     }
     execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed, do_offset);
@@ -543,13 +555,18 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
         Serial2.print(",");
         Serial2.print(right_pwm);
         Serial2.print(",");
-        Serial2.print(x_puck);
+        Serial2.print(x_puck*100);
         Serial2.print(",");
-        Serial2.println(y_puck);
+        Serial2.println(y_puck*100);
     }
 
 
     set_motor_pwms(left_pwm, right_pwm);
+}
+
+// Helper function to clip the value to its min and max
+float clip_value(float inVal, float minVal, float maxVal) {
+    return fmin(fmax(inVal, minVal), maxVal);
 }
 
 /*
@@ -592,6 +609,9 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
         intercept_point_y = y_puck;
     }
 
+    // Clip intercept point to within table
+    intercept_point_x = clip_value(intercept_point_x, X_MIN, X_MAX);
+    intercept_point_y = clip_value(intercept_point_y, Y_MIN, Y_MAX);
 
     // Scale the final velocity at the intercept
     float v_3_x = vf_x * vf_magnitude;
@@ -603,6 +623,13 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
 
     float q2_x = intercept_point_x - v_3_x * path_time / 3;
     float q2_y = intercept_point_y - v_3_y * path_time / 3;
+
+    // Clip control points to within table
+    q1_x = clip_value(q1_x, X_MIN, X_MAX);
+    q1_y = clip_value(q1_y, Y_MIN, Y_MAX);
+
+    q2_x = clip_value(q2_x, X_MIN, X_MAX);
+    q2_y = clip_value(q2_y, Y_MIN, Y_MAX);
 
     cx = {{x_initial, 3 * q1_x - 3 * x_initial, 3 * x_initial - 6 * q1_x + 3 * q2_x, 3 * q1_x - x_initial - 3 * q2_x + intercept_point_x}};
     cy = {{y_initial, 3 * q1_y - 3 * y_initial, 3 * y_initial - 6 * q1_y + 3 * q2_y, 3 * q1_y - y_initial - 3 * q2_y + intercept_point_y}};

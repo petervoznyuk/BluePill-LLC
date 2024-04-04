@@ -398,5 +398,6 @@ if __name__ == '__main__':
             # Press 'q' to break
             if cv2.waitKey(1)&0XFF == ord('q'):
                 agent.running = not agent.running
+                print("Agent running: " +  str(agent.running))
     except KeyboardInterrupt:
         agent.destroy()
