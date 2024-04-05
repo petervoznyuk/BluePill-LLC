@@ -84,16 +84,16 @@ float y_puck = 0.0;
 // bool do_loop = true;
 // ==================================
 // Four-leaf Slow-ver
-float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
-array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
-array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
-bool do_loop = true;
+// float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
+// array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
+// array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
+// bool do_loop = true;
 
 // // New Four-leaf
-// float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-// array<array<float, 4>, 9> x_traj_coeffs = {{{0.05,0,0.73,-0.32},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.7,-0.1},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.8,-0.2},{0.46,0.4,0.19,-0.26},{0.79,0,-0.59,0.26},{0.46,-0.4,-0.19,0.26},{0.13,0,0.49,-0.16}}};
-// array<array<float, 4>, 9> y_traj_coeffs = {{{0.05,0,0.95,-0.5},{0.5,0.4,0.19,-0.26},{0.83,0,-0.59,0.26},{0.5,-0.4,-0.19,0.26},{0.17,0,0.49,-0.16},{0.5,0.5,-0.4,-0.1},{0.5,-0.6,0.7,-0.1},{0.5,0.5,-0.3,-0.2},{0.5,-0.7,1,-0.3}}};
-// bool do_loop = true;
+float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
+array<array<float, 4>, 9> x_traj_coeffs = {{{0.05,0,0.73,-0.32},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.7,-0.1},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.8,-0.2},{0.46,0.4,0.19,-0.26},{0.79,0,-0.59,0.26},{0.46,-0.4,-0.19,0.26},{0.13,0,0.49,-0.16}}};
+array<array<float, 4>, 9> y_traj_coeffs = {{{0.05,0,0.95,-0.5},{0.5,0.4,0.19,-0.26},{0.83,0,-0.59,0.26},{0.5,-0.4,-0.19,0.26},{0.17,0,0.49,-0.16},{0.5,0.5,-0.4,-0.1},{0.5,-0.6,0.7,-0.1},{0.5,0.5,-0.3,-0.2},{0.5,-0.7,1,-0.3}}};
+bool do_loop = true;
 
 int path_section_num = -1;
 // ==================================
@@ -354,35 +354,35 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_pwm = fmin(fmax(-max_pwm, left_pid + left_feed_forward), max_pwm);
     float right_pwm = fmin(fmax(-max_pwm, right_pid + right_feed_forward), max_pwm);
 
-    Serial2.print(current_time*1000);
-    Serial2.print(",");
-    Serial2.print(x_pos*100);
-    Serial2.print(",");
-    Serial2.print(y_pos*100);
-    Serial2.print(",");
-    Serial2.print(actual_pos[0]*100);
-    Serial2.print(",");
-    Serial2.print(actual_pos[1]*100);
-    Serial2.print(",");
-    Serial2.print(actual_angles[0]);
-    Serial2.print(",");
-    Serial2.print(actual_angles[1]);
-    Serial2.print(",");
-    Serial2.print(left_error);
-    Serial2.print(",");
-    Serial2.print(right_error);
-    Serial2.print(",");
-    Serial2.print(left_pid);
-    Serial2.print(",");
-    Serial2.print(right_pid);
-    Serial2.print(",");
-    Serial2.print(feed_forward_values[0]);
-    Serial2.print(",");
-    Serial2.print(feed_forward_values[1]);
-    Serial2.print(",");
-    Serial2.print(left_pwm);
-    Serial2.print(",");
-    Serial2.println(right_pwm);
+    // Serial2.print(current_time*1000);
+    // Serial2.print(",");
+    // Serial2.print(x_pos*100);
+    // Serial2.print(",");
+    // Serial2.print(y_pos*100);
+    // Serial2.print(",");
+    // Serial2.print(actual_pos[0]*100);
+    // Serial2.print(",");
+    // Serial2.print(actual_pos[1]*100);
+    // Serial2.print(",");
+    // Serial2.print(actual_angles[0]);
+    // Serial2.print(",");
+    // Serial2.print(actual_angles[1]);
+    // Serial2.print(",");
+    // Serial2.print(left_error);
+    // Serial2.print(",");
+    // Serial2.print(right_error);
+    // Serial2.print(",");
+    // Serial2.print(left_pid);
+    // Serial2.print(",");
+    // Serial2.print(right_pid);
+    // Serial2.print(",");
+    // Serial2.print(feed_forward_values[0]);
+    // Serial2.print(",");
+    // Serial2.print(feed_forward_values[1]);
+    // Serial2.print(",");
+    // Serial2.print(left_pwm);
+    // Serial2.print(",");
+    // Serial2.println(right_pwm);
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -630,7 +630,7 @@ void loop() {
         y_pos = Y_MAX;
     }
 
-    read_camera();
+    bool cam = read_camera();
 
     Serial2.print(t*1000);
     Serial2.print(","); 
@@ -640,7 +640,9 @@ void loop() {
     Serial2.print(",");
     Serial2.print(x_pos);
     Serial2.print(",");
-    Serial2.println(y_pos);
+    Serial2.print(y_pos);
+    Serial2.print(",");
+    Serial2.println(cam);
     // Serial2.print(",");
     // Serial2.print(pwm_out[0]);
     // Serial2.print(",");
