@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 from time import sleep
-
+import pickle
 
 #Define Constants
 
@@ -102,6 +102,7 @@ def calibration(image):
     M = cv2.getPerspectiveTransform(table_corners,output_pts)
     #image = cv2.warpPerspective(image,M,(output_length_pixels, output_width_pixels),flags=cv2.INTER_LINEAR)
     #cv2.imshow(image)
+    pickle.dump(M, open("calibrationMat.bin", "wb"))
 
     print("Calibration complete.")
     
