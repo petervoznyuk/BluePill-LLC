@@ -34,8 +34,6 @@
 #define Y_MIN Y_OFFSET //meters
 #define Y_MAX 1-Y_OFFSET //meters
 
-using namespace std;
-
 // Define Global Variables
 int left_revolutions = 0;
 int right_revolutions = 0;
@@ -52,7 +50,7 @@ float right_accumulated_error = 0;
 float left_previous_error = 0;
 float right_previous_error = 0;
 double previous_time;
-float kp = 1.0;
+float kp = 0.5;
 float ki = 0;
 // float kd = 0.0002;
 float kd = 0.0;
@@ -63,42 +61,42 @@ float y_puck = 0.0;
 // ==================================
 // Figure-eight trajectory
 // float traj_durations[] = {0.2,0.2,0.2,0.2,0.2};
-// array<array<float, 4>, 5> x_traj_coeffs = {{{0.0699,0,1.0903,-0.6602},{0.5,0.2,0.68,-0.52},{0.86,0,-0.88,0.52},{0.5,-0.2,-0.71,0.54},{0.13,0,0.91,-0.54}}};
-// array<array<float, 4>, 5> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
+// std::array<std::array<float, 4>, 5> x_traj_coeffs = {{{0.0699,0,1.0903,-0.6602},{0.5,0.2,0.68,-0.52},{0.86,0,-0.88,0.52},{0.5,-0.2,-0.71,0.54},{0.13,0,0.91,-0.54}}};
+// std::array<std::array<float, 4>, 5> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
 // ==================================
 // // 3 shots v6 (best) (1,2,3)
 // float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
-// array<array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3}}};
-// array<array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13}}};
+// std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3}}};
+// std::array<std::array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13}}};
 // bool do_loop = false;
 // 3 shots (2,3,1)
 // float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
-// array<array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875}}};
-// array<array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},}};
+// std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875}}};
+// std::array<std::array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},}};
 // bool do_loop = false;
 // ==================================
 // Four-leaf clover
 // float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-// array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.8903,-0.4602},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.34,0.36},{0.12,0,0.74,-0.36}}};
-// array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.31,0.34},{0.13,0,0.71,-0.34},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
+// std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.8903,-0.4602},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.34,0.36},{0.12,0,0.74,-0.36}}};
+// std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.31,0.34},{0.13,0,0.71,-0.34},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
 // bool do_loop = true;
 // ==================================
 // Four-leaf Slow-ver
 // float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
-// array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
-// array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
+// std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
+// std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
 // bool do_loop = true;
 
 // // New Four-leaf
 float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-array<array<float, 4>, 9> x_traj_coeffs = {{{0.05,0,0.73,-0.32},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.7,-0.1},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.8,-0.2},{0.46,0.4,0.19,-0.26},{0.79,0,-0.59,0.26},{0.46,-0.4,-0.19,0.26},{0.13,0,0.49,-0.16}}};
-array<array<float, 4>, 9> y_traj_coeffs = {{{0.05,0,0.95,-0.5},{0.5,0.4,0.19,-0.26},{0.83,0,-0.59,0.26},{0.5,-0.4,-0.19,0.26},{0.17,0,0.49,-0.16},{0.5,0.5,-0.4,-0.1},{0.5,-0.6,0.7,-0.1},{0.5,0.5,-0.3,-0.2},{0.5,-0.7,1,-0.3}}};
+std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.05,0,0.73,-0.32},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.7,-0.1},{0.46,0.5,-0.4,-0.1},{0.46,-0.6,0.8,-0.2},{0.46,0.4,0.19,-0.26},{0.79,0,-0.59,0.26},{0.46,-0.4,-0.19,0.26},{0.13,0,0.49,-0.16}}};
+std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.05,0,0.95,-0.5},{0.5,0.4,0.19,-0.26},{0.83,0,-0.59,0.26},{0.5,-0.4,-0.19,0.26},{0.17,0,0.49,-0.16},{0.5,0.5,-0.4,-0.1},{0.5,-0.6,0.7,-0.1},{0.5,0.5,-0.3,-0.2},{0.5,-0.7,1,-0.3}}};
 bool do_loop = true;
 
 int path_section_num = -1;
 // ==================================
 
-array<float,2> prev_pos = {{0,0}};
+std::array<float,2> prev_pos = {{0,0}};
 float t;
 float tf;
 float path_start_time;
@@ -122,8 +120,8 @@ float ff[2][2][4] = {{{4.474910e-06, 7.149068e-03, 5.342087e-02,-9.214972e-17,},
 {4.474910e-06,7.149377e-03,5.391504e-02,6.167752e-17,} } };
 
 
-array<float,4> cx = {{0,0,0,0}};
-array<float,4> cy = {{0,0,0,0}};
+std::array<float,4> cx = {{0,0,0,0}};
+std::array<float,4> cy = {{0,0,0,0}};
 
 bool DISABLE_MOTORS = true;
 
@@ -131,8 +129,8 @@ bool DISABLE_MOTORS = true;
 Read left and right motor angles from the encoders.
 Angles are returned in degrees.
 */
-array<float, 2> read_motor_angles() {
-    array<float, 2> angles;
+std::array<float, 2> read_motor_angles() {
+    std::array<float, 2> angles;
     uint16_t serial_response; // incoming byte from the SPI
     int chips[2] = {ENC_CHIP_SELECT_LEFT, ENC_CHIP_SELECT_RIGHT};
 
@@ -172,7 +170,7 @@ array<float, 2> read_motor_angles() {
 Takes motor angles in degrees
 and converts them into cartesian position of the mallet in meters
 */
-array<float,2> theta_to_xy(float theta_l, float theta_r) {
+std::array<float,2> theta_to_xy(float theta_l, float theta_r) {
     float x = (theta_l + theta_r) * PULLEY_RADIUS * PI / 360;
     float y = (theta_l - theta_r) * PULLEY_RADIUS * PI / 360;
 
@@ -183,7 +181,7 @@ array<float,2> theta_to_xy(float theta_l, float theta_r) {
 Takes cartesian position of the mallet (x, y) in meters and converts
 it into motor angles in degrees
 */
-array<float,2> xy_to_theta(float x, float y) {
+std::array<float,2> xy_to_theta(float x, float y) {
     float theta_l = (x + y) / PULLEY_RADIUS * 360 / (2*PI);
     float theta_r = (x - y) / PULLEY_RADIUS * 360 / (2*PI);
     // float y_adj = Y_MAX - y;
@@ -235,7 +233,7 @@ Return the sum of the feed forward terms. This function determines what the feed
 contributes to the PWM at a given time. The ff matrix transforms the [theta_l,theta_r] vector, with 
 its derivatives, into [voltage_l, voltage_r].
 */
-array<float,2> feed_forward(float u) {
+std::array<float,2> feed_forward(float u) {
     float power_2 = u*u;
     float power_3 = power_2*u;
 
@@ -244,19 +242,19 @@ array<float,2> feed_forward(float u) {
 
     float x = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
     float y = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
-    array<float, 2> thetas = xy_to_theta(x*PI/180, y*PI/180);
+    std::array<float, 2> thetas = xy_to_theta(x*PI/180, y*PI/180);
 
     float x_vel = cx[1] + 2*cx[2]*u + 3*cx[3]*power_2;
     float y_vel = cy[1] + 2*cy[2]*u + 3*cy[3]*power_2;
-    array<float, 2> theta_vel = xy_to_theta(x_vel*PI/180/traj_duration, y_vel*PI/180/traj_duration);
+    std::array<float, 2> theta_vel = xy_to_theta(x_vel*PI/180/traj_duration, y_vel*PI/180/traj_duration);
 
     float x_accel = 2*cx[2] + 6*cx[3]*u;
     float y_accel = 2*cy[2] + 6*cy[3]*u;
-    array<float, 2> theta_accel = xy_to_theta(x_accel*PI/180/traj_2, y_accel*PI/180/traj_2);
+    std::array<float, 2> theta_accel = xy_to_theta(x_accel*PI/180/traj_2, y_accel*PI/180/traj_2);
 
     float x_jerk = 6*cx[3];
     float y_jerk = 6*cy[3];
-    array<float, 2> theta_jerk = xy_to_theta(x_jerk*PI/180/traj_3, y_jerk*PI/180/traj_3);
+    std::array<float, 2> theta_jerk = xy_to_theta(x_jerk*PI/180/traj_3, y_jerk*PI/180/traj_3);
 
 
     //The next 4 lines take the feed forward gains from the simulink model, which are stored in the ff variable as a 2x2x4 matrix, and multiply
@@ -315,7 +313,7 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
     delay(500);
 
     //Offsets to set the (0,0) in (x,y) coordinates to the bottom left corner of the table
-    array<float,2> global_theta_offsets = xy_to_theta(X_OFFSET, Y_OFFSET);
+    std::array<float,2> global_theta_offsets = xy_to_theta(X_OFFSET, Y_OFFSET);
 
     left_revolutions = 0;
     right_revolutions = 0;
@@ -325,10 +323,10 @@ void home_table(float x_speed, float y_speed, float position_threshold) {
 }
 
 void command_motors(float x_pos, float y_pos, double current_time, double previous_time) {
-    array<float, 2> target_angles = xy_to_theta(x_pos, y_pos);
+    std::array<float, 2> target_angles = xy_to_theta(x_pos, y_pos);
 
-    array<float,2> actual_angles = read_motor_angles();
-    array<float, 2> actual_pos = theta_to_xy(actual_angles[0], actual_angles[1]);
+    std::array<float,2> actual_angles = read_motor_angles();
+    std::array<float, 2> actual_pos = theta_to_xy(actual_angles[0], actual_angles[1]);
     //Add accumulated error update
 
     float left_error = target_angles[0] - actual_angles[0];
@@ -346,7 +344,7 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     left_accumulated_error += left_error;
     right_accumulated_error += right_error;
 
-    array<float, 2> feed_forward_values = feed_forward((current_time-path_start_time)/traj_duration);
+    std::array<float, 2> feed_forward_values = feed_forward((current_time-path_start_time)/traj_duration);
     
     float left_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[0]), max_pwm);
     float right_feed_forward = fmin(fmax(-max_pwm, feed_forward_values[1]), max_pwm);
@@ -354,35 +352,39 @@ void command_motors(float x_pos, float y_pos, double current_time, double previo
     float left_pwm = fmin(fmax(-max_pwm, left_pid + left_feed_forward), max_pwm);
     float right_pwm = fmin(fmax(-max_pwm, right_pid + right_feed_forward), max_pwm);
 
-    // Serial2.print(current_time*1000);
-    // Serial2.print(",");
-    // Serial2.print(x_pos*100);
-    // Serial2.print(",");
-    // Serial2.print(y_pos*100);
-    // Serial2.print(",");
-    // Serial2.print(actual_pos[0]*100);
-    // Serial2.print(",");
-    // Serial2.print(actual_pos[1]*100);
-    // Serial2.print(",");
-    // Serial2.print(actual_angles[0]);
-    // Serial2.print(",");
-    // Serial2.print(actual_angles[1]);
-    // Serial2.print(",");
-    // Serial2.print(left_error);
-    // Serial2.print(",");
-    // Serial2.print(right_error);
-    // Serial2.print(",");
-    // Serial2.print(left_pid);
-    // Serial2.print(",");
-    // Serial2.print(right_pid);
-    // Serial2.print(",");
-    // Serial2.print(feed_forward_values[0]);
-    // Serial2.print(",");
-    // Serial2.print(feed_forward_values[1]);
-    // Serial2.print(",");
-    // Serial2.print(left_pwm);
-    // Serial2.print(",");
-    // Serial2.println(right_pwm);
+    Serial2.print(current_time*1000);
+    Serial2.print(",");
+    Serial2.print(x_pos*100);
+    Serial2.print(",");
+    Serial2.print(y_pos*100);
+    Serial2.print(",");
+    Serial2.print(actual_pos[0]*100);
+    Serial2.print(",");
+    Serial2.print(actual_pos[1]*100);
+    Serial2.print(",");
+    Serial2.print(actual_angles[0]);
+    Serial2.print(",");
+    Serial2.print(actual_angles[1]);
+    Serial2.print(",");
+    Serial2.print(left_error);
+    Serial2.print(",");
+    Serial2.print(right_error);
+    Serial2.print(",");
+    Serial2.print(left_pid);
+    Serial2.print(",");
+    Serial2.print(right_pid);
+    Serial2.print(",");
+    Serial2.print(feed_forward_values[0]);
+    Serial2.print(",");
+    Serial2.print(feed_forward_values[1]);
+    Serial2.print(",");
+    Serial2.print(left_pwm);
+    Serial2.print(",");
+    Serial2.print(right_pwm);
+    Serial2.print(",");
+    Serial2.print(x_puck*100);
+    Serial2.print(",");
+    Serial2.println(y_puck*100);
 
     set_motor_pwms(left_pwm, right_pwm);
 }
@@ -407,7 +409,7 @@ void get_target_from_hlc() {
     tf = t + traj_durations[path_section_num];
 }
 
-std::array<float,2> get_pwm_from_direction(string direction, float pwm) {
+std::array<float,2> get_pwm_from_direction(std::string direction, float pwm) {
     std::array<float,2> pwm_outs;
     if (direction == "left") {
         pwm_outs[0] = -pwm;
@@ -516,13 +518,12 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(10, 8, 10);
+    home_table(12, 10, 10);
 
     delay(500);
 
     Serial2.println("BEGIN CSV");
-    // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM, Right_PWM");
-    Serial2.println("Time(ms),X_Puck,Y_Puck,x_mallet,y_mallet,Left_PWM,Right_PWM");
+    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Mallet(cm),Y_Mallet(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,X_Puck,Y_Puck");
 
     // Serial2.println("BEGIN CSV");
     // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_PWM,Right_PWM");
@@ -632,17 +633,17 @@ void loop() {
 
     bool cam = read_camera();
 
-    Serial2.print(t*1000);
-    Serial2.print(","); 
-    Serial2.print(x_puck);
-    Serial2.print(",");
-    Serial2.print(y_puck);
-    Serial2.print(",");
-    Serial2.print(x_pos);
-    Serial2.print(",");
-    Serial2.print(y_pos);
-    Serial2.print(",");
-    Serial2.println(cam);
+    // Serial2.print(t*1000);
+    // Serial2.print(","); 
+    // Serial2.print(x_puck);
+    // Serial2.print(",");
+    // Serial2.print(y_puck);
+    // Serial2.print(",");
+    // Serial2.print(x_pos);
+    // Serial2.print(",");
+    // Serial2.print(y_pos);
+    // Serial2.print(",");
+    // Serial2.println(cam);
     // Serial2.print(",");
     // Serial2.print(pwm_out[0]);
     // Serial2.print(",");
