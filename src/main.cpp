@@ -57,6 +57,8 @@ float ki = 0;
 // float kd = 0.0002;
 float kd = 0.0;
 float max_pwm = 100;
+float x_puck = 0.0;
+float y_puck = 0.0;
 
 // ==================================
 // Figure-eight trajectory
@@ -65,10 +67,10 @@ float max_pwm = 100;
 // array<array<float, 4>, 5> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
 // ==================================
 // // 3 shots v6 (best) (1,2,3)
-float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
-array<array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3}}};
-array<array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13}}};
-bool do_loop = false;
+// float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
+// array<array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3}}};
+// array<array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13}}};
+// bool do_loop = false;
 // 3 shots (2,3,1)
 // float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
 // array<array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875}}};
@@ -82,10 +84,10 @@ bool do_loop = false;
 // bool do_loop = true;
 // ==================================
 // Four-leaf Slow-ver
-// float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
-// array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
-// array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
-// bool do_loop = true;
+float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
+array<array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.9903,-0.5602},{0.5,0.3,0,-0.3},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,0.27,-0.32},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.3,0.34},{0.12,0,0.72,-0.34}}};
+array<array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,1.0476,-0.5984},{0.5,0.3,0.51,-0.44},{0.87,0,-0.69,0.32},{0.5,-0.42,-0.27,0.32},{0.13,0,0.69,-0.32},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18},{0.5,0.42,-0.24,-0.18},{0.5,-0.6,0.78,-0.18}}};
+bool do_loop = true;
 
 // // New Four-leaf
 // float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
@@ -446,6 +448,46 @@ std::array<float,2> get_pwm_from_direction(string direction, float pwm) {
     return pwm_outs;
 }
 
+float read_float(char end) {
+    char buffer[10];
+    byte index = 0;
+    bool isNegative = false;
+    while (true) {
+        while (Serial2.available() == 0) {
+        }  // wait for a byte to be available
+        char incoming = Serial2.read();
+        if (incoming == '-') {
+            isNegative = true;
+        } else if (incoming == '.') {
+            buffer[index++] = incoming;
+        } else if (incoming >= '0' && incoming <= '9') {
+            buffer[index++] = incoming;
+        } else if (incoming == end) {
+            break;
+        }
+    }
+    buffer[index] = '\0';
+    float number = atof(buffer);
+    if (isNegative) {
+        number *= -1;
+    }
+    return number;
+}
+
+bool read_camera() {
+    float temp;
+    if (Serial2.available()) {
+        temp = read_float(',');
+        x_puck = read_float(',');
+        y_puck = read_float(',');
+        temp = read_float(',');
+        temp = read_float('\n');
+        return true;
+    } else {
+        return false;
+    }
+}
+
 HardwareSerial Serial2(PA3, PA2);
 void setup() {
     Serial2.begin(460800);
@@ -479,7 +521,8 @@ void setup() {
     delay(500);
 
     Serial2.println("BEGIN CSV");
-    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM, Right_PWM");
+    // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM, Right_PWM");
+    Serial2.println("Time(ms),X_Puck,Y_Puck,x_mallet,y_mallet,Left_PWM,Right_PWM");
 
     // Serial2.println("BEGIN CSV");
     // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_PWM,Right_PWM");
@@ -586,6 +629,22 @@ void loop() {
     } else if(y_pos > Y_MAX) {
         y_pos = Y_MAX;
     }
+
+    read_camera();
+
+    Serial2.print(t*1000);
+    Serial2.print(","); 
+    Serial2.print(x_puck);
+    Serial2.print(",");
+    Serial2.print(y_puck);
+    Serial2.print(",");
+    Serial2.print(x_pos);
+    Serial2.print(",");
+    Serial2.println(y_pos);
+    // Serial2.print(",");
+    // Serial2.print(pwm_out[0]);
+    // Serial2.print(",");
+    // Serial2.println(pwm_out[1]);
 
     command_motors(x_pos, y_pos, t, previous_time);
 
