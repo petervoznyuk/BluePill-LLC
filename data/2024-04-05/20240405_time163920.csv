@@ -1,0 +1,4 @@
+BEGIN CSV
+Fully Homed
+BEGIN CSV
+Time(ms),X_Target(cm),Y_Target(cm),X_Mallet(cm),Y_Mallet(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,X_Puck,Y_Puck
