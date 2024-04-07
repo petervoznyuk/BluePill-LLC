@@ -22,7 +22,7 @@
 #define PULLEY_RADIUS 0.035         // meters
 #define MALLET_RADIUS 0.05
 #define PUCK_RADIUS 0.03175
-#define MAX_PWM 30
+#define MAX_PWM 60
 
 // Coordinate Definitions
 #define ICE_WIDTH 0.99                     // meters - total width of the playing surface
@@ -37,10 +37,20 @@
 // Agent Constants
 #define INTERSECTION_Y 0.2          // meters - y coordinate to intersect an approaching puck at
 #define HOME_Y 0.1                  // meters - y coordinate to return to and wait for next approaching shot
+#define MID_HOME_Y 0.4              // meters - y coordinate to return to and wait for next approaching shot if far out
 #define STATIONARY_THRESHOLD 0.02   // meters - if puck has travelled less than this distance between frames it is stationary
+#define MALLET_STATIONARY_THRESHOLD 0.007 // meters - if mallet within threshold do not make new path
 #define FRAMERATE 60                // FPS - Of the camera
 #define DEFAULT_INTERCEPT_TIME 0.3  // s - Time to destination if destination is stationary
-#define DEFAULT_INTERCEPT_SPEED 3   // m/s - Speed to hit puck at
+#define DEFAULT_INTERCEPT_SPEED 4   // m/s - Speed to hit puck at
+#define LATENCY_OFFSET 0.05         // s - loop latency to offset path time
+#define MIN_DEFENSE_TIME 0.07       // s - minimum path time to defend
+#define MAX_DEFENSE_TIME 0.2        // s - maximum path time to defend
+#define MIN_ATTACK_TIME 0.03        // s - minimum path time to attack
+#define MAX_ATTACK_TIME 0.2         // s - maximum path time to attack
+#define HOME_SPEED 2.5                // m/s - homing m/s
+#define MIN_HOME_TIME 0.03        // s - minimum path time to home
+#define MAX_HOME_TIME 0.4         // s - maximum path time to home
 
 // PID Controller Constants
 #define KP 0.8
@@ -216,13 +226,28 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
     float y_bounce = 0;
     float intersection_x = 0;
 
+    float y_speed = (y2-y1)/ ((frame_time - frame_time_prev)/1000);
+    float x_speed = (x2-x1)/ ((frame_time - frame_time_prev)/1000);
+    float puck_table_width = (ICE_WIDTH - 2*PUCK_RADIUS);
+    float x_final = x2;
+    float homing_dist = 0;
+    float y_intersect_dist = 0;
+
     switch (new_state) {
         case HOME:
             if (STATE_LOGGING) {
                 Serial2.println("HOME STATE");
             }
+
+            if (ym > 0.5) {
+                destination_y = MID_HOME_Y;
+            }
+            else {
+                destination_y = HOME_Y;
+            }
+
             destination_x = ICE_WIDTH / 2;
-            destination_y = HOME_Y;
+            
             approach_angle = atan((ym - HOME_Y) / (xm - ICE_WIDTH / 2));
             approach_speed = 0;
             do_offset = false;
@@ -234,6 +259,18 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             shot_type = 2;  // 0 is left, 1 is right, 2 is straight
             left_bounce = shot_type == 0;
             straight_shot = shot_type == 2;
+
+            // time_to_destination = fmin(fmax(time_to_destination - LATENCY_OFFSET, MIN_ATTACK_TIME), MAX_ATTACK_TIME);
+
+            x_final = abs(x2 - PUCK_RADIUS + x_speed*(time_to_destination + LATENCY_OFFSET));
+
+            if (int(x_final/puck_table_width) % 2 == 0) {
+                x2 = fmod(x_final, puck_table_width) + PUCK_RADIUS;
+            }
+            else {
+                x2 = puck_table_width - fmod(x_final, puck_table_width) + PUCK_RADIUS;
+            }
+            y2 = y2 + y_speed*(time_to_destination + LATENCY_OFFSET);
             if (straight_shot) {
                 approach_angle = get_attack_angle(x2, y2, ICE_WIDTH / 2, ICE_HEIGHT);
                 destination_x = x2;
@@ -248,6 +285,9 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
                 destination_x = x2;
                 destination_y = y2;
             }
+            approach_speed = DEFAULT_INTERCEPT_SPEED * (1-abs((destination_x-ICE_WIDTH/2))/(ICE_WIDTH/2));
+            approach_speed = fmin(fmax(approach_speed, 0), DEFAULT_INTERCEPT_SPEED);
+            do_offset = false;
             break;
         case DEFEND:
             if (STATE_LOGGING) {
@@ -274,20 +314,52 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             //     time_to_destination = time_to_intersection(x1, y1, x2, y2);
             // }
 
-            time_to_destination = fmin(fmax((frame_time - frame_time_prev)*2/1000, 0.02), 0.2);
-            destination_x = fmin(fmax(x2 + (x2-x1)*4.0, X_MIN), X_MAX);
-            destination_y = INTERSECTION_Y;
-            if (xm < x2){
-                approach_angle = 0;
+            y_intersect_dist = abs(y2-INTERSECTION_Y);
+            time_to_destination = abs(y_intersect_dist/y_speed);
+
+            time_to_destination = fmin(fmax(time_to_destination, MIN_DEFENSE_TIME), MAX_DEFENSE_TIME);
+
+            x_final = abs(x2 - PUCK_RADIUS + x_speed*(time_to_destination+LATENCY_OFFSET));
+
+            if (int(x_final/puck_table_width) % 2 == 0) {
+                destination_x = fmod(x_final, puck_table_width) + PUCK_RADIUS;
             }
             else {
-                approach_angle = PI;
+                destination_x = puck_table_width - fmod(x_final, puck_table_width) + PUCK_RADIUS;
+            }
+            
+            // Serial2.print(y2*100);
+            // Serial2.print(",");
+            // Serial2.print(y1*100);
+            // Serial2.print(",");
+            // Serial2.print(frame_time);
+            // Serial2.print(",");
+            // Serial2.print(frame_time_prev);
+            // Serial2.print(",");
+            // Serial2.print(y_dist);
+            // Serial2.print(",");
+            // Serial2.print(travel_time);
+            // Serial2.print(",");
+            // Serial2.println(time_to_destination);
+
+            destination_x = fmin(fmax(destination_x, X_MIN), X_MAX);
+            destination_y = INTERSECTION_Y;
+            if (xm < destination_x){
+                approach_angle = PI/8;
+            }
+            else {
+                approach_angle = 7*PI/8;
             }
             approach_speed = 0;
             do_offset = false;
             break;
     }
-    execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed, do_offset);
+    if (abs(destination_x-xm) < MALLET_STATIONARY_THRESHOLD && abs(destination_y-ym) < MALLET_STATIONARY_THRESHOLD) {
+        return;
+    }
+    else {
+        execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed, do_offset);
+    }
 }
 // End Agent Code
 
@@ -731,6 +803,12 @@ void loop() {
     }
 
     float u = (t - path_start_time) / traj_duration;
+
+    if (abs(u) > 1){
+        set_motor_pwms(0,0);
+        return;
+    }
+
     float power_2 = u * u;
     float power_3 = power_2 * u;
 
