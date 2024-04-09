@@ -249,14 +249,16 @@ class PuckTracker():
 
 
 class AirHockeyAgent():
-    def __init__(self, com_port="COM3", camera_number=1, do_calibrate=False, do_display=False, mode=1):
+    def __init__(self, com_port="COM3", camera_number=1, do_calibrate=False, do_display=False, mode=1, do_tune=False):
         self.start_time = time.time()
+        self.frame_time = 0
         self.dir_path = os.path.dirname(os.path.realpath(__file__))
         self.com_port = com_port
 
         self._establish_serial()
         self._create_logger()
 
+        self.do_tune = do_tune
         self.running = False
 
         self.XMIN = 0.0
@@ -282,7 +284,8 @@ class AirHockeyAgent():
         # self.vid = cv2.VideoCapture('udp://0.0.0.0:10000?overrun_nonfatal=1&fifo_size=5000000')
 
         # Initialize puck tracker
-        self.puck_Tracker = PuckTracker(camera_number, do_calibrate, do_display, mode)
+        if not self.do_tune:
+            self.puck_Tracker = PuckTracker(camera_number, do_calibrate, do_display, mode)
         # print("about to readall")
         self.serial.read_all()
         self.serial.read_until("\n")
@@ -338,28 +341,30 @@ class AirHockeyAgent():
             and self.y_pos >= self.YMIN and self.y_pos <= self.YMAX
 
     def update_puck_status(self):
-        puckyx = self.puck_Tracker.getPuckCoords()
-        self.frame_time = 1000* (time.time() - self.start_time)
-        if puckyx != -1:
-            self.x_pos = puckyx[1]
-            self.y_pos = puckyx[0]
-            self.missing_frames = 0
-        else:
-            self.missing_frames += 1
-        # cv2.imshow('Frame',self.frame)
-        # cv2.waitKey(1)
-        
-        # print(f"{self.x_pos}\t{self.y_pos}")
-        
-        if self.should_send_msg() and self.running:
-            self.send_to_bluepill()
+        if not self.do_tune:
+            puckyx = self.puck_Tracker.getPuckCoords()
+            self.frame_time = 1000* (time.time() - self.start_time)
+            if puckyx != -1:
+                self.x_pos = puckyx[1]
+                self.y_pos = puckyx[0]
+                self.missing_frames = 0
+            else:
+                self.missing_frames += 1
+            # cv2.imshow('Frame',self.frame)
+            # cv2.waitKey(1)
+            
+            # print(f"{self.x_pos}\t{self.y_pos}")
+            
+            if self.should_send_msg() and self.running:
+                self.send_to_bluepill()
         
         self.read_from_bluepill()
         self.last_frame_time = self.frame_time
         # print(puckyx)
     
     def destroy(self):
-        self.puck_Tracker.destroy()
+        if not self.do_tune:
+            self.puck_Tracker.destroy()
         # self.read_from_bluepill()
         self.logger.close()
         self.serial.close()
@@ -370,7 +375,7 @@ if __name__ == '__main__':
     parser.add_option("-c", "--calibrate", dest="do_calibrate",
                     help="Calibrate the table", action="store_true", default=False)
     parser.add_option("-p", "--port",
-                    dest="com_port", default="COM3",
+                    dest="com_port", default="COM5",
                     help="Define com_port, default COM5")
     parser.add_option("-v", "--camera",
                     dest="camera_number", default=1, type="int",
@@ -381,6 +386,9 @@ if __name__ == '__main__':
     parser.add_option("-m", "--mode",
                     dest="mode", default=1, type="int",
                     help="Puck mode: 0 for no LED, 1 for LED")
+    parser.add_option("-t", "--tune",
+                    dest="do_tune", default=False, action="store_true",
+                    help="Allows for tuning (logging enabled, puck tracker disabled)")
     
     (options, args) = parser.parse_args()
 
@@ -389,8 +397,9 @@ if __name__ == '__main__':
     camera_number = options.camera_number
     do_display = options.do_display
     mode = options.mode
+    do_tune = options.do_tune
     
-    agent = AirHockeyAgent(com_port, camera_number, do_calibrate, do_display, mode)
+    agent = AirHockeyAgent(com_port, camera_number, do_calibrate, do_display, mode, do_tune)
 
     try:
         while(True):

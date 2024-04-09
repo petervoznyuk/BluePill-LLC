@@ -33,6 +33,7 @@
 #define X_MAX 1-X_OFFSET //meter
 #define Y_MIN Y_OFFSET //meters
 #define Y_MAX 1-Y_OFFSET //meters
+#define DO_TUNING false 
 
 // Define Global Variables
 int left_revolutions = 0;
@@ -65,10 +66,10 @@ float y_puck = 0.0;
 // std::array<std::array<float, 4>, 5> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
 // ==================================
 // // 3 shots v6 (best) (1,2,3)
-float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
-std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3}}};
-std::array<std::array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13}}};
-bool do_loop = false;
+// float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
+// std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3}}};
+// std::array<std::array<float, 4>, 7> y_traj_coeffs = {{{0.0508,0,0.1476,-0.0984},{0.1,0,0.12,0.27},{0.49,1.05,-3.27,1.83},{0.1,0,0.37,0.02},{0.49,1.2,-3.57,1.98},{0.1,0,-0.18,0.57},{0.49,1.35,-3.87,2.13}}};
+// bool do_loop = false;
 // 3 shots (2,3,1)
 // float traj_durations[] = {0.2,0.3,0.3,0.2,0.3,0.3,0.3};
 // std::array<std::array<float, 4>, 7> x_traj_coeffs = {{{0.0699,0,1.2717,-0.8478},{0.5,0,0.015,-0.01},{0.505,0,-0.015,0.01},{0.5,0,0.975,-0.72},{0.755,-0.21,-0.345,0.3},{0.4938,0,-0.9939,0.7201},{0.22,0.1725,0.495,-0.3875}}};
@@ -76,10 +77,10 @@ bool do_loop = false;
 // bool do_loop = false;
 // ==================================
 // Four-leaf clover
-// float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
-// std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.8903,-0.4602},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.34,0.36},{0.12,0,0.74,-0.36}}};
-// std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.31,0.34},{0.13,0,0.71,-0.34},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
-// bool do_loop = true;
+float traj_durations[] = {0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2};
+std::array<std::array<float, 4>, 9> x_traj_coeffs = {{{0.0699,0,0.8903,-0.4602},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.34,0.36},{0.12,0,0.74,-0.36}}};
+std::array<std::array<float, 4>, 9> y_traj_coeffs = {{{0.0508,0,0.9476,-0.4984},{0.5,0.4,0.31,-0.34},{0.87,0,-0.71,0.34},{0.5,-0.4,-0.31,0.34},{0.13,0,0.71,-0.34},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2},{0.5,0.4,-0.2,-0.2},{0.5,-0.6,0.8,-0.2}}};
+bool do_loop = true;
 // ==================================
 // Four-leaf Slow-ver
 // float traj_durations[] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
@@ -121,10 +122,16 @@ float xf_prev, yf_prev;
 // {4.474910e-06,7.149377e-03,5.391504e-02,6.167752e-17,} } };
 
 // Apr 5
-float ff[2][2][4] = { { {4.531477e-06, 7.240509e-03, 5.529498e-02,-2.047470e-17,},
-{-1.889263e-06,-3.014782e-03, 9.035429e-17,-1.536679e-17,} }, 
-{ {-1.889263e-06,-3.014782e-03, 7.149001e-17, 8.619992e-31,},
-{4.531477e-06,7.241515e-03,5.690094e-02,8.419528e-17,} } };
+// float ff[2][2][4] = { { {4.531477e-06, 7.240509e-03, 5.529498e-02,-2.047470e-17,},
+// {-1.889263e-06,-3.014782e-03, 9.035429e-17,-1.536679e-17,} }, 
+// { {-1.889263e-06,-3.014782e-03, 7.149001e-17, 8.619992e-31,},
+// {4.531477e-06,7.241515e-03,5.690094e-02,8.419528e-17,} } };
+
+// Apr 8
+float ff[2][2][4] = { { {4.440386e-06,7.095690e-03,5.615559e-02,1.336924e-16,},
+{-1.796661e-06,-2.867012e-03, 2.259524e-16,-4.480237e-17,} }, 
+{ {-1.796661e-06,-2.867012e-03, 9.129494e-18, 2.517678e-17,},
+{4.440386e-06,7.097541e-03,5.910830e-02,7.178437e-17,} } };
 
 
 std::array<float,4> cx = {{0,0,0,0}};
@@ -525,15 +532,20 @@ void setup() {
 
     read_motor_angles(); //Need a dummy call to get the previous angle variable set properly
 
-    home_table(11, 9, 5);
+    delay(100);
 
-    delay(500);
+    if (DO_TUNING) {
+        Serial2.println("BEGIN CSV");
+        Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_PWM,Right_PWM");
+    }
+    else {
+        home_table(11, 9, 5);
 
-    Serial2.println("BEGIN CSV");
-    Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Mallet(cm),Y_Mallet(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,X_Puck,Y_Puck");
-
-    // Serial2.println("BEGIN CSV");
-    // Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Puck(cm),Y_Puck(cm),Left_Angle(deg),Right_Angle(deg),Left_PWM,Right_PWM");
+        delay(500);
+        Serial2.println("BEGIN CSV");
+        Serial2.println("Time(ms),X_Target(cm),Y_Target(cm),X_Mallet(cm),Y_Mallet(cm),Left_Angle(deg),Right_Angle(deg),Left_Error(deg),Right_Error(deg),Left_PID,Right_PID,Left_Feed_Forward,Right_Feed_Forward,Left_PWM,Right_PWM,X_Puck,Y_Puck");
+    }
+    
     previous_time = 0;
     start_time = micros();
     tf = 0;
@@ -542,124 +554,128 @@ void setup() {
 void loop() {
     t = (micros() - start_time) / 1000000.0;
 
-    // std::array<float,2> angles = read_motor_angles();
-    // std::array<float,2> pos = theta_to_xy(angles[0], angles[1]);
+    // IF DO TUNING IS TRUE, RUN PWM PATHS, OTHERWISE RUN SET DEMO PATH, SET IN GLOBAL
+    if (DO_TUNING) {
+        std::array<float,2> angles = read_motor_angles();
+        std::array<float,2> pos = theta_to_xy(angles[0], angles[1]);
 
-    // float switch_time = 0.08; // SHOULD BE ~0.1 MAX, THIS IS TIME PER DIRECTION
-    // float delay_time = 0.0; // WAIT HALF A SECOND
-    // float test_pwm = 0;
-    // std::array<float,2> pwm_out;
-    // bool motors_stopped = false;
+        float switch_time = 0.08; // SHOULD BE ~0.1 MAX, THIS IS TIME PER DIRECTION
+        float delay_time = 0.0; // WAIT HALF A SECOND
+        float test_pwm = 75;
+        std::array<float,2> pwm_out;
+        bool motors_stopped = false;
 
-    // float enable_motors;
-    // enable_motors = digitalRead(ENABLE_MOTOR_PIN);
-    // if (enable_motors == LOW) {
-    //     if (motors_stopped == false) {
-    //         test_pwm = 0;
-    //         set_motor_pwms(0, 0);
-    //         exit(0);
-    //     }
-    //     motors_stopped = true;
-    // }
-    // else {
-    //     if (t < delay_time) {
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("off", 0);
-    //     }
-    //     else if (t < switch_time + delay_time) {
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("right", test_pwm);
-    //     }
-    //     else if (t < 2 * switch_time + delay_time) {
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("left", test_pwm);
+        float enable_motors;
+        enable_motors = digitalRead(ENABLE_MOTOR_PIN);
+        if (enable_motors == LOW) {
+            if (motors_stopped == false) {
+                test_pwm = 0;
+                set_motor_pwms(0, 0);
+                exit(0);
+            }
+            motors_stopped = true;
+        }
+        else {
+            if (t < delay_time) {
+                motors_stopped = false;
+                pwm_out = get_pwm_from_direction("off", 0);
+            }
+            else if (t < switch_time + delay_time) {
+                motors_stopped = false;
+                pwm_out = get_pwm_from_direction("left", test_pwm);
+            }
+            else if (t < 2 * switch_time + delay_time) {
+                motors_stopped = false;
+                pwm_out = get_pwm_from_direction("right", test_pwm);
 
-    //     } 
-    //     else if (t < 3*switch_time + delay_time) { 
-    //         motors_stopped = false;
-    //         pwm_out = get_pwm_from_direction("off", 0);
-    //     }
-    //     else if (t >= 3*switch_time + delay_time) {
-    //         set_motor_pwms(0,0);
-    //         exit(0);
-    //     }
+            } 
+            else if (t < 3*switch_time + delay_time) { 
+                motors_stopped = false;
+                pwm_out = get_pwm_from_direction("off", 0);
+            }
+            else if (t >= 3*switch_time + delay_time) {
+                set_motor_pwms(0,0);
+                exit(0);
+            }
 
-    //     set_motor_pwms(pwm_out[0], pwm_out[1]);
-    // }
-
-
-    // Serial2.print(t*1000);
-    // Serial2.print(",");
-    // Serial2.print(0.0);
-    // Serial2.print(",");
-    // Serial2.print(0.0);
-    // Serial2.print(",");
-    // Serial2.print(pos[0] * 100);
-    // Serial2.print(",");
-    // Serial2.print(pos[1] * 100);
-    // Serial2.print(",");
-    // Serial2.print(angles[0]);
-    // Serial2.print(",");
-    // Serial2.print(angles[1]);
-    // Serial2.print(",");
-    // Serial2.print(pwm_out[0]);
-    // Serial2.print(",");
-    // Serial2.println(pwm_out[1]);
+            set_motor_pwms(pwm_out[0], pwm_out[1]);
+        }
 
 
-    float enable_motors;
-    enable_motors = digitalRead(ENABLE_MOTOR_PIN);
-    if (enable_motors == LOW) {
-        set_motor_pwms(0, 0);
-        exit(0);
+        Serial2.print(t*1000);
+        Serial2.print(",");
+        Serial2.print(0.0);
+        Serial2.print(",");
+        Serial2.print(0.0);
+        Serial2.print(",");
+        Serial2.print(pos[0] * 100);
+        Serial2.print(",");
+        Serial2.print(pos[1] * 100);
+        Serial2.print(",");
+        Serial2.print(angles[0]);
+        Serial2.print(",");
+        Serial2.print(angles[1]);
+        Serial2.print(",");
+        Serial2.print(pwm_out[0]);
+        Serial2.print(",");
+        Serial2.println(pwm_out[1]);
     }
 
-    if (t > tf) {
-        path_start_time = t;
-        get_target_from_hlc();
+    else {
+        float enable_motors;
+        enable_motors = digitalRead(ENABLE_MOTOR_PIN);
+        if (enable_motors == LOW) {
+            set_motor_pwms(0, 0);
+            exit(0);
+        }
+
+        if (t > tf) {
+            path_start_time = t;
+            get_target_from_hlc();
+        }
+        
+        float u = (t-path_start_time) / traj_duration;
+        float power_2 = u*u;
+        float power_3 = power_2*u;
+
+        float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
+        float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
+
+        if(x_pos < X_MIN) {
+            x_pos = X_MIN;
+        } else if(x_pos > X_MAX) {
+            x_pos = X_MAX;
+        }
+
+        if(y_pos < Y_MIN) {
+            y_pos = Y_MIN;
+        } else if(y_pos > Y_MAX) {
+            y_pos = Y_MAX;
+        }
+
+        // bool cam = read_camera();
+
+        // Serial2.print(t*1000);
+        // Serial2.print(","); 
+        // Serial2.print(x_puck);
+        // Serial2.print(",");
+        // Serial2.print(y_puck);
+        // Serial2.print(",");
+        // Serial2.print(x_pos);
+        // Serial2.print(",");
+        // Serial2.print(y_pos);
+        // Serial2.print(",");
+        // Serial2.println(cam);
+        // Serial2.print(",");
+        // Serial2.print(pwm_out[0]);
+        // Serial2.print(",");
+        // Serial2.println(pwm_out[1]);
+
+        command_motors(x_pos, y_pos, t, previous_time);
+
+        previous_time = t;
+        xf_prev = xf;
+        yf_prev = yf;
     }
-    
-    float u = (t-path_start_time) / traj_duration;
-    float power_2 = u*u;
-    float power_3 = power_2*u;
-
-    float x_pos = cx[0] + cx[1]*u + cx[2]*power_2 + cx[3]*power_3;
-    float y_pos = cy[0] + cy[1]*u + cy[2]*power_2 + cy[3]*power_3;
-
-    if(x_pos < X_MIN) {
-        x_pos = X_MIN;
-    } else if(x_pos > X_MAX) {
-        x_pos = X_MAX;
-    }
-
-    if(y_pos < Y_MIN) {
-        y_pos = Y_MIN;
-    } else if(y_pos > Y_MAX) {
-        y_pos = Y_MAX;
-    }
-
-    // bool cam = read_camera();
-
-    // Serial2.print(t*1000);
-    // Serial2.print(","); 
-    // Serial2.print(x_puck);
-    // Serial2.print(",");
-    // Serial2.print(y_puck);
-    // Serial2.print(",");
-    // Serial2.print(x_pos);
-    // Serial2.print(",");
-    // Serial2.print(y_pos);
-    // Serial2.print(",");
-    // Serial2.println(cam);
-    // Serial2.print(",");
-    // Serial2.print(pwm_out[0]);
-    // Serial2.print(",");
-    // Serial2.println(pwm_out[1]);
-
-    command_motors(x_pos, y_pos, t, previous_time);
-
-    previous_time = t;
-    xf_prev = xf;
-    yf_prev = yf;
 }
 
