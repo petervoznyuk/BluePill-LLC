@@ -789,9 +789,14 @@ void loop() {
     std::array<float, 2> current_angles = read_motor_angles();
     std::array<float, 2> current_pos = theta_to_xy(current_angles[0], current_angles[1]);
 
+    float prev_missing_frames = puck_missing_frames;
+
     if (read_camera() && t > (path_start_time + traj_duration)) {
         // Serial2.println("CAMERA READ");
-        classical_agent(current_pos[0], current_pos[1], xp_prev, yp_prev, x_puck, y_puck);
+        // Only play if two frames read in a row from camera
+        if (puck_missing_frames == prev_missing_frames) {
+            classical_agent(current_pos[0], current_pos[1], xp_prev, yp_prev, x_puck, y_puck);
+        }
         frame_time_prev = frame_time;
         xp_prev = x_puck;
         yp_prev = y_puck;
