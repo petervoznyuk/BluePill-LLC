@@ -128,10 +128,16 @@ float xf_prev, yf_prev;
 // {4.531477e-06,7.241515e-03,5.690094e-02,8.419528e-17,} } };
 
 // Apr 8
-float ff[2][2][4] = { { {4.440386e-06,7.095690e-03,5.615559e-02,1.336924e-16,},
-{-1.796661e-06,-2.867012e-03, 2.259524e-16,-4.480237e-17,} }, 
-{ {-1.796661e-06,-2.867012e-03, 9.129494e-18, 2.517678e-17,},
-{4.440386e-06,7.097541e-03,5.910830e-02,7.178437e-17,} } };
+// float ff[2][2][4] = { { {4.440386e-06,7.095690e-03,5.615559e-02,1.336924e-16,},
+// {-1.796661e-06,-2.867012e-03, 2.259524e-16,-4.480237e-17,} }, 
+// { {-1.796661e-06,-2.867012e-03, 9.129494e-18, 2.517678e-17,},
+// {4.440386e-06,7.097541e-03,5.910830e-02,7.178437e-17,} } };
+
+// Apr 9
+float ff[2][2][4] = { { {4.460893e-06,7.129924e-03,5.856578e-02,1.511237e-16,},
+{-1.828284e-06,-2.917475e-03, 5.766519e-17,-7.761393e-17,} }, 
+{ {-1.828284e-06,-2.917475e-03,-8.880149e-17, 1.024920e-16,},
+{4.460893e-06, 7.131214e-03, 6.062391e-02,-1.027947e-16,} } };
 
 
 std::array<float,4> cx = {{0,0,0,0}};
@@ -561,7 +567,7 @@ void loop() {
 
         float switch_time = 0.08; // SHOULD BE ~0.1 MAX, THIS IS TIME PER DIRECTION
         float delay_time = 0.0; // WAIT HALF A SECOND
-        float test_pwm = 75;
+        float test_pwm = 0;
         std::array<float,2> pwm_out;
         bool motors_stopped = false;
 
@@ -582,11 +588,11 @@ void loop() {
             }
             else if (t < switch_time + delay_time) {
                 motors_stopped = false;
-                pwm_out = get_pwm_from_direction("left", test_pwm);
+                pwm_out = get_pwm_from_direction("right", test_pwm);
             }
             else if (t < 2 * switch_time + delay_time) {
                 motors_stopped = false;
-                pwm_out = get_pwm_from_direction("right", test_pwm);
+                pwm_out = get_pwm_from_direction("left", test_pwm);
 
             } 
             else if (t < 3*switch_time + delay_time) { 
