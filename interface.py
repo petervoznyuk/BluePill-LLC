@@ -310,7 +310,7 @@ class AirHockeyAgent():
 
     def send_to_bluepill(self):
         msg = f"{round(self.frame_time,4)},{round(self.x_pos,4)},{round(self.y_pos,4)},{round(self.missing_frames,4)},{round(0.0,4)}\n"
-        print("Sending: " + msg)
+        # print("Sending: " + msg)
         self.serial.write(msg.encode())
 
     
@@ -332,10 +332,13 @@ class AirHockeyAgent():
             exit(0)
 
     
-    def should_send_msg(self):
-        '''Decide whether to send a command to the Blue Pill'''
-        return self.x_pos >= self.XMIN and self.x_pos <= self.XMAX \
-            and self.y_pos >= self.YMIN and self.y_pos <= self.YMAX
+    def validate_puck_locations(self):
+        '''Auto bounds the puck location if it's outside the table away from the mallet'''
+        if (self.x_pos < self.XMIN or self.x_pos > self.XMAX) \
+            or (self.y_pos < self.YMIN or self.y_pos > self.YMAX):
+            self.x_pos = 0.5
+            self.y_pos = 1.5
+        return
 
     def update_puck_status(self):
         puckyx = self.puck_Tracker.getPuckCoords()
@@ -350,8 +353,8 @@ class AirHockeyAgent():
         # cv2.waitKey(1)
         
         # print(f"{self.x_pos}\t{self.y_pos}")
-        
-        if self.should_send_msg() and self.running:
+        self.validate_puck_locations()
+        if self.running:
             self.send_to_bluepill()
         
         self.read_from_bluepill()
