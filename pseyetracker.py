@@ -35,10 +35,10 @@ params.minArea = 5 # Minimum area (in pixels) of a blob to be recognized as a pu
 blob_detector = cv2.SimpleBlobDetector_create(params)
 
 # Dimension of table and AruCo marker border in cm
-table_dim_cm = (200,100)
-aruco_border_cm = 1 # Should be unused, leaving it in as legacy
+table_dim_cm = (196,99)
+aruco_border_cm = 0 # Should be unused, leaving it in as legacy
 scaling_factor = 5 # Will be calculated later, leaving it in as legacy
-machine_distance = 2 #cm from AI end
+machine_distance = 3 #cm from AI end
 
 # HSV values to detect puck  # define range of red color in HSV
 lower_puck = np.array([0,100,100])

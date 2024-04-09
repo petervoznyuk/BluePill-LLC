@@ -22,7 +22,7 @@
 #define PULLEY_RADIUS 0.035         // meters
 #define MALLET_RADIUS 0.05
 #define PUCK_RADIUS 0.03175
-#define MAX_PWM 60
+#define MAX_PWM 100
 
 // Coordinate Definitions
 #define ICE_WIDTH 0.99                     // meters - total width of the playing surface
@@ -37,20 +37,21 @@
 // Agent Constants
 #define INTERSECTION_Y 0.2          // meters - y coordinate to intersect an approaching puck at
 #define HOME_Y 0.1                  // meters - y coordinate to return to and wait for next approaching shot
-#define MID_HOME_Y 0.4              // meters - y coordinate to return to and wait for next approaching shot if far out
+#define MID_HOME_Y 0.3              // meters - y coordinate to return to and wait for next approaching shot if mid
+#define FAR_HOME_Y 0.5              // meters - y coordinate to return to and wait for next approaching shot if far out
 #define STATIONARY_THRESHOLD 0.02   // meters - if puck has travelled less than this distance between frames it is stationary
 #define MALLET_STATIONARY_THRESHOLD 0.007 // meters - if mallet within threshold do not make new path
 #define FRAMERATE 60                // FPS - Of the camera
 #define DEFAULT_INTERCEPT_TIME 0.3  // s - Time to destination if destination is stationary
 #define DEFAULT_INTERCEPT_SPEED 4   // m/s - Speed to hit puck at
-#define LATENCY_OFFSET 0.05         // s - loop latency to offset path time
-#define MIN_DEFENSE_TIME 0.07       // s - minimum path time to defend
+#define LATENCY_OFFSET 0.04         // s - loop latency to offset path time
+#define MIN_DEFENSE_TIME 0.08       // s - minimum path time to defend
 #define MAX_DEFENSE_TIME 0.2        // s - maximum path time to defend
-#define MIN_ATTACK_TIME 0.03        // s - minimum path time to attack
-#define MAX_ATTACK_TIME 0.2         // s - maximum path time to attack
-#define HOME_SPEED 2.5                // m/s - homing m/s
-#define MIN_HOME_TIME 0.03        // s - minimum path time to home
-#define MAX_HOME_TIME 0.4         // s - maximum path time to home
+#define MIN_ATTACK_TIME 0.1        // s - minimum path time to attack
+#define MAX_ATTACK_TIME 0.6         // s - maximum path time to attack
+#define MAX_TRAVEL_DISTANCE 1.41    // m - maximum travel distance ~= sqrt(2)
+#define MIN_MALLET_INIT_VELO 0       // m/s - minimum mallet velocity
+#define MAX_MALLET_INIT_VELO 5      // m/s - max mallet initial velocity
 
 // PID Controller Constants
 #define KP 0.8
@@ -82,16 +83,26 @@ float x_puck, y_puck;
 
 // Define variables to home when puck is missing
 float puck_missing_frames = 0.0;
-float PUCK_MISSING_HOME_THRESHOLD = 6;
+float PUCK_MISSING_HOME_THRESHOLD = 5; // Number of frames the puck is missing to home
 
 float xp_prev = -1;
 float yp_prev = -1;
 
-// Apr 5
-float ff[2][2][4] = { { {4.531477e-06, 7.240509e-03, 5.529498e-02,-2.047470e-17,},
-{-1.889263e-06,-3.014782e-03, 9.035429e-17,-1.536679e-17,} }, 
-{ {-1.889263e-06,-3.014782e-03, 7.149001e-17, 8.619992e-31,},
-{4.531477e-06,7.241515e-03,5.690094e-02,8.419528e-17,} } };
+// prev path final velocities
+float v_3_xp = 0;
+float v_3_yp = 0;
+
+// // Apr 5
+// float ff[2][2][4] = { { {4.531477e-06, 7.240509e-03, 5.529498e-02,-2.047470e-17,},
+// {-1.889263e-06,-3.014782e-03, 9.035429e-17,-1.536679e-17,} }, 
+// { {-1.889263e-06,-3.014782e-03, 7.149001e-17, 8.619992e-31,},
+// {4.531477e-06,7.241515e-03,5.690094e-02,8.419528e-17,} } };
+
+// Apr 8
+float ff[2][2][4] = { { {4.440386e-06,7.095690e-03,5.615559e-02,1.336924e-16,},
+{-1.796661e-06,-2.867012e-03, 2.259524e-16,-4.480237e-17,} }, 
+{ {-1.796661e-06,-2.867012e-03, 9.129494e-18, 2.517678e-17,},
+{4.440386e-06,7.097541e-03,5.910830e-02,7.178437e-17,} } };
 
 std::array<float, 4> cx = {{0, 0, 0, 0}};
 std::array<float, 4> cy = {{0, 0, 0, 0}};
@@ -119,7 +130,7 @@ float time_to_intersection(float x1, float y1, float x2, float y2);
 State agent_state_selector(float xm, float ym, float x1, float y1, float x2, float y2);
 float bounce_coordinate_calculator(bool left_bounce, float xi, float yi);
 float get_attack_angle(float x1, float y1, float x2, float y2);
-void execute_shot(float t, float x, float y, float theta, float v, bool do_offset);
+void execute_shot(float t, float x, float y, float theta, float v, State game_state);
 void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2);
 std::array<float, 2> read_motor_angles();
 std::array<float, 2> theta_to_xy(float theta_l, float theta_r);
@@ -128,7 +139,7 @@ void set_motor_pwms(float left, float right);
 float pid(float error, float accumulated_error, float previous_error, double dt);
 void home_table(float x_speed, float y_speed, float position_threshold);
 void command_motors(float x_pos, float y_pos, double current_time, double previous_time);
-void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time, bool do_offset);
+void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time, State game_state);
 bool read_camera();
 float read_float(char end);
 
@@ -151,7 +162,7 @@ float time_to_intersection(float x1, float y1, float x2, float y2) {
 }
 
 State agent_state_selector(float xm, float ym, float x1, float y1, float x2, float y2) {
-    bool puck_in_our_half = y2 < ICE_HEIGHT / 2;
+    bool puck_in_our_half = y2 < (0.7 * ICE_HEIGHT) / 2;
     Direction puck_direction = LEAVING;
 
     // IF PUCK MISSING GO HOME
@@ -160,7 +171,7 @@ State agent_state_selector(float xm, float ym, float x1, float y1, float x2, flo
     }
 
     // IF PUCK PAST MALLET GO HOME
-    if (y2 < ym) {
+    if (y2 < ym + 0.02) {
         return HOME;
     }
 
@@ -170,12 +181,25 @@ State agent_state_selector(float xm, float ym, float x1, float y1, float x2, flo
         puck_direction = APPROACHING;
     }
 
+    // if (puck_direction == APPROACHING) {
+    //     if (abs(y2 - y1) < 2 * STATIONARY_THRESHOLD && puck_in_our_half) {
+    //         return ATTACK;
+    //     }
+    //     else {
+    //         return DEFEND;
+    //     }
+    // } 
+    // else if (puck_direction == STATIONARY && puck_in_our_half) {
+    //     return ATTACK;
+    // }
 
-    if (puck_direction == APPROACHING) {
-        return DEFEND;
-    } else if (puck_direction == STATIONARY && puck_in_our_half) {
+    if (puck_direction == STATIONARY && puck_in_our_half) {
         return ATTACK;
-    } else {
+    }
+    else if (puck_direction == APPROACHING) {
+        return DEFEND;
+    }
+    else {
         return HOME;
     }
 }
@@ -189,10 +213,16 @@ float bounce_coordinate_calculator(bool left_bounce, float xi, float yi) {
 }
 
 float get_attack_angle(float x1, float y1, float x2, float y2) {
-    return atan((y1 - y2) / (x1 - x2));
+    float angle_rads = atan((y1 - y2) / (x1 - x2));
+    if (angle_rads >= 0) {
+        return angle_rads;
+    }
+    else {
+        return angle_rads + PI;
+    }
 }
 
-void execute_shot(float t, float x, float y, float theta, float v, bool do_offset) {
+void execute_shot(float t, float x, float y, float theta, float v, State game_state) {
     if (STATE_LOGGING) {
         Serial2.println("t, x_cmd, y_cmd, theta, v");
         Serial2.print(t);
@@ -206,7 +236,7 @@ void execute_shot(float t, float x, float y, float theta, float v, bool do_offse
         Serial2.print(v);
     }
 
-    generate_path(x, y, theta, v, t, do_offset);
+    generate_path(x, y, theta, v, t, game_state);
 }
 
 void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2) {
@@ -221,7 +251,6 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
     int shot_type = 0;
     bool left_bounce = false;
     bool straight_shot = false;
-    bool do_offset = true;
     float x_bounce = 0;
     float y_bounce = 0;
     float intersection_x = 0;
@@ -230,16 +259,20 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
     float x_speed = (x2-x1)/ ((frame_time - frame_time_prev)/1000);
     float puck_table_width = (ICE_WIDTH - 2*PUCK_RADIUS);
     float x_final = x2;
-    float homing_dist = 0;
+    float total_dist = 0;
     float y_intersect_dist = 0;
+    float intersect_time = 0;
 
     switch (new_state) {
         case HOME:
             if (STATE_LOGGING) {
                 Serial2.println("HOME STATE");
             }
-
-            if (ym > 0.5) {
+            // if (ym > FAR_HOME_Y + 0.05) {
+            //     destination_y = FAR_HOME_Y;
+            // }
+            // else 
+            if (ym > MID_HOME_Y + 0.05) {
                 destination_y = MID_HOME_Y;
             }
             else {
@@ -247,10 +280,9 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             }
 
             destination_x = ICE_WIDTH / 2;
-            
+
             approach_angle = atan((ym - HOME_Y) / (xm - ICE_WIDTH / 2));
             approach_speed = 0;
-            do_offset = false;
             break;
         case ATTACK:
             if (STATE_LOGGING) {
@@ -261,6 +293,8 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             straight_shot = shot_type == 2;
 
             // time_to_destination = fmin(fmax(time_to_destination - LATENCY_OFFSET, MIN_ATTACK_TIME), MAX_ATTACK_TIME);
+            total_dist = sqrt(pow(x2-xm, 2) + pow(x2-ym, 2));
+            time_to_destination = fmin(fmax(total_dist/MAX_TRAVEL_DISTANCE, MIN_ATTACK_TIME), MAX_ATTACK_TIME);
 
             x_final = abs(x2 - PUCK_RADIUS + x_speed*(time_to_destination + LATENCY_OFFSET));
 
@@ -271,6 +305,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
                 x2 = puck_table_width - fmod(x_final, puck_table_width) + PUCK_RADIUS;
             }
             y2 = y2 + y_speed*(time_to_destination + LATENCY_OFFSET);
+
             if (straight_shot) {
                 approach_angle = get_attack_angle(x2, y2, ICE_WIDTH / 2, ICE_HEIGHT);
                 destination_x = x2;
@@ -285,9 +320,9 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
                 destination_x = x2;
                 destination_y = y2;
             }
-            approach_speed = DEFAULT_INTERCEPT_SPEED * (1-abs((destination_x-ICE_WIDTH/2))/(ICE_WIDTH/2));
+
+            approach_speed = DEFAULT_INTERCEPT_SPEED * ( (1-abs((destination_x-ICE_WIDTH/2))/(ICE_WIDTH/2)) * 0.5 + 0.5 );
             approach_speed = fmin(fmax(approach_speed, 0), DEFAULT_INTERCEPT_SPEED);
-            do_offset = false;
             break;
         case DEFEND:
             if (STATE_LOGGING) {
@@ -315,11 +350,11 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             // }
 
             y_intersect_dist = abs(y2-INTERSECTION_Y);
-            time_to_destination = abs(y_intersect_dist/y_speed);
+            intersect_time = abs(y_intersect_dist/y_speed);
 
-            time_to_destination = fmin(fmax(time_to_destination, MIN_DEFENSE_TIME), MAX_DEFENSE_TIME);
+            time_to_destination = fmin(fmax(intersect_time, MIN_DEFENSE_TIME), MAX_DEFENSE_TIME);
 
-            x_final = abs(x2 - PUCK_RADIUS + x_speed*(time_to_destination+LATENCY_OFFSET));
+            x_final = abs(x2 - PUCK_RADIUS + x_speed*(intersect_time+LATENCY_OFFSET));
 
             if (int(x_final/puck_table_width) % 2 == 0) {
                 destination_x = fmod(x_final, puck_table_width) + PUCK_RADIUS;
@@ -327,6 +362,7 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
             else {
                 destination_x = puck_table_width - fmod(x_final, puck_table_width) + PUCK_RADIUS;
             }
+            destination_x = (destination_x-ICE_WIDTH/2) * fmin(time_to_destination/intersect_time, 1) + ICE_WIDTH/2;
             
             // Serial2.print(y2*100);
             // Serial2.print(",");
@@ -351,14 +387,15 @@ void classical_agent(float xm, float ym, float x1, float y1, float x2, float y2)
                 approach_angle = 7*PI/8;
             }
             approach_speed = 0;
-            do_offset = false;
             break;
     }
     if (abs(destination_x-xm) < MALLET_STATIONARY_THRESHOLD && abs(destination_y-ym) < MALLET_STATIONARY_THRESHOLD) {
+        v_3_xp = 0;
+        v_3_yp = 0;
         return;
     }
     else {
-        execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed, do_offset);
+        execute_shot(time_to_destination, destination_x, destination_y, approach_angle, approach_speed, new_state);
     }
 }
 // End Agent Code
@@ -626,25 +663,51 @@ Generate the path and its coefficients for the given HLC target. Calculations fr
 https://en.wikipedia.org/wiki/B%C3%A9zier_curve
 */
 
-void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time, bool do_offset) {
+void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitude, float path_time, State game_state) {
     std::array<float, 2> current_angles = read_motor_angles();
     float x_initial = theta_to_xy(current_angles[0], current_angles[1])[0];
     float y_initial = theta_to_xy(current_angles[0], current_angles[1])[1];
 
-    float u = (t - path_start_time) / traj_duration;
+    bool do_offset;
+
+    if (game_state == ATTACK) {
+        do_offset = true;
+    }
+    else {
+        do_offset = false;
+    }
+
+    // float u = (t - path_start_time) / traj_duration;
 
     float vx_initial;
     float vy_initial;
 
-    if ((t + 0.01 - path_start_time) / traj_duration > 1.0) {
-        float power_2 = u * u;
+    // if ((t + 0.01 - path_start_time) / traj_duration > 1.0) {
+    //     float power_2 = u * u;
+    //     vx_initial = 0;
+    //     vy_initial = 0;
 
-        vx_initial = (cx[1] + 2 * cx[2] * u + 3 * cx[3] * power_2) / traj_duration;
-        vy_initial = (cy[1] + 2 * cy[2] * u + 3 * cy[3] * power_2) / traj_duration;
-    } else {
-        vx_initial = 0;
-        vy_initial = 0;
-    }
+    //     // vx_initial = (cx[1] + 2 * cx[2] * u + 3 * cx[3] * power_2) / traj_duration;
+    //     // vy_initial = (cy[1] + 2 * cy[2] * u + 3 * cy[3] * power_2) / traj_duration;
+    // } else {
+    //     vx_initial = 0;
+    //     vy_initial = 0;
+    // }
+    // if (game_state == ATTACK) {
+    //     vx_initial = v_3_xp;
+    //     vy_initial = v_3_yp;
+    // }
+    // else {
+    //     vx_initial = 0;
+    //     vy_initial = 0;
+    // }
+
+    vx_initial = v_3_xp;
+    vy_initial = v_3_yp;
+
+    vx_initial = clip_value(vx_initial, MIN_MALLET_INIT_VELO, MAX_MALLET_INIT_VELO);
+    vy_initial = clip_value(vy_initial, MIN_MALLET_INIT_VELO, MAX_MALLET_INIT_VELO);
+
     float vf_x = cos(vf_theta);
     float vf_y = sin(vf_theta);
 
@@ -653,8 +716,8 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
     float intercept_point_x;
     float intercept_point_y;
     if (do_offset) {
-        intercept_point_x = x_puck - vf_x * (MALLET_RADIUS + PUCK_RADIUS);
-        intercept_point_y = y_puck - vf_y * (MALLET_RADIUS + PUCK_RADIUS);
+        intercept_point_x = x_puck - vf_x * (MALLET_RADIUS + PUCK_RADIUS)/2;
+        intercept_point_y = y_puck - vf_y * (MALLET_RADIUS + PUCK_RADIUS)/2;
     }
     else {
         intercept_point_x = x_puck;
@@ -668,6 +731,10 @@ void generate_path(float x_puck, float y_puck, float vf_theta, float vf_magnitud
     // Scale the final velocity at the intercept
     float v_3_x = vf_x * vf_magnitude;
     float v_3_y = vf_y * vf_magnitude;
+
+    // Set previous final velocity
+    v_3_xp = v_3_x;
+    v_3_yp = v_3_y;
 
     // Find control point locations
     float q1_x = x_initial + vx_initial * path_time / 3;
@@ -758,7 +825,7 @@ void setup() {
 
     read_motor_angles();  // Need a dummy call to get the previous angle variable set properly
 
-    home_table(13, 10, 10);
+    home_table(13, 8, 10);
 
     while (!Serial2.available()) {
         // wait for serial to become available
@@ -800,6 +867,10 @@ void loop() {
         frame_time_prev = frame_time;
         xp_prev = x_puck;
         yp_prev = y_puck;
+    }
+    else {
+        v_3_xp = 0;
+        v_3_yp = 0;
     }
 
     if (t > tf) {

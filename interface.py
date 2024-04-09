@@ -44,17 +44,17 @@ class PuckTracker():
         self.blob_detector = cv2.SimpleBlobDetector_create(params)
 
         # Dimension of table and AruCo marker border in cm
-        self.table_dim_cm = (200,100)
-        self.aruco_border_cm = 1 # Should be unused, leaving it in as legacy
+        self.table_dim_cm = (196,99)
+        self.aruco_border_cm = 0 # Should be unused, leaving it in as legacy
         self.scaling_factor = 5 # Will be calculated later, leaving it in as legacy
-        self.machine_distance = 2 #cm from AI end
+        self.machine_distance = 3 #cm from AI end
 
         # HSV values to detect puck  # define range of red color in HSV
         self.lower_puck = np.array([0,100,100])
         self.upper_puck = np.array([20,255,255])
 
         if mode==1:
-            self.lower_puck = 200
+            self.lower_puck = 220
             self.upper_puck = 255
         
 
