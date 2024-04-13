@@ -54,7 +54,7 @@ class PuckTracker():
         self.upper_puck = np.array([20,255,255])
 
         if mode==1:
-            self.lower_puck = 220
+            self.lower_puck = 176
             self.upper_puck = 255
         
 
