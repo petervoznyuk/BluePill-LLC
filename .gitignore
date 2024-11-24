@@ -1,6 +1,5 @@
 .pio/
 .vscode/
-platformio.ini
 run_table.sh
 *.zip
 run_table.sh
